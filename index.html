@@ -3292,7 +3292,12 @@ function tokyoPlan(){const T=LIFE.tokyo,h=hourOf(),day=Math.floor(gm/1440);T.don
   if(T.mday!==day&&Mc.area==='hotel'&&h<12){T.mday=day;return tkMorning();}
   if(T.lunch!==day&&h>=11.5&&h<14){T.lunch=day;return tkGo(pick(['ramen','sushi']));}
   if(T.sup!==day&&h>=17.8&&h<21){T.sup=day;return tkGo(pick(['izakaya','ramen','sushi']));}
-  let rest=TKACT.filter(k=>!T.done.includes(k));if(!rest.length){T.done=[];rest=TKACT;}const k=pick(rest);T.done.push(k);return tkGo(k);}
+  let rest=TKACT.filter(k=>!T.done.includes(k));if(!rest.length){T.done=[];rest=TKACT;}
+  if(tReal>choiceNext&&rest.length>=3&&h<21){choiceNext=tReal+rnd(30,65);const opts=[...rest].sort(()=>Math.random()-.5).slice(0,3).map(k=>({t:TKN[k]||k,fn:()=>{T.done.push(k);return tkGo(k);}}));
+    return[...exitHotel(),...choiceSteps('Que fait Marcel à Tokyo?',opts,{a:'scroll',phone:{feed:1},label:'Regarde quoi faire à Tokyo sur son cell'})];}
+  const k=pick(rest);T.done.push(k);return tkGo(k);}
+const TKN={croisement:'🚦 Traverser le carrefour de Shibuya',temple:'⛩️ Visiter le temple et la pagode',tour:'🗼 Monter à la tour de Tokyo',arcade:'🕹️ Aller au Game Center',karaoke:'🎤 Chanter au karaoké',magasin:'🛍️ Magasiner au grand magasin',denki:'📺 Explorer le magasin d\'électronique',souvenirs:'🎁 Acheter des souvenirs',manga:'📚 Lire des mangas',matcha:'🍵 Boire un thé matcha',ruelle:'🏘️ Se promener dans une ruelle',train:'🚆 Faire le tour en train',
+ harajuku:'🍓 Crêpes et boutiques à Harajuku',yoyogi:'⛩️ Parc Yoyogi et sanctuaire',neko:'🐱 Café des chats',akiba:'🤖 Explorer Akihabara',retro:'👾 Jeux rétro à Akihabara',odaiba:'🦾 Robot géant d\'Odaiba',roue:'🎡 Grande roue d\'Odaiba',onsen:'♨️ Onsen d\'Odaiba'};
 function tokyoHTML(){const s=LIFE.tokS||0,T=LIFE.tokyo,p=Math.min(100,s/TOKPRIX*100);const day=Math.floor(gm/1440);
   const dette=LIFE.tokDebt?'<div class="lv" style="color:#e8705a;margin-top:6px">💳 Dette du voyage : '+(-money)+' $ · 50 $ d\'intérêts par jour</div>':'';const st=T?'🗼 Marcel est présentement à Tokyo (jour '+Math.min(6,day-T.d0+1)+' sur 6).':LIFE.tokDep!=null?'✈️ Voyage réservé! Départ '+(LIFE.tokDep-day<=0?'aujourd\'hui':'dans '+(LIFE.tokDep-day)+' jour'+(LIFE.tokDep-day>1?'s':''))+'.':s>=TOKPRIX?'🐷 Objectif atteint! Marcel va bientôt réserver.':'🐷 Marcel met de l\'argent de côté chaque matin quand il a plus de 450 $.';
   return`<h2 id="skDetT">✈️ Voyage à Tokyo</h2><div class="lv">Épargne : ${s} / ${TOKPRIX} $</div><div class="bar" style="height:10px;background:#232b3a;border-radius:6px;overflow:hidden;margin:8px 0"><div style="width:${p.toFixed(1)}%;height:100%;background:#e8c547"></div></div>
@@ -4191,7 +4196,7 @@ function planMarcel(){const h=hourOf(),wk=dayOf()<5;
    if(free&&!flags.outing&&h>=10&&h<19&&!RAIN()&&!SNOWING()&&day-(LIFE.quaiD??-9)>=4&&Math.random()<.35){flags.outing=true;return quaiOuting();}
    if(free&&!flags.outing&&h>=10&&h<18&&money>60&&day-(LIFE.rpD??-9)>=5&&Math.random()<.35){flags.outing=true;return rpOuting();}}
   if(!flags.jobOff&&h>=8&&h<13.5&&Mc.area==='home'&&!Mc.inCar&&Math.random()<.3){flags.jobOff=true;return jobChoice();}
-  if(tReal>choiceNext&&h>=8&&h<21.5&&!Mc.inCar&&Math.random()<.22){choiceNext=tReal+rnd(150,300);const c=actChoice();if(c){flags.actCh=true;return c;}}
+  if(tReal>choiceNext&&h>=8&&h<21.5&&!Mc.inCar&&Math.random()<.6){choiceNext=tReal+rnd(30,65);const c=actChoice();if(c){flags.actCh=true;return c;}}
   return pickRandom();}
 Mc.q=[D('sleep',0,{until:8*60+2,warp:14,pose:'lie',fx:{energy:.17},onEnd:wake})];
 setTask('Dort à poings fermés');
