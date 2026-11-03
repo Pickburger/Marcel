@@ -692,9 +692,9 @@ function bungalow(key,x,z,face,o){const w=o.w||11,d=o.d||9,H=3;const b=placeB(ke
   const sid=M('#ffffff',{map:TX.siding(o.col),r:.85});const fnd=M('#8d8a84',{map:TX.concrete,r:1});
   bx(p,fnd,w+.2,.5,d+.2,0,0,0,0,2);bx(p,sid,w,H,d,0,.5,0,0,4);
   const rm=M('#ffffff',{map:TX.shingle(o.roof||'#3f3a40','#4a454c'),r:.9});
-  const gab=new THREE.Mesh(prism(w,d,2.4),sid);gab.position.y=H+.5;p.add(gab);
-  const roof=new THREE.Mesh(prism(w+.8,d+1.2,2.75),rm);roof.position.y=H+.33;p.add(roof);
-  bx(p,M('#ece6da'),w+.1,.18,d+.1,0,H+.42,0);
+  const gab=new THREE.Mesh(prism(w,d,2.4),sid);gab.position.y=H+.5;p.add(gab);b.gab=gab;
+  const roof=new THREE.Mesh(prism(w+.8,d+1.2,2.75),rm);roof.position.y=H+.33;p.add(roof);b.roof=roof;
+  b.band=bx(p,M('#ece6da'),w+.1,.18,d+.1,0,H+.42,0);
   const dx=o.door??2;
   for(const wx of[-3.2,-1,4.2].filter(v=>Math.abs(v-dx)>1.3))windowSet(p,wx,1.4,d/2,1.3,1.3);
   for(const s of[-1,1])windowSet(grp(p,s*w/2,0,0,s*PI/2),0,1.4,0,1.3,1.3);
@@ -702,7 +702,7 @@ function bungalow(key,x,z,face,o){const w=o.w||11,d=o.d||9,H=3;const b=placeB(ke
   bx(p,fnd,1.8,.3,1.2,dx,0,d/2+.6,0,2);bx(p,fnd,1.8,.15,.7,dx,0,d/2+1.4,0,2);
   bx(p,M('#ece6da'),2.2,.12,1.4,dx,2.9,d/2+.7);cy(p,M('#ece6da'),.05,.05,2.5,dx-.95,.4,d/2+1.3,6);cy(p,M('#ece6da'),.05,.05,2.5,dx+.95,.4,d/2+1.3,6);
   // cheminée
-  bx(p,M('#ffffff',{map:TX.brick('#8a4334','#7a3a2c')}),.8,2.2,.8,-w/4,H+1.4,-1,0,1.2);CHIMS.push(new V3(-w/4,H+3.8,-1).applyAxisAngle(new V3(0,1,0),b.ry).add(new V3(x,0,z)));
+  b.chim=bx(p,M('#ffffff',{map:TX.brick('#8a4334','#7a3a2c')}),.8,2.2,.8,-w/4,H+1.4,-1,0,1.2);CHIMS.push(new V3(-w/4,H+3.8,-1).applyAxisAngle(new V3(0,1,0),b.ry).add(new V3(x,0,z)));b.chimV=CHIMS[CHIMS.length-1];
   // allée
   const path=M('#ffffff',{map:TX.concrete,r:.95});ns(bx(p,path,1.4,.04,7,dx,0,d/2+5.4,0,1.4));
   if(o.drive){ns(bx(p,M('#ffffff',{map:TX.asphalt}),3.2,.04,10,-w/2+1.4,0,d/2+5,0,4));}
@@ -945,7 +945,8 @@ const paveTex=ctex(128,(g,s)=>{g.fillStyle='#8f8578';g.fillRect(0,0,s,s);for(let
   car(8,18.5,0);car(-11,18.5,0);car(-30,18.5,0);T.traverse(o=>{if(o.isMesh)o.castShadow=true;});T.position.set(RAILX,.2,-400);T.visible=false;}}
 
 // --- Maison de Marcel & voisins (bloc nord-ouest)
-{const b=bungalow('home',-55,-52,'S',{col:'#6f8fa8',door:2,drive:1});regDoor('home',b,2,.5);
+let HOMEB=null;
+{const b=bungalow('home',-55,-52,'S',{col:'#6f8fa8',door:2,drive:1});regDoor('home',b,2,.5);HOMEB=b;{const HR=new THREE.Group();HR.position.set(b.x,0,b.z);HR.rotation.y=b.ry;town.add(HR);for(const k of['gab','roof','band','chim'])if(b[k]){HR.add(b[k]);b[k].castShadow=true;b[k].receiveShadow=true;}b.HR=HR;}
  const p=b.g;// citrouilles + boîte aux lettres + clôture
  for(const[px,pz,s]of[[1.3,6.9,1],[2.8,6.1,.75],[3.1,6.5,.55]]){const pk=sp(p,M('#e07a1e',{r:.6,flat:0}),.28*s,px,.27*s+.32,pz,2);pk.scale.y=.75;cy(p,M('#4a6a2a'),.03,.02,.12*s,px,.45*s+.25,pz,5);}
  cy(p,M('#333',{m:.5}),.04,.04,1.1,4.2,0,13.6,6);bx(p,M('#2f3a4a',{m:.4,r:.4}),.3,.25,.5,4.2,1.1,13.6);
@@ -958,8 +959,8 @@ const paveTex=ctex(128,(g,s)=>{g.fillStyle='#8f8578';g.fillRect(0,0,s,s);for(let
 {const dk=M('#a07850',{map:TX.wood,r:.8});ns(bx(TR,dk,8,.2,3.4,-55,0,-58.4,0,2));
  const tb=table(TR,-56,-58.2,1.2,.9,'#e8e2d0');tb.position.y=.2;const ch1=chair(TR,-56,-59.2,0,'#e8e2d0');ch1.position.y=.2;const ch2=chair(TR,-56,-57.2,PI,'#e8e2d0');ch2.position.y=.2;
  cy(TR,M('#ddd'),.03,.03,2.3,-56,.2,-58.2,6);const um=new THREE.Mesh(new THREE.ConeGeometry(1.3,.6,10),M('#2a8a8a',{r:.8,ds:1}));um.position.set(-56,2.5,-58.2);TR.add(um);
- const fw2=M('#c9a46a',{r:.9});for(let x=-63;x<=-47;x+=2)cy(TR,fw2,.06,.06,1.4,x,0,-71,5);for(let z=-71;z<=-57;z+=2){cy(TR,fw2,.06,.06,1.4,-63,0,z,5);cy(TR,fw2,.06,.06,1.4,-47,0,z,5);}
- for(const y of[.5,1.15]){bx(TR,fw2,16,.1,.04,-55,y,-71);bx(TR,fw2,.04,.1,14,-63,y,-64);bx(TR,fw2,.04,.1,14,-47,y,-64);}
+ const fw2=M('#c9a46a',{r:.9});for(let x=-63;x<=-47;x+=2)if(x!==-61)cy(TR,fw2,.06,.06,1.4,x,0,-71,5);for(let z=-71;z<=-57;z+=2){cy(TR,fw2,.06,.06,1.4,-63,0,z,5);cy(TR,fw2,.06,.06,1.4,-47,0,z,5);}
+ for(const y of[.5,1.15]){bx(TR,fw2,.6,.1,.04,-62.7,y,-71);bx(TR,fw2,13.6,.1,.04,-53.8,y,-71);bx(TR,fw2,.04,.1,14,-63,y,-64);bx(TR,fw2,.04,.1,14,-47,y,-64);}
  for(let i=0;i<3;i++){bx(TR,M('#6b4a32',{r:1}),1.6,.3,1.6,-49.5,0,-69+i*2);for(let k=0;k<6;k++)sp(TR,M('#3f8a3a',{flat:1}),.18,-50+(k%3)*.5,.42,-69.4+i*2+Math.floor(k/3)*.7,0);sp(TR,STRAWR,.07,-49.3,.5,-68.6+i*2,0);}
  for(const[lx,lz]of[[-60.4,-70.1],[-55.6,-70.1]])cy(TR,M('#6b4a35'),.07,.07,1.6,lx,0,lz,6);}
 {const asph=M('#ffffff',{map:TX.asphalt,r:.9});ns(bx(TR,asph,6.4,.05,10.8,-1.8,0,-42.6,0,4));ns(bx(TR,asph,5.2,.05,10.8,1,0,42.6,0,4));ns(bx(TR,asph,10.8,.05,5,-42.6,0,-75,0,4));ns(bx(TR,asph,9.8,.05,8,42.1,0,66,0,4));
@@ -4029,8 +4030,8 @@ function deliveryEvent(){const it=delivery.item;const NL=nearNodes();const st=pi
   if(food)s2.push(F(()=>{delivery=null;MEALC=it.nom;}),...at('home.eat','eat',rnd(18,25),{label:'Mange : '+it.nom.toLowerCase()+' ('+it.resto+')',fx:{food:3,fun:.4},say:pick(['Mmm, encore chaud!','Ça valait la peine!'])}),F(()=>{Mc.carry=null;flags.dirty=true;}));
   else if(groc)s2.push(F(()=>{delivery=null;}),...at('home.entry','look',.5,{label:'Rentre avec son épicerie'}));
   else if(it.up)s2.push(tr(INST[it.id],{label:'Démonte '+it.old}),D('install',9,{warp:2,label:'Démonte '+it.old,say:pick(['Adieu, mon vieux…','Il a fait son temps!','Bon débarras!'])}),
-    F(()=>{OLD[it.up].visible=false;}),tr('town.junk',{label:'Sort '+it.old+' au bord du chemin'}),D('install',1.6,{label:'Laisse '+it.old+' aux encombrants',say:pick(['Les encombrants passent demain.','Quelqu\'un va peut-être le prendre!'])}),
-    F(()=>showJunk(it.up)),tr(INST[it.id],{label:'Installe : '+it.nom.toLowerCase()}),D('install',14,{warp:2,say:pick(['Wow, quelle différence!','Ça va être beau!','Presque fini…'])}),
+    F(()=>{OLD[it.up].visible=false;}),...(kioOK()?[tr('town.kio',{label:'Apporte '+it.old+' à son kiosque'}),D('stock',1.6,{yaw:0,label:'Met '+it.old+' en vente au kiosque',say:'Quelqu\'un va être content de l\'avoir!'}),F(()=>kioUsed({old:it.old,prix:it.prix}))]:[tr('town.junk',{label:'Sort '+it.old+' au bord du chemin'}),D('install',1.6,{label:'Laisse '+it.old+' aux encombrants',say:pick(['Les encombrants passent demain.','Quelqu\'un va peut-être le prendre!'])}),
+    F(()=>showJunk(it.up))]),tr(INST[it.id],{label:'Installe : '+it.nom.toLowerCase()}),D('install',14,{warp:2,say:pick(['Wow, quelle différence!','Ça va être beau!','Presque fini…'])}),
     F(()=>{Mc.carry=null;OWN[it.id]=true;delivery=null;applyOwned();INT.home.G=null;say(Mc,pick(['La maison a l\'air neuve!','Ça, c\'est du luxe!','J\'aurais dû faire ça avant!']));}));
   else s2.push(tr(INST[it.id],{label:it.id==='chat'?'Présente la maison à son chat':'Installe : '+it.nom.toLowerCase()}),D('install',it.id==='chat'?4:12,{warp:2,say:pick(['Voyons… la vis A dans le trou B.','Presque!','Ça va être beau!'])}),
     F(()=>{Mc.carry=null;OWN[it.id]=true;delivery=null;applyOwned();if(it.id==='chat'){CAT.x=Mc.pos.x+.8;CAT.z=Mc.pos.z;}say(Mc,pick(['Wow, ça change la maison!','Parfait!','J\'adore!']));}));
@@ -4805,7 +4806,7 @@ function step(dt){tReal+=dt;
   if(outageOn&&powerOn()){outageOn=false;toast('💡 Le courant est revenu!',true);SFX.ping();}
   avoid(dt);updateCars(dt);updateRaccoon(dt);updateFW(dt);
   for(const ch of ALL){if(ch.area==='none')continue;if(ch.staff){ch.tyaw=ch.yaw;}animate(ch,dt);}
-  visibility();updateCamera(dt);updateEnv(dt);updateBubbles(dt);updatePhone();updateChoice();mgTick();updatePlate();updateVenues();updateHomeFX(dt);dayTick();updateJobHud();updateMusicState();skillTick();updateFishing();SFX.update(dt);updateCat(dt);}
+  visibility();updateCamera(dt);updateEnv(dt);updateBubbles(dt);updatePhone();updateChoice();mgTick();farmTick(dt);updatePlate();updateVenues();updateHomeFX(dt);dayTick();updateJobHud();updateMusicState();skillTick();updateFishing();SFX.update(dt);updateCat(dt);}
 function tick(now){const dt=Math.min(.05,(now-last)/1000);last=now;try{step(dt);if(!MG.on)R.render(scene,cam);}catch(e){console.error(e);}try{mgFrame(dt);}catch(e){console.error(e);if(MG.G){MG.G.ph='fin';MG.G.s=.5;mgClose();}}
   uiT-=dt;if(uiT<=0){uiT=.25;ui();}if(tReal-lastSave>20)saveGame();requestAnimationFrame(tick);}
 /* ================= Mini-jeux « Aider Marcel » ================= */
@@ -5208,7 +5209,7 @@ function mgSteps(id,o={}){return[F(()=>{MG.res=null;MG.offer=false;if(!MGD[id])r
   W(()=>MG.res!=null||(!MG.offer&&!MG.on),{a:o.a||'idle',pose:o.pose,seatH:o.seatH,yaw:o.yaw,label:o.label||MGD[id].lab,max:2000,warp:.03}),
   F(()=>mgApply(id,o))];}
 function mgOffer(id,o){const d=MGD[id];MG.offer=true;MG.id=id;MG.o=o;MG.lastOffer=tReal;CHOICE={opts:[],done:false,pick:null,t0:tReal,dur:14,mg:1};
-  $('choixQ').textContent=d.e+' Mini-jeu : '+d.n;$('choixS').textContent=(o.q?o.q+' · ':'')+'Sans réponse, Marcel s\'en occupe seul.';const B=$('choixB');B.innerHTML='';
+  $('choixQ').textContent=d.e+' Mini-jeu : '+d.n;$('choixS').textContent=(o.q?(typeof o.q==='function'?o.q():o.q)+' · ':'')+'Sans réponse, Marcel s\'en occupe seul.';const B=$('choixB');B.innerHTML='';
   const mk=(t,sub,cls,fn)=>{const b=document.createElement('button');b.type='button';if(cls)b.className=cls;b.innerHTML='<span>'+t+'</span>'+(sub?'<small>'+sub+'</small>':'');b.onclick=fn;B.appendChild(b);};
   mk('🎮 Aider Marcel','Jouer au mini-jeu (prime si tu réussis)','',()=>{if(!CHOICE||!CHOICE.mg)return;CHOICE=null;$('choix').classList.toggle('on',false);MG.offer=false;mgSnd('tap');mgStart(id,o);});
   mk('🤖 Laisser Marcel faire','','non',()=>{if(CHOICE&&CHOICE.mg)CHOICE.done=true;});
@@ -5280,6 +5281,283 @@ TROPHIES.push(['mg1','🎮','Coup de main','Jouer un premier mini-jeu avec Marce
 {const _f=trophyHTML;trophyHTML=()=>{const B=LIFE.mg||{};const L=Object.keys(MGD).filter(k=>B[k]).map(k=>'<span style="display:inline-block;margin:2px 8px 2px 0">'+MGD[k].e+' '+MGD[k].n+' : <b>'+Math.round(B[k]*100)+' %</b></span>').join('');
   const h='<div style="border:1px solid var(--trait);border-radius:12px;padding:10px 12px;margin:0 0 12px"><b>🎮 Mini-jeux</b> · '+(MG.off?'désactivés':'activés')+' <button type="button" onclick="mgSet('+(!MG.off)+')" style="margin-left:6px;font:inherit;font-size:.8rem;padding:4px 10px;border-radius:99px;border:1px solid var(--trait);background:#26324a;color:inherit;cursor:pointer">'+(MG.off?'Réactiver':'Désactiver')+'</button>'+
    '<div class="mut" style="margin-top:6px;font-size:.85rem">'+(L||'Aucun record encore. Touche « Aider Marcel » quand un mini-jeu est proposé!')+'</div></div>';const t=_f();const i=t.indexOf('</div>',t.indexOf('class="mut"'));return i>0?t.slice(0,i+6)+h+t.slice(i+6):h+t;};}
+
+/* ================= Potager, poulailler, kiosque, 2e étage et roulette du chef ================= */
+const VEG=[['laitue','Laitues','🥬',3,'#8fd16a','leaf',3,'laitue',0],['radis','Radis','🌱',2,'#d8304a','root',2,null,0],['carotte','Carottes','🥕',4,'#f08a2a','root',2.5,'carottes',0],
+ ['tomate','Tomates','🍅',5,'#e03a2a','vine',4,'tomates',2],['haricot','Haricots verts','🫛',4,'#4caf50','vine',3,null,4],['concombre','Concombres','🥒',5,'#2e7d32','vine',3,null,6],
+ ['patate','Pommes de terre','🥔',6,'#c8a46a','root',3,'patates',8],['courgette','Courgettes','🥒',5,'#558b2f','big',3,null,10],['poivron','Poivrons','🫑',6,'#e53935','vine',4,null,12],
+ ['betterave','Betteraves','🟣',5,'#8e2453','root',3,null,14],['oignon','Oignons','🧅',5,'#e8d8a8','root',2.5,null,16],['ail','Gousses d\'ail','🧄',7,'#f2ead8','root',4,null,18],
+ ['brocoli','Brocolis','🥦',6,'#2e7d32','leaf',4,null,21],['mais','Épis de maïs','🌽',7,'#f2c21a','tall',3,'mais',24],['epinard','Épinards','🥬',3,'#2f7a3a','leaf',3,null,27],
+ ['fraise','Fraises','🍓',5,'#e8202a','leaf',5,'fraises',30],['pois','Petits pois','🫛',4,'#7cb342','vine',3,null,34],['chou','Choux','🥬',7,'#9ccc65','big',4,null,38],
+ ['aubergine','Aubergines','🍆',6,'#5e2a6a','vine',4,null,42],['piment','Piments forts','🌶️',6,'#d32f2f','vine',4,null,48],['citrouille','Citrouilles','🎃',9,'#f07a1a','big',12,null,54],
+ ['bleuet','Bleuets','🫐',8,'#3949ab','leaf',6,null,60]].map(a=>({k:a[0],n:a[1],e:a[2],d:a[3],c:a[4],f:a[5],p:a[6],inv:a[7],u:a[8]}));
+const VK=Object.fromEntries(VEG.map(v=>[v.k,v]));
+function POT(){const P=LIFE.pot=LIFE.pot||{};P.beds=P.beds||[0,1,2,3,4,5].map(()=>({v:null,g:0,w:-9e9}));P.h=P.h||{};P.st=P.st||{};P.tot=P.tot||0;return P;}
+function COOP(){return LIFE.coop=LIFE.coop||{b:0,hens:0,eggs:0,feedD:-9,tot:0,moulee:0};}
+function KIO(){return LIFE.kio=LIFE.kio||{b:0,used:[],tot:0,d:-9};}
+const ETG=()=>LIFE.etg||0;
+const today=()=>Math.floor(gm/1440);
+const potBeds=()=>Math.min(6,2+Math.floor(POT().tot/4));
+const vegOpen=()=>VEG.filter(v=>POT().tot>=v.u);
+const potSeason=()=>{const m=MON();return m>=4&&m<=8;};
+const potGrowS=()=>{const m=MON();return m>=4&&m<=9;};
+const EGGP=.6;
+function kioItems(){const P=POT(),K=KIO();const L=[];for(const k in P.st)if(P.st[k]>0)L.push({k,n:P.st[k],p:k==='oeufs'?EGGP:VK[k].p,e:k==='oeufs'?'🥚':VK[k].e});for(const u of K.used)L.push({k:'_'+u[0],n:1,p:u[1],e:'📦',used:u});return L;}
+const kioValue=()=>kioItems().reduce((s,i)=>s+i.n*i.p,0);
+const kioOK=()=>KIO().b>=3;
+function kioUsed(it){const v=Math.max(10,Math.round((it.prix||100)*.3));KIO().used.push([it.old||'un vieux meuble',v]);toast('🧺 '+(it.old||'Vieux meuble')+' en vente au kiosque ('+v+' $)',true);}
+
+/* ---------- Clôture : ouverture vers le jardin + nouveaux décors ---------- */
+const FARMG=new THREE.Group();town.add(FARMG);
+const fmat={};const FM=(c,o={})=>fmat[c+JSON.stringify(o)]||(fmat[c+JSON.stringify(o)]=M(c,o));
+{const fw=M('#c9a46a',{r:.9});const P=FARMG;
+ for(let z=-73;z>=-84;z-=2){cy(P,fw,.06,.06,1.4,-63,0,z,5);cy(P,fw,.06,.06,1.4,-51.8,0,z,5);}for(let x=-61;x<=-53;x+=2)cy(P,fw,.06,.06,1.4,x,0,-84.5,5);cy(P,fw,.06,.06,1.4,-51.8,0,-84.5,5);
+ for(const y of[.5,1.15]){bx(P,fw,.04,.1,13.5,-63,y,-77.75);bx(P,fw,.04,.1,13.5,-51.8,y,-77.75);bx(P,fw,11.2,.1,.04,-57.4,y,-84.5);}
+ cy(P,fw,.06,.06,1.4,-63,0,-84.5,5);
+ const gate=grp(P,-62.4,0,-71);for(let i=0;i<5;i++)bx(gate,fw,.08,1.1,.04,.12+i*.42,.1,0);bx(gate,fw,1.8,.1,.04,.9,.3,0);bx(gate,fw,1.8,.1,.04,.9,.95,0);gate.rotation.y=1.45;
+ const grav=FM('#b8a582',{r:1});ns(bx(P,grav,1.1,.03,13,-61.5,0,-77.6));ns(bx(P,grav,8.6,.03,.8,-56.6,0,-74.95));ns(bx(P,grav,6.8,.03,.9,-57.8,0,-78.35));
+ // panneau du potager
+ const sg=new THREE.Mesh(new THREE.PlaneGeometry(1.1,.4),signMat('POTAGER','#5b3a29','#f2ead8',256,96,'800 60px "Bricolage Grotesque", sans-serif'));sg.position.set(-59.9,1.62,-70.9);P.add(sg);cy(P,fw,.05,.05,1.45,-59.9,0,-70.97,5);}
+
+/* ---------- Potager : 6 bacs ---------- */
+const BEDX=[-59.2,-56.4,-53.6],BEDZ=[-73.4,-76.4];const BEDS=[];
+{const H=[-53,-35.5],CP=[[-53,-40],[-61.5,-40],[-61.5,-58.5],[-61.5,-71]];
+ for(let i=0;i<6;i++)townSpot('pot'+i,H,[...CP,[-61.5,-74.95],[BEDX[i%3],-74.95]],i<3?0:PI);
+ townSpot('p_feed',H,[...CP,[-61.5,-81.3],[-58.2,-81.3]],PI/2);townSpot('p_oeufs',H,[...CP,[-61.5,-81.3],[-58.2,-81.3],[-55.9,-81.3]],PI/2);townSpot('coop_b',H,[...CP,[-61.5,-78.4],[-54.6,-78.4]],PI);
+ townSpot('kio',H,[[-53,-40],[-61.5,-40],[-62.4,-40.55],[-63.9,-40.55]],0);townSpot('kio_b',H,[[-53,-40],[-61.5,-40],[-61.9,-38.5],[-63.9,-38.5]],PI);townSpot('chantier',H,[[-53,-40],[-53,-44.4],[-57.2,-44.4]],PI);}
+{const wood=M('#8a5b33',{map:TX.wood,r:.85}),soil=FM('#4a3424',{r:1}),grn=FM('#4f9a3a',{flat:1}),stk=FM('#a07850',{r:.9});
+ const geoS=new THREE.IcosahedronGeometry(1,1),geoC=new THREE.CylinderGeometry(1,1,1,6);
+ for(let i=0;i<6;i++){const X=BEDX[i%3],Z=BEDZ[Math.floor(i/3)];const g=grp(FARMG,X,0,Z);
+  bx(g,wood,2,.36,.1,0,0,1.05);bx(g,wood,2,.36,.1,0,0,-1.05);bx(g,wood,.1,.36,2.2,.95,0,0);bx(g,wood,.1,.36,2.2,-.95,0,0);ns(bx(g,soil,1.8,.32,2,0,0,0));
+  const slots=[];for(let a=0;a<2;a++)for(let b=0;b<3;b++){const s=grp(g,(a?.45:-.45),.32,-.65+b*.65);const L=[];for(let k=0;k<3;k++){const m=new THREE.Mesh(geoS,grn);s.add(m);L.push(m);}
+   const st=new THREE.Mesh(geoC,stk);s.add(st);const fr=[];for(let k=0;k<3;k++){const m=new THREE.Mesh(geoS,grn);s.add(m);fr.push(m);}const big=new THREE.Mesh(geoS,grn);s.add(big);s.visible=false;slots.push({s,L,st,fr,big,r:rnd(0,6)});}
+  g.visible=i<2;BEDS.push({g,slots});}}
+function potVis(){const P=POT(),nb=potBeds();BEDS.forEach((B,i)=>{B.g.visible=i<nb;const b=P.beds[i];const V=b&&b.v&&VK[b.v];
+  for(const S of B.slots){if(!V||!B.g.visible){S.s.visible=false;continue;}S.s.visible=true;const g=clamp(b.g,0,1),s=.25+.75*g,ripe=g>=.72;const lf=V.f==='leaf'&&!['fraise','bleuet'].includes(V.k)?FM(V.c,{flat:1}):FM('#4f9a3a',{flat:1});
+   S.s.rotation.y=S.r;S.st.visible=false;S.big.visible=false;S.fr.forEach(m=>m.visible=false);
+   S.L.forEach((m,k)=>{m.material=lf;const a=k*2.1;m.visible=true;if(V.f==='root'||V.f==='tall'){m.scale.set(.03,.22*s,.03);m.position.set(Math.cos(a)*.05,.2*s,Math.sin(a)*.05);m.rotation.z=Math.cos(a)*.35;}
+    else{m.scale.set(.15*s,.07*s,.15*s);m.position.set(Math.cos(a)*.08*s,.06*s+k*.02,Math.sin(a)*.08*s);m.rotation.z=0;}});
+   if(V.f==='vine'||V.f==='tall'){S.st.visible=true;const H=(V.f==='tall'?1.6:.9)*s;S.st.material=V.f==='tall'?lf:FM('#a07850',{r:.9});S.st.scale.set(V.f==='tall'?.03:.015,H,V.f==='tall'?.03:.015);S.st.position.set(0,H/2,0);
+    S.L.forEach((m,k)=>{m.scale.set(.1*s,.05*s,.13*s);m.position.set((k%2?.06:-.06),H*(.35+k*.22),0);});}
+   if(ripe){const fm=FM(V.c,{r:.5});if(V.f==='big'){S.big.visible=true;S.big.material=fm;const r=V.k==='citrouille'?.26:V.k==='chou'?.16:.1;S.big.scale.set(V.k==='courgette'?.07:r,r*.8,V.k==='courgette'?.2:r);S.big.position.set(.08,r*.75,0);}
+    else if(V.f==='root'){S.fr[0].visible=true;S.fr[0].material=fm;S.fr[0].scale.setScalar(.055);S.fr[0].position.set(0,.02,0);}
+    else{const H=V.f==='tall'?1.1*s:V.f==='vine'?.5*s:.08;S.fr.forEach((m,k)=>{if(V.f!=='vine'&&V.f!=='tall'&&k>1)return;m.visible=true;m.material=fm;const sz=V.f==='tall'?.06:['tomate','poivron','aubergine'].includes(V.k)?.055:.035;m.scale.set(sz,V.f==='tall'||V.k==='concombre'||V.k==='haricot'||V.k==='pois'||V.k==='piment'?sz*2.2:sz,sz);m.position.set((k-1)*.08,H-k*.1,.07);});}}}});}
+
+/* ---------- Poulailler ---------- */
+const COOPG=new THREE.Group();FARMG.add(COOPG);const COOPH=new THREE.Group(),COOPR=new THREE.Group();COOPG.add(COOPH,COOPR);const HENS=[];
+{const red=M('#a8382a',{map:TX.wood,r:.8}),wh=FM('#f2ead8',{r:.7}),rf=M('#ffffff',{map:TX.shingle('#3f3a40','#4a454c'),r:.9});const g=grp(COOPH,-54.2,0,-81.6);
+ for(const[x,z]of[[-1,-.7],[1,-.7],[-1,.7],[1,.7]])bx(g,wh,.1,.55,.1,x,0,z);bx(g,red,2.2,1.2,1.6,0,.55,0);const roof=new THREE.Mesh(prism(2.6,2,.7),rf);roof.position.y=1.75;g.add(roof);
+ bx(g,wh,.5,.7,.06,-.6,.65,.82);bx(g,FM('#2a1a12'),.36,.5,.02,-.6,.72,.86);const nb=bx(g,red,.8,.5,.6,1.45,.8,0);bx(g,wh,.9,.06,.7,1.45,1.3,0);
+ const rp=bx(g,FM('#a07850',{r:.9}),.4,.04,1,-1.25,.25,.3);rp.rotation.z=.45;rp.position.x=-1.35;bx(g,wh,.3,.3,.04,.5,1.05,.82);
+ const wire=FM('#9aa3aa',{m:.6,r:.4}),mesh=new THREE.MeshStandardMaterial({color:0xbfc6cc,transparent:true,opacity:.18,side:THREE.DoubleSide,roughness:.6});
+ const x0=-59.6,x1=-52.6,z0=-79,z1=-83.6;for(let x=x0;x<=x1+.01;x+=1){cy(COOPR,wire,.035,.035,1.2,x,0,z0,5);cy(COOPR,wire,.035,.035,1.2,x,0,z1,5);}for(let z=z0;z>=z1-.01;z-=1.15){if(z>-80.1||z<-81.5)cy(COOPR,wire,.035,.035,1.2,x0,0,z,5);cy(COOPR,wire,.035,.035,1.2,x1,0,z,5);}
+ for(const y of[.05,1.18]){bx(COOPR,wire,7,.03,.03,(x0+x1)/2,y,z0);bx(COOPR,wire,7,.03,.03,(x0+x1)/2,y,z1);bx(COOPR,wire,.03,.03,1.2,x0,y,-79.6);bx(COOPR,wire,.03,.03,2.2,x0,y,-82.5);bx(COOPR,wire,.03,.03,4.6,x1,y,-81.3);}
+ const pl=(w,x,z,ry)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,1.15),mesh);m.position.set(x,.6,z);m.rotation.y=ry;COOPR.add(m);};pl(7,(x0+x1)/2,z0,0);pl(7,(x0+x1)/2,z1,0);pl(1.2,x0,-79.6,PI/2);pl(2.2,x0,-82.5,PI/2);pl(4.6,x1,-81.3,PI/2);
+ ns(bx(COOPR,FM('#8a7a5a',{r:1}),6.9,.02,4.5,(x0+x1)/2,0,-81.3));const fd=cy(COOPR,FM('#c8a46a',{r:.8}),.22,.18,.12,-58,0,-80.2,10);cy(COOPR,FM('#6aa0c8',{r:.3}),.2,.2,.08,-58,0,-82.6,10);
+ const sg=new THREE.Mesh(new THREE.PlaneGeometry(1,.34),signMat('LES COCOTTES','#f2ead8','#a8382a',256,96,'800 52px "Bricolage Grotesque", sans-serif'));sg.position.set(-54.2,1.45,-80.77);COOPH.add(sg);}
+const HEN_N=['Cocotte','Ginette','Paulette','Roberta','Jacqueline','Huguette','Rita','Pierrette'];
+function mkHen(i){const g=new THREE.Group();const col=i%3===1?'#8a4a22':i%3===2?'#2a2a2a':'#f4f0e6';const b=FM(col,{r:.8});const body=new THREE.Mesh(new THREE.IcosahedronGeometry(1,1),b);body.scale.set(.13,.12,.17);body.position.y=.2;g.add(body);
+ const tail=new THREE.Mesh(new THREE.IcosahedronGeometry(1,0),b);tail.scale.set(.06,.1,.06);tail.position.set(0,.3,-.15);g.add(tail);const hd=new THREE.Group();hd.position.set(0,.33,.13);g.add(hd);
+ const h=new THREE.Mesh(new THREE.IcosahedronGeometry(.065,1),b);hd.add(h);const cb=new THREE.Mesh(new THREE.BoxGeometry(.02,.05,.07),FM('#d32f2f',{r:.6}));cb.position.set(0,.06,0);hd.add(cb);
+ const bk=new THREE.Mesh(new THREE.ConeGeometry(.02,.06,5),FM('#f2a33a',{r:.6}));bk.rotation.x=PI/2;bk.position.set(0,0,.07);hd.add(bk);for(const s of[-1,1])cy(g,FM('#e8a33a'),.008,.008,.12,s*.05,0,0,4);
+ g.traverse(o=>{if(o.isMesh)o.castShadow=true;});COOPG.add(g);return{g,hd,x:rnd(-59,-56),z:rnd(-82.8,-79.5),tx:-57,tz:-81,t:0,pk:0};}
+function coopVis(){const C=COOP();COOPH.visible=C.b>=1;COOPR.visible=C.b>=2;while(HENS.length<Math.min(8,C.hens))HENS.push(mkHen(HENS.length));HENS.forEach((h,i)=>h.g.visible=i<C.hens&&C.b>=2&&night<.55);}
+function henAnim(dt){if(!HENS.length||VIS_AREA!=='town')return;const sp2=dt*Math.min(speed,8);for(const h of HENS){if(!h.g.visible)continue;h.t-=sp2;const dx=h.tx-h.x,dz=h.tz-h.z,d=Math.hypot(dx,dz);
+  if(d>.05&&h.pk<=0){const v=Math.min(d,.45*sp2);h.x+=dx/d*v;h.z+=dz/d*v;h.g.rotation.y=Math.atan2(dx,dz);h.g.position.y=Math.abs(Math.sin(tReal*16+h.tx))*.02;h.hd.rotation.x=0;}
+  else{h.g.position.y=0;h.pk-=sp2;h.hd.rotation.x=h.pk>0?.6+Math.sin(tReal*20)*.4:0;if(h.t<0){h.t=rnd(1,4);if(Math.random()<.5)h.pk=rnd(.6,1.6);h.tx=rnd(-59.2,-55.8);h.tz=rnd(-83.2,-79.4);}}
+  h.g.position.x=h.x;h.g.position.z=h.z;}}
+
+/* ---------- Kiosque de vente ---------- */
+const KIOG=new THREE.Group();town.add(KIOG);const KS=[new THREE.Group(),new THREE.Group(),new THREE.Group()];KS.forEach(g=>KIOG.add(g));const KGOODS=new THREE.Group();KIOG.add(KGOODS);
+{const KX=-63.9,KZ=-40.3,w=M('#a07850',{map:TX.wood,r:.85}),wd=M('#8a5b33',{map:TX.wood,r:.85});
+ ns(bx(KS[0],w,2.8,.12,1.8,KX,0,KZ));for(const[x,z]of[[-1.3,-.8],[1.3,-.8],[-1.3,.8],[1.3,.8]])bx(KS[0],wd,.12,2.35,.12,KX+x,0,KZ+z);
+ bx(KS[1],wd,2.6,.95,.45,KX,.12,KZ+.62);bx(KS[1],w,2.8,.06,.6,KX,1.07,KZ+.62);bx(KS[1],wd,2.6,.06,.2,KX,1.1,KZ-.78);bx(KS[1],wd,2.6,.06,.2,KX,1.55,KZ-.78);bx(KS[1],wd,2.6,1.6,.06,KX,.12,KZ-.88);
+ const roof=bx(KS[2],w,3.2,.08,2.3,KX,2.4,KZ+.05);roof.rotation.x=-.18;roof.position.y=2.5;
+ for(let i=0;i<8;i++){const a=bx(KS[2],FM(i%2?'#f4f0e6':'#c8402f',{r:.8}),.4,.04,.7,KX-1.4+i*.4,2.12,KZ+1.25);a.rotation.x=.55;}
+ const sg=new THREE.Mesh(new THREE.PlaneGeometry(2.2,.42),signMat('KIOSQUE CHEZ MARCEL','#2f5d3a','#f2ead8',512,96,'800 52px "Bricolage Grotesque", sans-serif'));sg.position.set(KX,2.75,KZ+1.18);KS[2].add(sg);
+ const s2=new THREE.Mesh(new THREE.PlaneGeometry(.7,.36),signMat('FRAIS!','#f2ead8','#c8402f',256,128,'800 64px "Bricolage Grotesque", sans-serif'));s2.position.set(KX+1.42,.75,KZ+.9);s2.rotation.y=-.3;KS[2].add(s2);
+ KIOG.userData={KX,KZ};}
+let kioSig='';function kioVis(){const K=KIO();KS.forEach((g,i)=>g.visible=K.b>i);KGOODS.visible=K.b>=3;if(K.b<3)return;const items=kioItems().filter(i=>!i.used).sort((a,b)=>b.n-a.n).slice(0,4);
+ const sig=items.map(i=>i.k+Math.min(6,1+Math.floor(i.n/2))).join()+'|'+Math.min(3,K.used.length);if(sig===kioSig)return;kioSig=sig;KGOODS.children.slice().forEach(c=>{KGOODS.remove(c);if(c.geometry)c.geometry.dispose();});const{KX,KZ}=KIOG.userData;items.forEach((it,i)=>{const x=KX-.95+i*.62,z=KZ+.62;bx(KGOODS,FM('#c9a46a',{r:.9}),.5,.18,.38,x,1.1,z);
+  const c=it.k==='oeufs'?'#f4ead8':VK[it.k].c;for(let k=0;k<Math.min(6,1+Math.floor(it.n/2));k++)sp(KGOODS,FM(c,{r:.6}),it.k==='citrouille'?.12:.06,x-.15+(k%3)*.15,1.33+Math.floor(k/3)*.06,z-.08+Math.floor(k/3)*.12,0);});
+ KIO().used.slice(0,3).forEach((u,i)=>{bx(KGOODS,FM('#c9a46a',{r:1}),.5,.4,.4,KX-1.7-i*.05,.12+i*.4,KZ+.2);});}
+
+/* ---------- 2e étage (chantier) ---------- */
+const ETGS=[];const ETGG=new THREE.Group();town.add(ETGG);
+const ETGSTEPS=[['Échafaudage et permis',600,'Monte l\'échafaudage autour de la maison'],['Plancher et charpente',1400,'Enlève le vieux toit et monte la charpente'],['Murs extérieurs',900,'Pose les panneaux des murs'],
+ ['Nouveau toit',1100,'Installe le nouveau toit avec les couvreurs'],['Revêtement et fenêtres',1200,'Pose le revêtement et les fenêtres'],['Escalier et finition intérieure',800,'Construit l\'escalier et finit les pièces']];
+if(typeof HOMEB!=='undefined'&&HOMEB){const B=HOMEB;ETGG.position.set(B.x,0,B.z);ETGG.rotation.y=B.ry;const w=B.w,d=B.d,Y=3.5,H2=2.7;
+ const scaf=new THREE.Group(),frame=new THREE.Group(),walls=new THREE.Group(),fin=new THREE.Group();ETGG.add(scaf,frame,walls,fin);
+ const pm=FM('#9aa3aa',{m:.7,r:.35}),pk=M('#c9a46a',{map:TX.wood,r:.9});
+ const xs=[...Array(6).keys()].map(i=>-w/2-.45+i*(w+.9)/5);
+ for(const s of[-1,1]){for(const x of xs){cy(scaf,pm,.04,.04,7.4,x,0,s*(d/2+.8),5);cy(scaf,pm,.04,.04,7.4,x,0,s*(d/2+1.6),5);}for(let z=-d/2+.5;z<=d/2-.4;z+=2.6){cy(scaf,pm,.04,.04,7.4,s*(w/2+.45),0,z,5);}
+  for(const y of[3.3,5.8]){bx(scaf,pk,w+.9,.06,.8,0,y,s*(d/2+1.2));bx(scaf,pm,w+.9,.04,.04,0,y+1,s*(d/2+1.6));bx(scaf,pm,.04,.04,d,s*(w/2+.45),y+1,0);}
+  const br=bx(scaf,pm,.03,.03,6.2,0,1,s*(d/2+1.6));br.rotation.z=.9;br.position.set(-2,3,s*(d/2+1.6));}
+ bx(scaf,FM('#2a6ab8',{r:.8}),1.4,.9,2.6,-w/2-2.6,0,d/2+2.6);for(let i=0;i<4;i++)bx(scaf,pk,2,.12,.9,-.8,i*.12,d/2+2.3);
+ const deck=new THREE.Group();ETGG.add(deck);bx(deck,pk,w+.2,.22,d+.2,0,Y-.1,0);const stud=FM('#d8b680',{r:.9});for(let x=-w/2;x<=w/2+.01;x+=.6){bx(frame,stud,.06,H2,.12,x,Y+.12,d/2-.06);bx(frame,stud,.06,H2,.12,x,Y+.12,-d/2+.06);}
+ for(let z=-d/2;z<=d/2+.01;z+=.6){bx(frame,stud,.12,H2,.06,w/2-.06,Y+.12,z);bx(frame,stud,.12,H2,.06,-w/2+.06,Y+.12,z);}bx(frame,stud,w,.1,.14,0,Y+H2+.1,d/2-.07);bx(frame,stud,w,.1,.14,0,Y+H2+.1,-d/2+.07);
+ const osb=FM('#c9a66b',{r:.95}),sid=M('#ffffff',{map:TX.siding('#6f8fa8'),r:.85});const wl=[bx(walls,osb,w,H2,.12,0,Y+.12,d/2-.06),bx(walls,osb,w,H2,.12,0,Y+.12,-d/2+.06),bx(walls,osb,.12,H2,d,w/2-.06,Y+.12,0),bx(walls,osb,.12,H2,d,-w/2+.06,Y+.12,0)];
+ for(const wx of[-3.2,1,4.2])windowSet(fin,wx,Y+1,d/2+.01,1.3,1.3);for(const wx of[-3,2.6])windowSet(grp(fin,0,0,0,PI),wx,Y+1,d/2+.01,1.3,1.3);for(const s of[-1,1])windowSet(grp(fin,s*w/2,0,0,s*PI/2),0,Y+1,.01,1.3,1.3);
+ bx(fin,FM('#ece6da'),w+.1,.14,d+.1,0,Y,0);
+ ETGS.push({scaf,frame,walls,fin,wl,osb,sid,deck});}
+function etgVis(){const s=ETG(),E=ETGS[0];if(!E)return;E.scaf.visible=s>=1&&s<6;E.frame.visible=s>=2&&s<3;E.deck.visible=s>=2&&s<4;E.walls.visible=s>=3;E.fin.visible=s>=5;const m=s>=5?E.sid:E.osb;E.wl.forEach(x=>{if(x.material!==m)x.material=m;});
+ const R=HOMEB&&HOMEB.HR;if(R){R.visible=s<2||s>=4;R.position.y=s>=4?2.8:0;}if(HOMEB&&HOMEB.chimV&&!HOMEB.chimV.userData0){HOMEB.chimV.userData0=HOMEB.chimV.y;}if(HOMEB&&HOMEB.chimV)HOMEB.chimV.y=HOMEB.chimV.userData0+(s>=4?2.8:0);
+ stairVis(s>=6);}
+/* escalier dans la maison */
+const STAIR=new THREE.Group();let stairObs=false;
+{const I=INT.home;I.dyn.add(STAIR);const wd=M('#8a5b33',{map:TX.wood,r:.6}),wh=FM('#efe9df',{r:.6});for(let i=0;i<9;i++)bx(STAIR,wd,.3,.31*(i+1),1,2.05+i*.3,0,-.9);bx(STAIR,wh,2.8,.06,.06,3.3,.9+.0,-.4).rotation.z=.68;
+ const rl=bx(STAIR,wh,3.4,.05,.05,3.3,1.9,-.38);rl.rotation.z=.75;for(let i=0;i<5;i++)cy(STAIR,wh,.02,.02,.9,2.2+i*.6,.31*(1+i*2),-.38,4);STAIR.visible=false;spot(I,'escalier',1.55,-.85,PI/2);}
+function stairVis(on){STAIR.visible=on;if(on&&!stairObs){stairObs=true;INT.home.obs.push([1.9,-1.45,4.8,-.35]);INT.home.G=null;}}
+/* étage intérieur */
+{const I=interior('etage','home',12,8,-4.4,{name:'Maison · 2e étage'});const r=I.root;room(I,M('#ffffff',{map:TX.wood,r:.6}),'#e8dcc8',{backWins:[-3.6,2.8],sideWins:[0]});
+ const wd=M('#6b4a32',{map:TX.wood,r:.6}),felt=FM('#1f6a3a',{r:.95}),wh=FM('#f2ede4',{r:.8});
+ // coin bureau
+ table(r,-4.4,-3.2,1.6,.7,'#5b3a29');chair(r,-4.4,-2.5,PI,'#2a2a2e');bx(r,FM('#1a1a1c',{r:.3}),.75,.45,.05,-4.4,.8,-3.4);const sc=new THREE.Mesh(new THREE.PlaneGeometry(.68,.38),new THREE.MeshBasicMaterial({color:0x5ab0f0,toneMapped:false}));sc.position.set(-4.4,1.03,-3.37);r.add(sc);
+ bx(r,wd,1.2,1.9,.35,-1.9,0,-3.8);for(let i=0;i<3;i++)for(let k=0;k<5;k++)bx(r,FM(pick(['#c8402f','#2f5d7a','#e8a33a','#3a7a4a']),{r:.8}),.12,.3,.25,-2.35+k*.22,.25+i*.6,-3.75);
+ // billard
+ bx(r,wd,2.4,.75,1.35,.4,0,-.7);bx(r,felt,2.2,.04,1.15,.4,.75,-.7);for(const[x,z]of[[-1.1,-.6],[1.1,-.6],[-1.1,.6],[1.1,.6]])bx(r,wd,.14,.7,.14,.4+x*.95,0,-.7+z*.95);
+ for(let i=0;i<6;i++)sp(r,FM(pick(['#e8c547','#c8402f','#2f5d9a','#1a1a1a','#e87a2a','#f2f2f2']),{r:.3}),.03,.1+i*.12,.82,-.7+(i%2)*.15,1);
+ const q=bx(r,FM('#c8a46a',{r:.5}),1.4,.03,.03,.9,.85,-.2);q.rotation.y=.3;
+ // jeu de fléchettes
+ const db=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,.04,20),FM('#1a1a1a'));db.rotation.x=PI/2;db.position.set(3.6,1.6,-3.92);r.add(db);const db2=new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.05,20),FM('#c8402f'));db2.rotation.x=PI/2;db2.position.set(3.6,1.6,-3.92);r.add(db2);sp(r,FM('#2e9d4a'),.04,3.6,1.6,-3.88,1);
+ // chambre d'amis
+ bx(r,wd,1.5,.45,2.1,4.9,0,1.9);bx(r,wh,1.4,.15,2,4.9,.45,1.9);bx(r,FM('#5a7a9a',{r:1}),1.42,.06,1.2,4.9,.6,2.3);bx(r,wh,.5,.12,.35,4.9,.62,1.1);bx(r,wd,1.5,.9,.08,4.9,0,.82);bx(r,wd,.5,.5,.45,3.85,0,.95);
+ // coin lecture + télé
+ const fa=grp(r,-.6,0,2.8,PI);bx(fa,FM('#8a3a2a',{r:.9}),.9,.42,.85,0,0,0);bx(fa,FM('#8a3a2a',{r:.9}),.9,.6,.18,0,.42,-.34);for(const s of[-1,1])bx(fa,FM('#8a3a2a',{r:.9}),.16,.3,.85,s*.42,.42,0);
+ bx(r,FM('#1a1a1c'),1.3,.75,.05,-.6,1.05,3.9);bx(r,wd,1.4,.5,.4,-.6,0,3.75);
+ const rug=bx(r,FM('#c8a46a',{r:1}),2.6,.01,1.8,.4,0,-.7);rug.userData.ns=1;
+ bake(r,I.g);
+ I.obs=[[-5.25,-3.6,-3.55,-2.8],[-2.55,-4,-1.25,-3.6],[-.85,-1.45,1.65,.05],[4.1,.75,5.7,2.95],[3.55,.7,4.15,1.2],[-1.1,2.35,-.1,3.25],[-1.35,3.5,.15,4]];
+ spot(I,'entree',-4.4,2.9,PI);spot(I,'entry',-4.4,3,PI);spot(I,'bureau',-4.4,-2.45,PI,{seat:.47,via:[[-4.4,-1.8]]});spot(I,'billard',.4,.55,PI);spot(I,'billard2',-1.3,-.7,PI/2);spot(I,'flechettes',3.6,-1.2,PI);
+ spot(I,'lit',4.9,.4,0,{lie:{x:4.9,z:1.95,y:.62,yaw:PI}});spot(I,'lecture',-.6,2.75,PI,{seat:.45,via:[[-.6,2]]});spot(I,'livres',-1.9,-3.1,PI);spot(I,'fenetre',2.8,-3.4,PI);}
+function etgGo(){return[tr('home.escalier',{label:'Monte l\'escalier'}),{t:'warp',dest:'etage',spot:'entree',label:'Monte au 2e étage'}];}
+function etgBack(){return[tr('etage.entree'),{t:'warp',dest:'home',spot:'escalier',label:'Redescend au rez-de-chaussée'}];}
+
+/* ---------- Visuels : synchro ---------- */
+let farmG=null,farmV=-9,farmFrost=false;
+function farmVis(){potVis();coopVis();kioVis();etgVis();}
+function farmTick(dt){if(farmG===null){farmG=gm;farmVis();return;}const dm=gm-farmG;farmG=gm;
+ if(dm>0&&dm<3000){const P=POT();const lv=skLv('jardin');let frost=false;for(const b of P.beds){if(!b.v)continue;const V=VK[b.v];if(!V){b.v=null;continue;}
+   if(!potGrowS()){b.v=null;b.g=0;frost=true;continue;}const wet=RAIN()||(gm-b.w)<1440*1.1;b.g=Math.min(1.05,b.g+dm/(V.d*1440)*(wet?1:.35)*(1+Math.min(.5,lv*.01)));}
+  if(frost&&!farmFrost){toast('🥶 Le gel a eu raison du potager. On ressème au printemps!');}farmFrost=frost;
+  const C=COOP();if(C.hens>0&&C.b>=2){const fed=today()-C.feedD<=1;C.eggs=Math.min(C.hens*6,C.eggs+dm/1440*C.hens*(winterM()?.45:.85)*(fed?1:.35));}}
+ henAnim(dt);if(tReal-farmV>1.5){farmV=tReal;farmVis();}}
+
+/* ---------- Jardinage (compétence) ---------- */
+SKILLS.push({k:'jardin',n:'Jardinage',e:'🌱',u:['Les légumes poussent 10 % plus vite','Récoltes plus abondantes','Prix de vente des légumes +10 %','Les légumes poussent 30 % plus vite','Maître jardinier : récoltes doublées']});
+function jXP(v){addXP('jardin',v);if(SKACT&&SKACT.k!=='jardin')SKREC=[SKACT.k,...SKREC.filter(x=>x!==SKACT.k&&x!=='jardin')];SKACT={k:'jardin',t:tReal};}
+const vegPrice=V=>V.p*(skLv('jardin')>=30?1.1:1);
+
+/* ---------- Actions ---------- */
+function potPlant(i,V){const b=POT().beds[i];b.v=V.k;b.g=0;b.w=gm;}
+function potHarvest(i){const P=POT(),b=P.beds[i],V=VK[b.v];if(!V)return;const lv=skLv('jardin');let n=Math.round(rnd(4,6)+lv/12);if(lv>=50)n*=2;const before=P.tot;
+ b.v=null;b.g=0;P.tot++;P.h[V.k]=(P.h[V.k]||0)+n;cnt('recolte');let toInv=0;if(V.inv){toInv=Math.max(0,Math.min(n,6-(INV[V.inv]||0)));if(toInv)INV[V.inv]=(INV[V.inv]||0)+toInv;}
+ const rest=n-toInv;if(rest)P.st[V.k]=Math.min(60,(P.st[V.k]||0)+rest);jXP(10+n);toast(V.e+' Récolte : '+n+' '+V.n.toLowerCase()+(toInv?' ('+toInv+' au frigo)':''),true);
+ const nw=VEG.filter(v=>v.u>before&&v.u<=P.tot);nw.forEach(v=>setTimeout(()=>toast('🌱 Nouveau légume débloqué : '+v.e+' '+v.n,true),1800));if(Math.floor(before/4)!==Math.floor(P.tot/4)&&potBeds()>Math.min(6,2+Math.floor(before/4)))setTimeout(()=>toast('🪴 Marcel construit un nouveau bac au potager!',true),3400);}
+const potS=i=>'town.pot'+i;
+function semerOuting(){const P=POT();const empty=[...Array(potBeds()).keys()].filter(i=>!P.beds[i].v);if(!empty.length)return[];const open=vegOpen();const cur=new Set(P.beds.map(b=>b.v));
+ const pool=shuf(open.filter(v=>!cur.has(v.k)));const fresh=pool.filter(v=>!P.h[v.k]);const opts=[...fresh,...pool.filter(v=>P.h[v.k])].slice(0,3);if(!opts.length)opts.push(pick(open));
+ const plant=V=>{const s=[payF(4,'Semences : '+V.n.toLowerCase())];empty.slice(0,3).forEach((i,k)=>s.push(tr(potS(i),{label:k?undefined:'Sème des '+V.n.toLowerCase()+' au potager'}),D('rake',rnd(5,8),{yaw:SPK(potS(i)).yaw,warp:2,label:'Sème des '+V.n.toLowerCase()+' (bac '+(i+1)+')',say:k?undefined:pick(['Un petit trou, une graine…','Poussez bien, mes petits!']),fx:{fun:.3}}),D('water',2,{warp:2}),F(()=>{potPlant(i,V);jXP(4);})));return s;};
+ const s=[tr(potS(empty[0]),{label:'Va au potager dans la cour'})];if(opts.length>1)s.push(...choiceSteps('Quel légume Marcel sème-t-il au potager?',opts.map(V=>({t:V.e+' '+V.n,sub:(P.h[V.k]?'Récolté : '+P.h[V.k]:'Nouveau!')+' · '+V.d+' jours',fn:()=>plant(V)})),{a:'look',label:'Choisit quoi semer'}));else s.push(...plant(opts[0]));return s;}
+function arroserOuting(){const P=POT();const L=P.beds.map((b,i)=>i).filter(i=>P.beds[i].v&&gm-P.beds[i].w>600);return[F(()=>{Mc.carry=null;}),...L.flatMap((i,k)=>[tr(potS(i),{label:k?undefined:'Va arroser le potager'}),D('water',rnd(2,3.5),{yaw:SPK(potS(i)).yaw,warp:2,label:'Arrose ses '+VK[P.beds[i].v].n.toLowerCase(),fx:{fun:.2}}),F(()=>{P.beds[i].w=gm;jXP(2);})])];}
+function recolteOuting(){const P=POT();const L=P.beds.map((b,i)=>i).filter(i=>P.beds[i].v&&P.beds[i].g>=1);return L.flatMap((i,k)=>[tr(potS(i),{label:k?undefined:'Va récolter au potager'}),D('stock',rnd(3,5),{yaw:SPK(potS(i)).yaw,warp:2,label:'Récolte ses '+VK[P.beds[i].v].n.toLowerCase(),say:pick(['Regarde-moi ces beaux légumes!','Du jardin à l\'assiette!','Ça, c\'est du local!']),fx:{fun:.5}}),F(()=>potHarvest(i))]);}
+function clousStep(lab,o={}){return mgSteps('clous',{a:'install',label:lab,q:o.q||'Un coup de marteau?',...o});}
+const COOPB=[['Construction du poulailler',260,'Construit le poulailler'],['Enclos grillagé',160,'Installe le grillage de l\'enclos']];
+function coopBuild(){const C=COOP(),st=COOPB[C.b];return[tr('town.coop_b',{label:st[2]}),payF(st[1],'Matériaux : '+st[0].toLowerCase()),D('install',rnd(25,40),{yaw:PI,warp:3,label:st[2],say:pick(['Un clou ici, un clou là…','Les poules vont être bien logées!']),fx:{energy:-.1}}),...clousStep('Plante des clous'),D('install',rnd(15,25),{yaw:PI,warp:3}),
+ F(()=>{C.b++;farmVis();toast('🐔 '+st[0]+' : terminé!',true);say(Mc,C.b>=2?'Il ne manque que les poules!':'Le poulailler prend forme!');})];}
+function poulesOuting(){const C=COOP();const n=Math.min(2,8-C.hens);const nm=HEN_N.slice(C.hens,C.hens+n);return[{t:'drive',to:'animal',label:'Va acheter des poules pondeuses'},...at('animal.comptoir','pay',3,{label:'Achète '+n+' poules pondeuses',say:'Deux belles pondeuses, svp!'}),payF(35*n,'Poules pondeuses ('+n+')'),
+ F(()=>{Mc.carry='box';}),{t:'drive',to:'home',label:'Rentre avec ses poules dans une boîte'},tr('town.p_feed',{label:'Présente le poulailler aux nouvelles poules'}),D('give',3,{yaw:PI/2,say:'Bienvenue, '+nm.join(' et ')+'!'}),F(()=>{Mc.carry=null;C.hens+=n;C.feedD=today();farmVis();toast('🐔 '+nm.join(' et ')+' rejoignent le poulailler!',true);})];}
+function nourrirPoules(){const C=COOP();const s=[];if((C.moulee||0)<=0)s.push(payF(22,'Sac de moulée pour les poules'),F(()=>{C.moulee=14;}));
+ s.push(tr('town.p_feed',{label:'Va nourrir ses poules'}),D('feed',rnd(4,6),{yaw:PI/2,warp:2,label:'Donne de la moulée et de l\'eau aux poules',say:pick(['Petits, petits, petits!','Cot cot! À table, mesdames!']),fx:{fun:.4}}),F(()=>{C.feedD=today();C.moulee=(C.moulee||0)-1;jXP(3);}));return s;}
+function oeufsOuting(){const C=COOP();return[tr('town.p_oeufs',{label:'Va ramasser les œufs au poulailler'}),D('stock',rnd(2.5,4),{yaw:PI/2,warp:2,label:'Ramasse les œufs dans les pondoirs',say:pick(['Encore tout chauds!','Merci les filles!'])}),
+ F(()=>{const n=Math.floor(C.eggs);if(!n)return;C.eggs-=n;C.tot+=n;cnt('oeuf',n);const toInv=Math.max(0,Math.min(n,6-(INV.oeufs||0)));if(toInv)INV.oeufs=(INV.oeufs||0)+toInv;const r=n-toInv;if(r){const P=POT();P.st.oeufs=Math.min(72,(P.st.oeufs||0)+r);}toast('🥚 '+n+' œuf'+(n>1?'s':'')+' ramassé'+(n>1?'s':''),true);jXP(3);})];}
+const KIOB=[['Plancher et poteaux',120,'Monte le plancher et les poteaux du kiosque'],['Comptoir et étagères',180,'Construit le comptoir du kiosque'],['Toit et enseigne',150,'Pose le toit et l\'enseigne du kiosque']];
+function kioBuild(){const K=KIO(),st=KIOB[K.b];return[tr('town.kio_b',{label:st[2]}),payF(st[1],'Matériaux : '+st[0].toLowerCase()),D('install',rnd(25,40),{yaw:PI,warp:3,label:st[2],say:pick(['Mesurer deux fois, couper une fois!','Ça va être le plus beau kiosque du quartier!']),fx:{energy:-.1}}),...clousStep('Cloue les planches du kiosque'),D('install',rnd(10,20),{yaw:PI,warp:3}),
+ F(()=>{K.b++;farmVis();toast('🧺 Kiosque : '+st[0].toLowerCase()+' terminé!',true);if(K.b>=3)say(Mc,'Mon kiosque est prêt! Il me reste juste des choses à vendre.');})];}
+function kioSale(){const L=kioItems();if(!L.length)return 0;let tot=0;const got=[];const n=Math.round(rnd(1,4));for(let k=0;k<n;k++){const it=pick(kioItems());if(!it)break;if(it.used){KIO().used.splice(KIO().used.indexOf(it.used),1);tot+=it.p;got.push(it.used[0]);continue;}
+  const q=Math.min(it.n,it.k==='oeufs'?pick([6,12]):Math.round(rnd(1,4)));const P=POT();P.st[it.k]-=q;if(P.st[it.k]<=0)delete P.st[it.k];tot+=q*(it.k==='oeufs'?EGGP:vegPrice(VK[it.k]));got.push(q+' '+(it.k==='oeufs'?'œufs':VK[it.k].n.toLowerCase()));}
+ tot=Math.round(tot);if(tot>0){addMoney(tot,'Kiosque : '+got.slice(0,2).join(', '));KIO().tot+=tot;}return tot;}
+function kioOuting(){const K=KIO();K.d=today();const{KX,KZ}=KIOG.userData;const s=[tr('town.kio',{label:'Ouvre son kiosque de vente'}),F(()=>farmVis()),D('stock',rnd(3,5),{yaw:0,warp:2,label:'Place ses produits sur le comptoir',say:'Des légumes frais du potager!'})];
+ const items=[...new Set(kioItems().map(i=>i.e))].slice(0,6);if(items.length>=2)s.push(...mgSteps('caisse',{a:'look',yaw:0,items,label:'Sert les clients du kiosque',q:'Il y a foule au kiosque!'}));
+ const nc=Math.round(rnd(3,6));for(let i=0;i<nc;i++)s.push(D('look',rnd(6,14),{yaw:0,warp:3,label:i?undefined:'Attend les clients au kiosque',fx:{social:.2}}),F(()=>{if(kioItems().length)showClient('town',KX+rnd(-.8,.8),KZ+1.7,PI);}),
+   D('give',rnd(2,4),{yaw:0,warp:2,label:'Sert un client au kiosque',say:pick(['Tout vient de mon potager!','Les œufs sont du matin même!','Bonne journée, revenez nous voir!','Ça vous fait '+Math.round(rnd(4,18))+' piasses.'])}),F(()=>{kioSale();hideClient('town');farmVis();}));
+ s.push(F(()=>{hideClient('town');say(Mc,pick(['Belle journée au kiosque!','Le monde aime le local!']));LIFE.lastOuting={kind:'tenir son kiosque'};}));return s;}
+function chantierOuting(){const s0=ETG(),st=ETGSTEPS[s0];const s=[];if(s0===0)s.push(...at('home.desk','type',rnd(15,25),{label:'Dessine les plans du 2e étage',say:'Un bureau, une salle de jeux et une chambre d\'amis!'}),payF(250,'Permis de construction (2e étage)'));
+ s.push(tr('town.chantier',{label:st[2]}),payF(st[1],'Chantier du 2e étage : '+st[0].toLowerCase()),D('install',rnd(40,60),{yaw:PI,warp:3,label:st[2],say:pick(['Ça avance!','Attention en dessous!','Le niveau est parfait!']),fx:{energy:-.12,fun:.2}}),...clousStep('Cloue la charpente du 2e étage',{q:'Le chantier avance!'}),
+  D('install',rnd(30,50),{yaw:PI,warp:3,fx:{energy:-.1}}),F(()=>{LIFE.etg=s0+1;farmVis();cnt('chantier');toast('🏗️ 2e étage · étape '+(s0+1)+'/6 : '+st[0].toLowerCase()+' ✔',true);
+   say(Mc,s0+1>=6?'Le 2e étage est fini! Allons voir ça!':'Une étape de plus!');if(s0+1>=6){const a=AABB.find(b=>Math.abs(b.x0-(HOMEB.x-HOMEB.w/2-.3))<.1&&Math.abs(b.z0-(HOMEB.z-HOMEB.d/2-.3))<.1);if(a)a.h+=2.8;}}));
+ if(s0+1>=6)s.push(...etgGo(),...at('etage.fenetre','look',4,{label:'Fait le tour de son nouvel étage',say:'Wow… j\'ai une salle de jeux!'}),...etgBack());return s;}
+const ETGACT={billard:()=>[...etgGo(),...at('etage.billard','game',rnd(20,35),{label:'Joue au billard dans sa salle de jeux',warp:2,fx:{fun:.8},say:pick(['La 8 dans le coin!','Belle bande!','Raté… de peu.'])}),...at('etage.billard2','look',rnd(3,5)),...etgBack()],
+ flechettes:()=>[...etgGo(),...at('etage.flechettes','give',rnd(12,20),{label:'Lance des fléchettes',warp:2,fx:{fun:.6},say:pick(['Dans le mille!','Cent quatre-vingts!','Oups, le mur…'])}),...etgBack()],
+ bureau2:()=>[...etgGo(),...at('etage.bureau','type',rnd(25,40),{label:'Joue à l\'ordi dans son bureau à l\'étage',warp:2,fx:{fun:.8}}),...etgBack()],
+ lecture2:()=>[...etgGo(),...at('etage.livres','browse',2,{label:'Choisit un livre dans sa bibliothèque'}),...at('etage.lecture','read',rnd(25,40),{label:'Lit dans son fauteuil à l\'étage',warp:2,fx:{fun:.5}}),...etgBack()],
+ sieste2:()=>[...etgGo(),...at('etage.lit','nap',rnd(25,40),{label:'Fait une sieste dans la chambre d\'amis',warp:3,fx:{energy:.5}}),...etgBack()]};
+
+/* ---------- Planification ---------- */
+const farmOK=h=>h>=7&&h<20&&weather!=='tempete'&&!flags.trip&&!(LIFE.tokyo&&LIFE.tokyo.end>today()&&TOKAREAS.has(Mc.area));
+A.push({id:'semer',out:1,w:h=>{const P=POT();return farmOK(h)&&potSeason()&&!RAIN()&&money>20&&[...Array(potBeds()).keys()].some(i=>!P.beds[i].v)?1.5:0;},f:()=>semerOuting()},
+ {id:'arroser',out:1,w:h=>{const P=POT();return farmOK(h)&&!RAIN()&&P.beds.some(b=>b.v&&gm-b.w>1000)?(h<11||h>17?2:1.1):0;},f:()=>arroserOuting()},
+ {id:'recolte',out:1,w:h=>farmOK(h)&&POT().beds.some(b=>b.v&&b.g>=1)?2.6:0,f:()=>recolteOuting()},
+ {id:'coopb',out:1,w:h=>{const C=COOP();return farmOK(h)&&C.b<2&&!winterM()&&!RAIN()&&money>COOPB[C.b][1]+250&&POT().tot>=1?.8:0;},f:()=>coopBuild()},
+ {id:'poules',out:1,w:h=>{const C=COOP();return h>=9&&h<17&&C.b>=2&&C.hens<(C.hens<4?4:8)&&money>220&&(C.hens<2||today()-(C.buyD??-9)>6)?(C.hens<2?2:.4):0;},f:()=>{COOP().buyD=today();return poulesOuting();}},
+ {id:'nourrir',out:1,w:h=>{const C=COOP();return C.hens>0&&h>=6&&h<19&&today()-C.feedD>=1?2.2:0;},f:()=>nourrirPoules()},
+ {id:'oeufs',out:1,w:h=>{const C=COOP();return C.hens>0&&h>=7&&h<20&&C.eggs>=3?1.6:0;},f:()=>oeufsOuting()},
+ {id:'kiob',out:1,w:h=>{const K=KIO();return farmOK(h)&&K.b<3&&!RAIN()&&!winterM()&&money>KIOB[K.b][1]+200&&(POT().tot>=2||COOP().tot>=6)?.9:0;},f:()=>kioBuild()},
+ {id:'kiosque',out:1,w:h=>{const K=KIO();return h>=9&&h<18&&kioOK()&&!RAIN()&&!SNOWING()&&K.d!==today()&&kioValue()>=12?1.4:0;},f:()=>kioOuting()},
+ {id:'chantier',out:1,w:h=>{const s=ETG();return s<6&&h>=8&&h<16&&!RAIN()&&weather!=='tempete'&&!flags.trip&&money>ETGSTEPS[s][1]+(s===0?250:0)+400&&today()-(LIFE.etgD??-9)>=1?(s===0?.5:1):0;},f:()=>{LIFE.etgD=today();return chantierOuting();}},
+ ...Object.keys(ETGACT).map(k=>({id:k,w:h=>ETG()>=6&&h>=9&&h<22.5?(k==='sieste2'?(h>13&&h<17?.5:0):.7):0,f:ETGACT[k]})));
+Object.assign(CHN,{semer:'🌱 Semer au potager',arroser:'🚿 Arroser le potager',recolte:'🥕 Récolter au potager',coopb:'🐔 Construire le poulailler',poules:'🐔 Acheter des poules',nourrir:'🌾 Nourrir les poules',oeufs:'🥚 Ramasser les œufs',
+ kiob:'🔨 Construire le kiosque',kiosque:'🧺 Tenir son kiosque de vente',chantier:'🏗️ Travailler sur le 2e étage',billard:'🎱 Jouer au billard à l\'étage',flechettes:'🎯 Lancer des fléchettes',bureau2:'🖥️ Jouer à l\'ordi à l\'étage',lecture2:'📖 Lire dans le coin lecture',sieste2:'😴 Sieste dans la chambre d\'amis'});
+
+/* ---------- Mini-jeux : roulette du chef et clous ---------- */
+const ROUL=[['Saisir','Assaisonner','Cuire à point'],['Couper','Mélanger','Dorer'],['Fouetter','Verser','Retourner'],['Mijoter','Goûter','Dresser l\'assiette']];
+MGD.roulette={n:'Roulette du chef',e:'🍳',sk:'cuisine',bg:'#24160f',lab:'Cuisine avec soin',
+ h:'Trois étapes pour réussir la recette. L\'aiguille tourne : touche l\'écran quand elle passe dans la zone verte. La zone dorée, c\'est la perfection! Plus Marcel est bon cuisinier, plus la zone est large.',
+ init(G){G.i=0;G.sc=[];G.st='spin';G.a=rnd(0,PI*2);G.k=0;G.steps=pick(ROUL);const lv=skLv('cuisine');G.gw=.32+Math.min(.3,lv*.006);G.ow=.07+Math.min(.06,lv*.0012);G.z=rnd(0,PI*2);G.sp=2.8;},
+ dn(G){if(G.st!=='spin')return;let d=Math.abs(((G.a-G.z)%(PI*2)+PI*3)%(PI*2)-PI);const v=d<G.ow?1:d<G.gw?.6:0;G.sc.push(v);G.st='res';G.k=0;G.lastV=v;mgSnd(v?'ping':'tap');mgMsg(G,v===1?'Parfait! ✨':v?'Bien joué!':'Oups… raté!',v===1?'#ffd54f':v?'#9ef0a0':'#ff8a7a');},
+ up(G,dt){G.k+=dt;if(G.st==='spin')G.a+=G.sp*dt;else if(G.k>1){G.i++;if(G.i>=3){G.end=1;return;}G.st='spin';G.z=rnd(0,PI*2);G.sp+=.8;}},
+ dr(G,g){const w=G.w,h=G.h,cx=w/2,cy2=h*.55,R=Math.min(w,h*.8)*.33;mgT(g,'Recette : '+(MEALC||'repas maison'),cx,h*.12,16,'#ffd9b0');
+  G.steps.forEach((t,i)=>{const x=cx+(i-1)*Math.min(120,w/3.2);mgR(g,x-52,h*.16,104,30,15,i<G.i?(G.sc[i]===1?'#b8860b':G.sc[i]?'#2e7d32':'#8b2a2a'):i===G.i?'#3d5a8a':'#2a2330');mgT(g,t,x,h*.16+15,12,'#fff');});
+  mgC(g,cx,cy2,R+10,'#3a2a20');mgC(g,cx,cy2,R,'#5a2020');g.fillStyle='#2e7d32';g.beginPath();g.moveTo(cx,cy2);g.arc(cx,cy2,R,G.z-G.gw,G.z+G.gw);g.fill();g.fillStyle='#ffd54f';g.beginPath();g.moveTo(cx,cy2);g.arc(cx,cy2,R,G.z-G.ow,G.z+G.ow);g.fill();
+  mgC(g,cx,cy2,R*.42,'#2a1a12');mgE(g,'🍳',cx,cy2,R*.45);const a=G.a;g.strokeStyle='#fff';g.lineWidth=5;g.lineCap='round';g.beginPath();g.moveTo(cx+Math.cos(a)*R*.45,cy2+Math.sin(a)*R*.45);g.lineTo(cx+Math.cos(a)*(R+6),cy2+Math.sin(a)*(R+6));g.stroke();
+  mgT(g,G.st==='spin'?'Touche pour : '+G.steps[G.i].toLowerCase():'',cx,h*.9,16,'#fff');},
+ hud:G=>'Étape '+Math.min(3,G.i+1)+'/3',
+ fin(G){const s=G.sc.reduce((a,b)=>a+b,0)/3;G.msg=s>=.99?'Recette parfaite! Digne d\'un grand chef!':s>=.6?'Recette réussie!':s>0?'Mangeable… de justesse.':'Euh… on commande une pizza?';return s;},
+ ap(s,r){if(!r.auto){addXP('cuisine',10+30*s);if(s>=.99)cnt('roul_perf');}need.food=clamp(need.food+6*s,0,100);}};
+MGD.clous={n:'Planter des clous',e:'🔨',sk:'crea',dur:40,bg:'#2a2118',lab:'Prend son marteau',
+ h:'La jauge de force monte et descend. Touche quand elle est dans le vert pour enfoncer le clou; dans le doré, il entre d\'un seul coup! Trop fort (rouge), le clou plie.',
+ init(G){G.n=0;G.ok=0;G.bent=0;G.dep=0;G.k=0;G.hit=0;},
+ dn(G){const p=1-Math.abs(((G.k*(1.25+G.n*.12))%2)-1);G.hit=.18;mgSnd('tap');if(p>.86){G.bent++;G.n++;G.dep=0;mgMsg(G,'Trop fort! Le clou a plié…','#ff8a7a');}else if(p>=.72&&p<=.8){G.dep=1;mgPop(G,'D\'un coup! 💥',G.w/2,G.h*.35,'#ffd54f');}else if(p>=.58){G.dep+=.5;}else{G.dep+=.15;mgMsg(G,'Trop doux…');}
+  if(G.dep>=1){G.ok++;G.n++;G.dep=0;if(G.n>=6)G.end=1;}else if(G.n>=6)G.end=1;},
+ up(G,dt){G.k+=dt;if(G.hit>0)G.hit-=dt;},
+ dr(G,g){const w=G.w,h=G.h;mgR(g,w*.06,h*.5,w*.72,h*.14,6,'#b07a42');g.strokeStyle='rgba(60,30,10,.4)';for(let i=0;i<5;i++){g.beginPath();g.moveTo(w*.06,h*.52+i*h*.025);g.lineTo(w*.78,h*.52+i*h*.025);g.stroke();}
+  for(let i=0;i<6;i++){const x=w*.12+i*w*.12,y=h*.5;if(i<G.n){mgR(g,x-7,y-3,14,5,2,'#9aa3aa');}else if(i===G.n){const L=h*.12*(1-G.dep);mgR(g,x-2,y-L,4,L,1,'#c9ced2');mgR(g,x-8,y-L-4,16,5,2,'#9aa3aa');
+    g.save();g.translate(x+40,y-L-20);g.rotate(G.hit>0?-.2:-1.1);mgR(g,-4,-70,8,74,3,'#8a5b33');mgR(g,-22,-84,44,20,4,'#4a4f56');g.restore();}else{mgR(g,x-2,y-h*.12,4,h*.12,1,'rgba(201,206,210,.35)');}}
+  const p=1-Math.abs(((G.k*(1.25+G.n*.12))%2)-1),gx=w*.86,gy=h*.18,gh=h*.62;mgR(g,gx,gy,24,gh,12,'#1b2230');const Y=v=>gy+gh*(1-v);
+  mgR(g,gx,Y(1),24,Y(.86)-Y(1),4,'#c62828');mgR(g,gx,Y(.86),24,Y(.58)-Y(.86),2,'#2e7d32');mgR(g,gx,Y(.8),24,Y(.72)-Y(.8),2,'#ffd54f');g.fillStyle='#fff';g.fillRect(gx-6,Y(p)-2,36,4);
+  mgT(g,'Clous : '+G.ok+' enfoncé'+(G.ok>1?'s':'')+' · '+G.bent+' plié'+(G.bent>1?'s':''),w*.42,h*.82,15,'#f2ead8');},
+ hud:G=>'🔨 '+G.ok+' / 6',
+ fin(G){G.msg=G.ok+' clou'+(G.ok>1?'s':'')+' sur 6'+(G.bent?' · '+G.bent+' plié'+(G.bent>1?'s':''):' · du travail de pro!');return clamp(G.ok/6-G.bent*.05,0,1);}};
+{const _f=cookMeal;cookMeal=(kind,nom)=>mgInj(_f(kind,nom),'roulette',byA('cook'),{q:()=>'Recette : '+(MEALC||'repas'),label:'Cuisine avec soin'});}
+
+/* ---------- Trophées ---------- */
+TROPHIES.push(['potager1','🥕','Main verte','Faire une première récolte au potager',()=>C_('recolte')>=1],['potager50','🧑‍🌾','Maraîcher','Faire 50 récoltes au potager',()=>C_('recolte')>=50],
+ ['veg_all','🌽','Grainothèque complète','Récolter les 22 légumes du potager',()=>!!LIFE.pot&&VEG.every(v=>LIFE.pot.h[v.k])],['oeufs144','🥚','Douze douzaines','Ramasser 144 œufs au poulailler',()=>C_('oeuf')>=144],
+ ['kio500','🧺','Petit commerçant','Vendre pour 500 $ au kiosque',()=>((LIFE.kio&&LIFE.kio.tot)||0)>=500],['etage','🏗️','Ça monte!','Terminer le 2e étage de la maison',()=>ETG()>=6],['chef10','👨‍🍳','Chef étoilé','Réussir 10 recettes parfaites à la roulette du chef',()=>C_('roul_perf')>=10]);
+
+/* ---------- Fiche « Ma propriété » dans les trophées ---------- */
+function farmHTML(){const P=POT(),C=COOP(),K=KIO(),s=ETG();const beds=P.beds.slice(0,potBeds()).map((b,i)=>b.v?VK[b.v].e+' '+VK[b.v].n+' '+Math.min(100,Math.round(b.g*100))+' %':'Bac '+(i+1)+' : vide').join(' · ');
+ const st=kioItems().map(i=>i.e+' '+i.n).join(' ')||'rien en stock';
+ return '<div style="border:1px solid var(--trait);border-radius:12px;padding:10px 12px;margin:0 0 12px;font-size:.88rem;line-height:1.45"><b>🏡 Ma propriété</b><br>🌱 Potager ('+potBeds()+'/6 bacs, '+vegOpen().length+'/22 légumes) : '+beds+
+  '<br>🐔 Poulailler : '+(C.b<2?'en construction ('+C.b+'/2)':C.hens+' poule'+(C.hens>1?'s':'')+' · '+Math.floor(C.eggs)+' œuf(s) à ramasser · '+C.tot+' au total')+
+  '<br>🧺 Kiosque : '+(K.b<3?'en construction ('+K.b+'/3)':'stock : '+st+' · ventes : '+K.tot+' $')+'<br>🏗️ 2e étage : '+(s>=6?'terminé! 🎉':'étape '+s+'/6'+(s<6?' (prochaine : '+ETGSTEPS[s][0].toLowerCase()+', '+ETGSTEPS[s][1]+' $)':''))+'</div>';}
+{const _f=trophyHTML;trophyHTML=()=>{const t=_f();const i=t.indexOf('<div style="border:1px solid var(--trait)');return i>0?t.slice(0,i)+farmHTML()+t.slice(i):farmHTML()+t;};}
+
+/* ---------- Priorité aux tâches de la propriété ---------- */
+const FARMPRI=['recolte','nourrir','arroser','oeufs','semer','kiosque','chantier','kiob','coopb','poules'];
+function farmUrgent(h){if(need.food<35||need.energy<25||need.hyg<20)return null;const T=today();LIFE.fu=LIFE.fu||{};
+ for(const k of FARMPRI){if(LIFE.fu[k]===T)continue;const a=A.find(x=>x.id===k);if(!a||!(a.w(h)>0))continue;LIFE.fu[k]=T;HIST.push(k);if(HIST.length>20)HIST.shift();const s=a.f();if(s&&s.length)return s;}return null;}
+{const _p=planMarcel;planMarcel=()=>{const h=hourOf();if(!LIFE.tokyo&&!flags.trip&&Mc.area!=='route'&&!(Mc.job&&gm<Mc.job.end)&&h>=7&&h<19.5&&Math.random()<.3){const f=farmUrgent(h);if(f)return f;}return _p();};}
 
 resize();const LOADED=loadGame();chooseShot();shot={type:'piece',t:0,dur:9,seed:.6,cut:true,ctx:shotCtx()};if(LOADED)setTimeout(()=>toast('Partie reprise : '+fmtDay(),true),600);else setTimeout(()=>toast('Nouvelle partie : lundi 1er juin',true),600);
 enhanceWorld();$('chargement').hidden=true;requestAnimationFrame(tick);initCloud();
