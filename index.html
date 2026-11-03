@@ -33,7 +33,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .lb.h{top:0}.lb.b{bottom:0}
 .scene.cine .lb{height:9%}
 #fondu{position:absolute;inset:0;background:#05070b;opacity:0;pointer-events:none;z-index:6}
-#camlabel{position:absolute;top:10px;left:12px;z-index:5;font:700 .66rem var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.85);display:flex;gap:7px;align-items:center;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+#camlabel{position:absolute;top:8px;left:8px;z-index:5;font:700 .7rem var(--f-body);color:var(--craie);display:flex;flex-direction:column;gap:4px;background:rgba(18,22,30,.72);backdrop-filter:blur(6px);border:1px solid var(--trait);border-radius:10px;padding:5px 9px;min-width:150px;max-width:calc(100% - 170px)}
+#camlabel span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#camlabel .clb{display:block;height:4px;border-radius:99px;background:#283143;overflow:hidden}#camlabel .clb s{display:block;height:100%;width:0;background:var(--sapin);text-decoration:none;transition:width .4s}#camlabel.job .clb s{background:var(--citrouille)}
 #camlabel i{width:7px;height:7px;border-radius:50%;background:#e5484d;animation:rec 1.2s steps(2) infinite}
 @keyframes rec{50%{opacity:.2}}
 #bulles{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden}
@@ -120,7 +121,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #jobhud .jhbar{height:5px;border-radius:99px;background:#283143;margin:6px 0;overflow:hidden}#jobhud .jhbar i{display:block;height:100%;background:var(--citrouille);width:0}
 #jhC{font-weight:700;color:var(--citrouille);margin-bottom:4px}#jhC:before{content:'▶ ';}#jhL{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;color:var(--gris)}#jhL li:before{content:'✔ ';color:var(--sapin)}
 @media (max-width:640px){.scene{min-height:min(64vh,560px)}
-#jobhud{top:34px;bottom:auto;left:8px;width:min(215px,calc(100% - 160px));padding:5px 8px;font-size:.64rem;background:rgba(18,22,30,.7);border-radius:10px;cursor:pointer}
+#jobhud{top:46px;bottom:auto;left:8px;width:min(215px,calc(100% - 160px));padding:5px 8px;font-size:.64rem;background:rgba(18,22,30,.7);border-radius:10px;cursor:pointer}
 #jobhud .jh1 b{font-size:.66rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}#jobhud .jh1 span{font-size:.64rem}
 #jobhud .jhbar{height:4px;margin:4px 0}#jobhud #jhC{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#jobhud #jhL{display:none}#jobhud.open #jhL{display:block}
 .chip{padding:4px 8px;font-size:.72rem;background:rgba(18,22,30,.66);max-width:calc(100% - 90px)}.chip small{font-size:.58rem}}
@@ -168,7 +169,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
     <div id="bulles"></div>
     <div class="lb h"></div><div class="lb b"></div>
     <div id="jobhud" hidden><div class="jh1"><b id="jhT"></b><span id="jhP"></span></div><div class="jhbar"><i id="jhB"></i></div><div id="jhC"></div><ul id="jhL"></ul></div>
-    <div id="camlabel"><i></i><span id="camtxt">Cam 1 · Chambre</span></div>
+    <div id="camlabel" hidden><span id="camtxt"></span><b class="clb"><s id="clbar"></s></b></div>
     <div id="appel"><div class="l1"><i></i><span id="appelQui" style="color:var(--craie);margin:0">Maman</span><span id="appelT">00:00</span></div><div id="appelTxt"></div></div>
     <div id="tel"><div class="ecran"><div class="tete" id="telTete">Julie</div><div id="fil"></div></div></div>
     <div class="chip"><small id="lieu">Maison</small><span id="now"><b>Marcel</b> dort</span></div>
@@ -4487,7 +4488,7 @@ function updateCamera(dt){
   applyCam();}
 function applyCam(){cam.position.copy(camPos);cam.lookAt(camLook);if(Math.abs(cam.fov-camFov)>.01){cam.fov=camFov;cam.updateProjectionMatrix();}
   sceneEl.classList.toggle('cine',['champ','rue'].includes(shot.type)&&!trans);
-  $('camtxt').textContent=trans?'Cam '+shotN+' · Porte':'Cam '+shotN+' · '+SHOT_NAMES[shot.type];}
+}
 /* ----- transitions par la porte ----- */
 function startTrans(kind,ik){const I=INT[ik],b=BLD[I.building];trans={kind,I,b,t:0,ph:0,from:camPos.clone(),fromL:camLook.clone()};}
 function runTrans(dt){const T=trans,I=T.I,b=T.b;T.t+=dt*Math.min(speed,2);const fade=$('fondu');
@@ -4738,7 +4739,11 @@ function updatePhone(){const st=Mc.q[0];const tel=$('tel'),fil=$('fil'),tete=$('
 /* ================= Interface ================= */
 $('son').addEventListener('click',()=>{const o=SFX.toggle();$('son').setAttribute('aria-pressed',o?'true':'false');$('son').textContent=o?'🔊 Son activé':'🔇 Activer le son';});
 for(const[id,v]of[['v1',1],['v2',2],['v5',5]])$(id).addEventListener('click',()=>{speed=v;document.querySelectorAll('.vitesse button').forEach(b=>b.setAttribute('aria-pressed',b.id===id?'true':'false'));});
-function ui(){renderSkills();$('jour').textContent=fmtDay();$('heure').textContent=fmt(gm);const h=hourOf();const temp=tempNow();
+function lvBox(){const el=$('camlabel');let t=null,p=0,job=false;
+  if(Mc.job&&Mc.job.id){const J=[...JOBS,...JOBS2].find(j=>j.id===Mc.job.id);const i=jobInfo(Mc.job.id);t=(J?J.t.split(' ')[0]:'💼')+' '+Mc.job.t+' · niv. '+i.l+' ▲';p=i.x/i.need;job=true;}
+  else if(SKACT&&tReal-SKACT.t<8){const S=SKILLS.find(x=>x.k===SKACT.k);if(S){const i=skInfo(S.k);t=S.e+' '+S.n+' · niv. '+i.l+' ▲';p=i.x/i.need;}}
+  if(!t){if(!el.hidden&&tReal-(lvBox.t||0)>12)el.hidden=true;return;}lvBox.t=tReal;el.hidden=false;el.classList.toggle('job',job);$('camtxt').textContent=t;$('clbar').style.width=(Math.min(1,p)*100).toFixed(1)+'%';}
+function ui(){renderSkills();lvBox();$('jour').textContent=fmtDay();$('heure').textContent=fmt(gm);const h=hourOf();const temp=tempNow();
   $('meteo').textContent=(weather==='tempete'?'Tempête de neige':weather==='neige'?'Neige':weather==='orage'?'Orage':RAIN()?'Pluie':weather==='nuages'?'Nuageux':night>.5?'Dégagé':'Ensoleillé')+' · '+temp+' °C';$('warp').hidden=warpNow<=1.5;
   $('argent').textContent=money.toLocaleString('fr-CA')+' $';$('contrat').innerHTML=contract?'Contrat en cours : <b>'+contract.title+'</b> · '+Math.min(99,Math.round(contract.done/contract.hours*100))+' % · '+contract.pay+' $':(delivery?'Livraison attendue : <b>'+delivery.item.nom+'</b>':'Aucun contrat en cours');
   {const fr=Object.keys(INV).filter(k=>GROC[k]&&GROC[k][1]==='f'),ga=Object.keys(INV).filter(k=>GROC[k]&&GROC[k][1]==='g');const nm=a=>a.length?a.slice(0,4).map(k=>GROC[k][0].toLowerCase()).join(', ')+(a.length>4?' +'+(a.length-4):''):'vide';
