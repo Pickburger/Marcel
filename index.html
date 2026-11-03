@@ -86,7 +86,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #journal li{display:flex;gap:10px;color:var(--gris)}
 #journal li:first-child{color:var(--craie)}
 #journal time{font-variant-numeric:tabular-nums;color:var(--citrouille);flex:none}
-@media (max-width:640px){#journal{max-height:80px}.scene{min-height:360px}}
+@media (max-width:640px){#skDet{align-items:start;padding:max(12px,env(safe-area-inset-top)) 10px 12px}.skBox{padding:12px 12px 12px;font-size:.9rem;max-height:calc(100dvh - 30px)}#skDetX{width:38px;height:38px;font-size:1rem}#journal{max-height:80px}.scene{min-height:360px}}
 .comp{grid-column:1/-1}
 #choix{position:absolute;left:50%;top:44px;z-index:7;transform:translate(-50%,-8px);opacity:0;pointer-events:none;width:min(360px,calc(100% - 24px));background:rgba(18,22,30,.94);backdrop-filter:blur(8px);border:1px solid var(--trait);border-radius:14px;padding:10px 12px;transition:opacity .3s,transform .3s}
 #choix.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
@@ -100,8 +100,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #skills{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px}#skTot{display:block;font-size:.72rem;color:var(--gris);margin:-4px 0 8px}
 .sk{cursor:pointer;color:inherit;font:inherit;text-align:left;width:100%}.sk:hover{border-color:var(--citrouille)}.sk:focus-visible{outline:2px solid var(--citrouille)}
 #skDet{position:fixed;inset:0;z-index:50;background:rgba(5,8,14,.72);display:grid;place-items:center;padding:16px}#skDet[hidden]{display:none!important}
-.skBox{position:relative;width:min(460px,100%);max-height:calc(100vh - 32px);overflow-y:auto;background:var(--panneau);border:1px solid var(--trait);border-radius:16px;padding:18px 18px 16px;color:var(--craie)}
-#skDetX{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;border:1px solid var(--trait);background:#232b3a;color:var(--craie);font-size:.9rem;cursor:pointer}
+.skBox{position:relative;width:min(460px,100%);max-height:calc(100vh - 32px);max-height:calc(100dvh - 24px);overflow-y:auto;background:var(--panneau);border:1px solid var(--trait);border-radius:16px;padding:18px 18px 16px;color:var(--craie)}
+#skDetX{position:sticky;top:0;float:right;margin:-6px -6px 4px 8px;z-index:3;width:32px;height:32px;border-radius:50%;border:1px solid var(--trait);background:#232b3a;color:var(--craie);font-size:.9rem;cursor:pointer}
 .skBox h2{margin:0 0 2px;font:800 1.35rem var(--f-display)}.skBox .lv{color:var(--citrouille);font-weight:800;font-size:1rem}
 .skBox .barre{height:10px;margin:10px 0 4px}.skBox .mut{color:var(--gris);font-size:.78rem;line-height:1.4}
 .skBox h3{margin:14px 0 6px;font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gris)}
@@ -544,7 +544,7 @@ function makePerson(o){
   hips.add(mesh(new THREE.BoxGeometry(.32,.2,.2),pants));
   const leg=s=>{const th=new THREE.Group();th.position.set(s*.095,-.04,0);hips.add(th);const t=mesh(new THREE.CylinderGeometry(.078,.064,.46,10),pants);t.position.y=-.23;th.add(t);
     const kn=new THREE.Group();kn.position.y=-.46;th.add(kn);const sh=mesh(new THREE.CylinderGeometry(.062,.05,.44,10),pants);sh.position.y=-.22;kn.add(sh);
-    const f=mesh(new THREE.BoxGeometry(.105,.08,.25),shoe);f.position.set(0,-.46,.05);kn.add(f);return{th,kn};};
+    const ft=new THREE.Group();ft.position.y=-.4;kn.add(ft);const sole=mesh(new THREE.BoxGeometry(.112,.026,.27),M('#1c1a18',{r:.8}));sole.position.set(0,-.037,.055);ft.add(sole);const up=mesh(new THREE.BoxGeometry(.1,.075,.19),shoe);up.position.set(0,.0,.025);ft.add(up);const toe=mesh(new THREE.SphereGeometry(.055,10,7),shoe);toe.scale.set(1,.7,1.25);toe.position.set(0,-.01,.13);ft.add(toe);const hl=mesh(new THREE.BoxGeometry(.1,.06,.05),shoe);hl.position.set(0,0,-.07);ft.add(hl);const ank=mesh(new THREE.CylinderGeometry(.05,.052,.08,10),pants);ank.position.y=.06;ft.add(ank);return{th,kn,ft};};
   const LL=leg(1),RL=leg(-1);
   const spine=new THREE.Group();spine.position.y=.08;hips.add(spine);
   const torso=mesh(new THREE.CylinderGeometry(.175,.15,.54,14),shirt);torso.scale.z=.7;torso.position.y=.27;spine.add(torso);
@@ -2602,7 +2602,7 @@ const ALL=[];
 class Ch{
   constructor(name,look,o={}){this.name=name;this.m=makePerson(look);this.look=look;scene.add(this.m.root);
     this.area='none';this.pos={x:0,z:0};this.y=0;this.yaw=0;this.q=[];this.pose='stand';this.act=null;this.ph=Math.random()*6;this.back=[];this.node=null;this.carry=null;this.bubble=null;this.npc=!!o.npc;this.hidden=false;this.lie=null;this.seatH=null;this.t=0;
-    this.cur={thL:0,thR:0,knL:0,knR:0,shLx:0,shRx:0,shLz:0,shRz:0,elL:0,elR:0,hipY:.95,spX:0,spY:0,hdX:0,hdY:0,tilt:0};ALL.push(this);}
+    this.cur={ftL:0,ftR:0,hpY:0,hpZ:0,thL:0,thR:0,knL:0,knR:0,shLx:0,shRx:0,shLz:0,shRz:0,elL:0,elR:0,hipY:.95,spX:0,spY:0,hdX:0,hdY:0,tilt:0};ALL.push(this);}
   world(out){const o=this.area==='town'?null:INT[this.area]?.origin;out.set(this.pos.x+(o?o.x:0),this.y+(o?o.y:0),this.pos.z+(o?o.z:0));return out;}
 }
 const tmpV=new V3();
@@ -4309,10 +4309,13 @@ function pedPlan(c){const n=pick(NODE_LIST);TOWN_SPOTS['_p'+c.m.root.id]={node:n
 function animate(ch,dt){if(ch.act==='tread'||ch.act==='swim'||ch.act==='paddle')ch.ph+=dt*speed*(ch.act==='tread'?10:4);
   const m=ch.m,c=ch.cur,t=tReal+ch.ph*.1,k=1-Math.exp(-dt*9);
   if(ch.tyaw!=null){let d=ch.tyaw-ch.yaw;while(d>PI)d-=2*PI;while(d<-PI)d+=2*PI;ch.yaw+=d*Math.min(1,dt*8);}
-  const T={thL:0,thR:0,knL:0,knR:0,shLx:0,shRx:0,shLz:.08,shRz:-.08,elL:-.15,elR:-.15,hipY:.95,spX:0,spY:0,hdX:0,hdY:0,tilt:0};
+  const T={ftL:0,ftR:0,hpY:0,hpZ:0,thL:0,thR:0,knL:0,knR:0,shLx:0,shRx:0,shLz:.08,shRz:-.08,elL:-.15,elR:-.15,hipY:.95,spX:0,spY:0,hdX:0,hdY:0,tilt:0};
   const a=ch.act,p=ch.pose,ph=ch.ph;let direct=false;
-  if(p==='walk'||p==='run'){const amp=p==='run'?.95:.5;T.thL=-Math.sin(ph)*amp;T.thR=Math.sin(ph)*amp;T.knL=Math.max(0,Math.sin(ph-1.2))*(p==='run'?1.4:.8);T.knR=Math.max(0,-Math.sin(ph-1.2))*(p==='run'?1.4:.8);
-    T.shLx=Math.sin(ph)*(p==='run'?.8:.4);T.shRx=-Math.sin(ph)*(p==='run'?.8:.4);T.elL=T.elR=p==='run'?-1.3:-.25;T.hipY=.95+Math.abs(Math.cos(ph))*.03-(p==='run'?.04:0);T.spX=p==='run'?.18:.03;direct=true;}
+  if(p==='walk'||p==='run'){const run=p==='run',amp=run?.9:.42;const gait=(q)=>{const th=-Math.sin(q)*amp+(run?-.15:-.03);const sw=Math.max(0,Math.cos(q+.3));const kn=(run?.25:.05)+sw*(run?1.5:.75)+Math.max(0,Math.sin(q-1))*(run?.2:.12);
+      const fl=-(th+kn);const toe=Math.max(0,-Math.sin(q+.2))*(run?.6:.45);const heel=Math.max(0,Math.sin(q-.2))*(run?.1:.3);return[th,kn,fl+toe*Math.max(0,th/amp)-heel*Math.max(0,-th/amp)];};
+    const[a1,b1,c1]=gait(ph),[a2,b2,c2]=gait(ph+PI);T.thL=a1;T.knL=b1;T.ftL=c1;T.thR=a2;T.knR=b2;T.ftR=c2;
+    T.shLx=Math.sin(ph)*(run?.8:.38);T.shRx=-Math.sin(ph)*(run?.8:.38);T.elL=(run?-1.35:-.22)-Math.max(0,Math.sin(ph))*(run?.1:.22);T.elR=(run?-1.35:-.22)-Math.max(0,-Math.sin(ph))*(run?.1:.22);T.shLz=.1;T.shRz=-.1;
+    T.hipY=.93+Math.abs(Math.cos(ph))*(run?.05:.035)-(run?.05:0);T.hpY=Math.sin(ph)*(run?.12:.09);T.spY=-Math.sin(ph)*(run?.16:.12);T.hpZ=Math.cos(ph)*.035;T.spX=run?.2:.05;T.hdY=Math.sin(ph)*.05;direct=true;}
   if(p==='sit'){T.thL=T.thR=-1.5;T.knL=T.knR=1.5;T.hipY=(ch.seatH||.47)+.06;T.shLx=T.shRx=-.25;T.elL=T.elR=-.6;}
   if(p==='bike'){const q=ph;T.hipY=.97;T.thL=-1.25+Math.sin(q)*.45;T.thR=-1.25-Math.sin(q)*.45;T.knL=1.25+Math.cos(q)*.5;T.knR=1.25-Math.cos(q)*.5;T.spX=.35;T.shLx=T.shRx=-1.15;T.elL=T.elR=-.25;T.shLz=-.15;T.shRz=.15;direct=true;}
   if(p==='sitg'){T.thL=T.thR=-1.45;T.knL=T.knR=.15;T.hipY=.14;T.shLx=T.shRx=.3;T.elL=T.elR=-.2;}
@@ -4400,7 +4403,7 @@ function animate(ch,dt){if(ch.act==='tread'||ch.act==='swim'||ch.act==='paddle')
   if((a==='match'||a==='movie')&&ch.staff&&a==='match'&&tReal<cheerUntil){T.shLx=T.shRx=-2.8;}
   const kk=direct?1:k;
   for(const key in T){c[key]=key==='tilt'?lerp(c[key],T[key],k):lerp(c[key],T[key],kk);}
-  m.LL.th.rotation.x=c.thL;m.RL.th.rotation.x=c.thR;m.LL.kn.rotation.x=c.knL;m.RL.kn.rotation.x=c.knR;
+  m.LL.th.rotation.x=c.thL;m.RL.th.rotation.x=c.thR;m.LL.kn.rotation.x=c.knL;m.RL.kn.rotation.x=c.knR;if(m.LL.ft){m.LL.ft.rotation.x=c.ftL;m.RL.ft.rotation.x=c.ftR;}m.hips.rotation.y=c.hpY;m.hips.rotation.z=c.hpZ;
   m.LA.sh.rotation.x=c.shLx;m.RA.sh.rotation.x=c.shRx;m.LA.sh.rotation.z=c.shLz;m.RA.sh.rotation.z=c.shRz;
   m.LA.el.rotation.x=c.elL;m.RA.el.rotation.x=c.elR;m.hips.position.y=c.hipY;m.spine.rotation.x=c.spX;m.spine.rotation.y=c.spY;m.head.rotation.x=c.hdX;m.head.rotation.y=c.hdY;
   if(ch===Mc&&(p==='walk'||p==='run')){const sg=Math.sin(ph)>0;if(sg!==ch.lastS){ch.lastS=sg;if(ch.area===VIS_AREA)SFX.step(ch.area==='town');}}
