@@ -119,7 +119,11 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #jobhud .jh1{display:flex;justify-content:space-between;gap:8px;align-items:baseline}#jobhud .jh1 b{font-size:.78rem}#jobhud .jh1 span{color:var(--sapin);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 #jobhud .jhbar{height:5px;border-radius:99px;background:#283143;margin:6px 0;overflow:hidden}#jobhud .jhbar i{display:block;height:100%;background:var(--citrouille);width:0}
 #jhC{font-weight:700;color:var(--citrouille);margin-bottom:4px}#jhC:before{content:'▶ ';}#jhL{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;color:var(--gris)}#jhL li:before{content:'✔ ';color:var(--sapin)}
-@media (max-width:640px){#jobhud{top:auto;bottom:62px;width:calc(100% - 20px)}}
+@media (max-width:640px){.scene{min-height:min(64vh,560px)}
+#jobhud{top:34px;bottom:auto;left:8px;width:min(215px,calc(100% - 160px));padding:5px 8px;font-size:.64rem;background:rgba(18,22,30,.7);border-radius:10px;cursor:pointer}
+#jobhud .jh1 b{font-size:.66rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}#jobhud .jh1 span{font-size:.64rem}
+#jobhud .jhbar{height:4px;margin:4px 0}#jobhud #jhC{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#jobhud #jhL{display:none}#jobhud.open #jhL{display:block}
+.chip{padding:4px 8px;font-size:.72rem;background:rgba(18,22,30,.66);max-width:calc(100% - 90px)}.chip small{font-size:.58rem}}
 #argent{font-weight:700;color:var(--sapin);font-variant-numeric:tabular-nums;font-size:.9rem}
 #son{position:absolute;top:8px;right:10px;z-index:7;font:700 .72rem var(--f-body);color:var(--craie);background:rgba(18,22,30,.82);border:1px solid var(--trait);border-radius:999px;padding:6px 11px;cursor:pointer;backdrop-filter:blur(6px)}
 #son[aria-pressed="true"]{background:rgba(115,192,143,.25);border-color:var(--sapin)}
@@ -3473,7 +3477,7 @@ function jobShift(J,hrs){const pay=Math.round(jobRate(J)*hrs);const JT2=JTASKS[J
   s.push(F(()=>{const tip=J.tips?Math.round(rnd(8,25)*tipMult()):0;GASCAR.visible=false;LIFE.jobKinds=LIFE.jobKinds||[];if(!LIFE.jobKinds.includes(J.id))LIFE.jobKinds.push(J.id);Mc.job=null;Mc.apron=null;addMoney(pay+tip,'Quart de '+hrs+' h : '+nm+(tip?' + pourboires':''));say(Mc,'Bonne journée de travail!');LIFE.jobs=(LIFE.jobs||0)+1;}));
   if(J.drive)s.push({t:'drive',to:'home',label:'Rentre du travail'});return s;}
 function updateJobHud(){const J=Mc.job;const el=$('jobhud');if(!J){if(!el.hidden)el.hidden=true;return;}el.hidden=false;const p=clamp((gm-J.start)/(J.end-J.start),0,1);const left=Math.max(0,J.end-gm);
-  {const ji=jobInfo(J.id);$('jhT').textContent='💼 '+J.t+' · niv. '+ji.l+' ('+Math.floor(ji.x/ji.need*100)+' %)';}$('jhP').textContent=Math.round(J.pay*p)+' / '+J.pay+' $';$('jhB').style.width=(p*100).toFixed(1)+'%';$('jhC').textContent=J.cur+' · reste '+Math.floor(left/60)+' h '+String(Math.round(left%60)).padStart(2,'0');
+  {const ji=jobInfo(J.id);$('jhT').textContent='💼 '+J.t+' · niv. '+ji.l;}$('jhP').textContent=Math.round(J.pay*p)+' / '+J.pay+' $';$('jhB').style.width=(p*100).toFixed(1)+'%';$('jhC').textContent=J.cur+' · reste '+Math.floor(left/60)+' h '+String(Math.round(left%60)).padStart(2,'0');
   $('jhL').innerHTML=J.done.slice(0,3).map(x=>'<li>'+x+'</li>').join('');}
 const JTITLE=['Recrue','Employé confirmé','Chef d\'équipe','Superviseur','Gérant','Directeur','Directeur régional','Vice-président','Président','Légende','Légende vivante'];
 function jobInfo(id){let x=(LIFE.jx&&LIFE.jx[id])||0,l=0;while(l<99&&x>=xpNeed(l)){x-=xpNeed(l);l++;}return{l,x,need:xpNeed(l),title:JTITLE[Math.min(10,Math.floor(l/10))]};}
@@ -3542,7 +3546,7 @@ function skDetail(){if(!skOpen)return;if(skOpen==='__tro'){$('skDetC').innerHTML
 function openSk(k){skOpen=k;skDetail();$('skDet').hidden=false;const fx_=$('skDetX');if(fx_.focus)fx_.focus();}
 function closeSk(){skOpen=null;$('skDet').hidden=true;}
 $('skills').addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-sk]');if(b)openSk(b.dataset.sk);});
-$('skDetX').addEventListener('click',closeSk);$('bTro').addEventListener('click',()=>openSk('__tro'));$('bJob').addEventListener('click',()=>openSk('__jobs'));$('bTok').addEventListener('click',()=>openSk('__tokyo'));$('bJou').addEventListener('click',()=>{jSel=0;openSk('__jour');});$('skDetC').addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-j]');if(b){jSel=+b.dataset.j;skDetail();}});$('skDet').addEventListener('click',e=>{if(e.target.id==='skDet')closeSk();});window.addEventListener('keydown',e=>{if(e.key==='Escape'&&skOpen)closeSk();});
+$('skDetX').addEventListener('click',closeSk);$('bTro').addEventListener('click',()=>openSk('__tro'));$('bJob').addEventListener('click',()=>openSk('__jobs'));$('bTok').addEventListener('click',()=>openSk('__tokyo'));$('jobhud').addEventListener('click',()=>$('jobhud').classList.toggle('open',!$('jobhud').classList.contains('open')));$('bJou').addEventListener('click',()=>{jSel=0;openSk('__jour');});$('skDetC').addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-j]');if(b){jSel=+b.dataset.j;skDetail();}});$('skDet').addEventListener('click',e=>{if(e.target.id==='skDet')closeSk();});window.addEventListener('keydown',e=>{if(e.key==='Escape'&&skOpen)closeSk();});
 function renderSkills(){if(tReal<skUI)return;skUI=tReal+1;skDetail();let tot=0;const act=SKACT&&tReal-SKACT.t<4?SKACT.k:null;const rec=[...(act?[]:(SKACT?[SKACT.k]:[])),...SKREC].filter((x,i,a)=>x!==act&&a.indexOf(x)===i);const rk=k=>k===act?-1:rec.indexOf(k)>=0?rec.indexOf(k):99+SKILLS.findIndex(x=>x.k===k);
   $('skills').innerHTML=[...SKILLS].sort((a,b)=>rk(a.k)-rk(b.k)).map(S=>{const i=skInfo(S.k);tot+=i.l;const nx=Math.floor(i.l/10)+1;const u=S.u[nx-1];
   return`<button type="button" class="sk${S.k===act?' on':''}" data-sk="${S.k}" aria-label="Détails : ${S.n}, niveau ${i.l}"><div class="nm"><span>${S.e}</span>${S.n}${S.k===act?'<i class="up">▲ en cours</i>':rec.indexOf(S.k)>=0&&rec.indexOf(S.k)<2?'<i class="up rec">récent</i>':''}</div><div class="lvr"><em>Niv. ${i.l}</em><span class="px">${Math.floor(i.x)} / ${i.need}</span></div><div class="barre"><i style="width:${Math.round(i.x/i.need*100)}%"></i></div><small>${u?'Niv. '+nx*10+' : '+u:'Tous les déblocages obtenus!'}</small></button>`;}).join('');$('skTot').textContent='Total '+tot+' · 🏠 Confort '+comfort();}
@@ -4152,7 +4156,7 @@ function planMarcel(){const h=hourOf(),wk=dayOf()<5;
   if(flags.morning){flags.morning=false;return morning();}
   if(LIFE.tokDep!=null&&Math.floor(gm/1440)>=LIFE.tokDep&&h>=11.5)LIFE.tokDep=Math.floor(gm/1440)+1;
   if(!LIFE.tokyo&&LIFE.tokDep!=null&&Math.floor(gm/1440)>=LIFE.tokDep&&h>=7&&h<11.5&&Mc.area==='home'&&!Mc.inCar&&Julie.area==='none'&&Steve.area==='none')return tokyoTrip();
-  if(!LIFE.tokyo&&LIFE.tokDep==null&&h>=8&&h<21&&Mc.area==='home'&&!Mc.inCar&&!Mc.carry&&((tokCanBook()&&Math.floor(gm/1440)>=(LIFE.tokAsk||0))||Math.floor(gm/1440)-(LIFE.tokOffD??-14)>=14))return tokyoChoice();
+  if(!LIFE.tokyo&&LIFE.tokDep==null&&h>=8&&h<21&&Mc.area==='home'&&!Mc.inCar&&!Mc.carry&&((tokCanBook()&&Math.floor(gm/1440)>=(LIFE.tokAsk||0))||Math.floor(gm/1440)-(LIFE.tokOffD??0)>=14))return tokyoChoice();
   if(flags.forceOutage&&Mc.area==='home'&&powerOn()){flags.forceOutage=false;return evOutage(rnd(40,90));}
   if(delivery&&gm>=delivery.at&&Mc.area==='home'&&Courier.area==='none'&&h>8&&h<21.5)return deliveryEvent();
   if(Mc.carry==='baguette')return[...at('home.fridge','fridge',2,{label:'Range le pain'}),F(()=>Mc.carry=null)];
