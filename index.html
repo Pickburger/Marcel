@@ -5212,10 +5212,10 @@ function mgSteps(id,o={}){return[F(()=>{MG.res=null;MG.offer=false;if(!MGD[id])r
   W(()=>MG.res!=null||(!MG.offer&&!MG.on),{a:o.a||'idle',pose:o.pose,seatH:o.seatH,yaw:o.yaw,label:o.label||MGD[id].lab,max:2000,warp:.03}),
   F(()=>mgApply(id,o))];}
 function mgOffer(id,o){const d=MGD[id];MG.offer=true;MG.id=id;MG.o=o;MG.lastOffer=tReal;CHOICE={opts:[],done:false,pick:null,t0:tReal,dur:14,mg:1};
-  $('choixQ').textContent=d.e+' Mini-jeu : '+d.n;$('choixS').textContent=(o.q?(typeof o.q==='function'?o.q():o.q)+' · ':'')+'Sans réponse, Marcel s\'en occupe seul.';const B=$('choixB');B.innerHTML='';
+  $('choixQ').textContent=d.oq||(d.e+' Mini-jeu : '+d.n);$('choixS').textContent=(o.q?(typeof o.q==='function'?o.q():o.q)+' · ':'')+'Sans réponse, Marcel s\'en occupe seul.';const B=$('choixB');B.innerHTML='';
   const mk=(t,sub,cls,fn)=>{const b=document.createElement('button');b.type='button';if(cls)b.className=cls;b.innerHTML='<span>'+t+'</span>'+(sub?'<small>'+sub+'</small>':'');b.onclick=fn;B.appendChild(b);};
-  mk('🎮 Aider Marcel','Jouer au mini-jeu (prime si tu réussis)','',()=>{if(!CHOICE||!CHOICE.mg)return;CHOICE=null;$('choix').classList.toggle('on',false);MG.offer=false;mgSnd('tap');mgStart(id,o);});
-  mk('🤖 Laisser Marcel faire','','non',()=>{if(CHOICE&&CHOICE.mg)CHOICE.done=true;});
+  mk(d.ob||'🎮 Aider Marcel',d.os||'Jouer au mini-jeu (prime si tu réussis)','',()=>{if(!CHOICE||!CHOICE.mg)return;CHOICE=null;$('choix').classList.toggle('on',false);MG.offer=false;mgSnd('tap');mgStart(id,o);});
+  mk(d.ol||'🤖 Laisser Marcel faire','','non',()=>{if(CHOICE&&CHOICE.mg)CHOICE.done=true;});
   mk('🚫 Ne plus proposer de mini-jeux','Réactivable dans 🏆 Trophées','non',()=>{mgSet(true);if(CHOICE&&CHOICE.mg)CHOICE.done=true;});
   $('choix').classList.toggle('on',true);}
 function mgSet(off){MG.off=off;try{localStorage.setItem('marcel_mg_off',off?'1':'0');}catch(e){}toast(off?'Mini-jeux désactivés':'🎮 Mini-jeux activés!',!off);if(skOpen==='__tro')skDetail();}
@@ -5238,7 +5238,7 @@ function mgFrame(dt){const G=MG.G;if(!MG.on||!G)return;mgSize(G);const d=G.d,c=$
    if(G.k>.6){mgR(g,G.w/2-100,G.h*.68,200,50,25,'#f28c28');mgT(g,'Continuer',G.w/2,G.h*.68+25,18,'#1a0f05');}}
   $('mgS').textContent=G.ph==='play'&&d.hud?d.hud(G):'';$('mgB').style.width=(G.ph==='play'&&d.dur?Math.max(0,100-G.t/d.dur*100):G.ph==='fin'?0:100)+'%';}
 function mgPreview(G){const d=G.d;let t=[];if(d.m&&G.s>.05)t.push('+'+Math.round(d.m*G.s)+' $');if(d.sk){const S=SKILLS.find(x=>x.k===d.sk);if(S)t.push(S.e+' +'+Math.round(8+25*G.s)+' XP '+S.n);}if(G.o&&G.o.job)t.push('💼 +XP de métier');return t.join(' · ');}
-function mgApply(id,o){const d=MGD[id];if(!d)return;let r=MG.res;MG.res=null;MG.offer=false;if(!r)r={s:mgAuto(id,o),auto:1};const s=r.s;
+function mgApply(id,o){const d=MGD[id];if(!d)return;let r=MG.res;MG.res=null;MG.offer=false;if(!r)r={s:mgAuto(id,o),auto:1};const s=r.s;if(d.noRec){try{d.ap&&d.ap(s,r,o);}catch(e){console.error(e);}return;}
   LIFE.mg=LIFE.mg||{};const best=LIFE.mg[id]||0;if(!r.auto){cnt('mg');if(s>=.999)cnt('mgperf');if(s>best)LIFE.mg[id]=+s.toFixed(3);}
   if(d.m&&s>.05){const v=Math.round(d.m*s*(r.auto?.5:1));if(v>0)addMoney(v,d.ml);}
   if(d.sk)addXP(d.sk,(r.auto?4:8)+(r.auto?10:25)*s);if(o.job)addJobXP(o.job,(r.auto?3:6)+(r.auto?8:20)*s);need.fun=clamp(need.fun+(r.auto?2:6)*s,0,100);
@@ -5380,7 +5380,7 @@ const KIOG=new THREE.Group();town.add(KIOG);const KS=[new THREE.Group(),new THRE
  const sg=new THREE.Mesh(new THREE.PlaneGeometry(2.2,.42),signMat('KIOSQUE CHEZ MARCEL','#2f5d3a','#f2ead8',512,96,'800 52px "Bricolage Grotesque", sans-serif'));sg.position.set(KX,2.75,KZ+1.18);KS[2].add(sg);
  const s2=new THREE.Mesh(new THREE.PlaneGeometry(.7,.36),signMat('FRAIS!','#f2ead8','#c8402f',256,128,'800 64px "Bricolage Grotesque", sans-serif'));s2.position.set(KX+1.42,.75,KZ+.9);s2.rotation.y=-.3;KS[2].add(s2);
  KIOG.userData={KX,KZ};}
-let kioSig='';function kioVis(){const K=KIO();KS.forEach((g,i)=>g.visible=K.b>i);KGOODS.visible=K.b>=3;if(K.b<3)return;const items=kioItems().filter(i=>!i.used).sort((a,b)=>b.n-a.n).slice(0,4);
+let kioSig='';function kioVis(){const K=KIO();KS.forEach((g,i)=>g.visible=K.b>i);KGOODS.visible=K.b>=3;if(K.b<3)return;const items=kioItems().filter(i=>!i.used&&!i.cards).sort((a,b)=>b.n-a.n).slice(0,4);
  const sig=items.map(i=>i.k+Math.min(6,1+Math.floor(i.n/2))).join()+'|'+Math.min(3,K.used.length);if(sig===kioSig)return;kioSig=sig;KGOODS.children.slice().forEach(c=>{KGOODS.remove(c);if(c.geometry)c.geometry.dispose();});const{KX,KZ}=KIOG.userData;items.forEach((it,i)=>{const x=KX-.95+i*.62,z=KZ+.62;bx(KGOODS,FM('#c9a46a',{r:.9}),.5,.18,.38,x,1.1,z);
   const c=it.k==='oeufs'?'#f4ead8':VK[it.k].c;for(let k=0;k<Math.min(6,1+Math.floor(it.n/2));k++)sp(KGOODS,FM(c,{r:.6}),it.k==='citrouille'?.12:.06,x-.15+(k%3)*.15,1.33+Math.floor(k/3)*.06,z-.08+Math.floor(k/3)*.12,0);});
  KIO().used.slice(0,3).forEach((u,i)=>{bx(KGOODS,FM('#c9a46a',{r:1}),.5,.4,.4,KX-1.7-i*.05,.12+i*.4,KZ+.2);});}
@@ -5477,7 +5477,7 @@ function oeufsOuting(){const C=COOP();return[tr('town.p_oeufs',{label:'Va ramass
 const KIOB=[['Plancher et poteaux',120,'Monte le plancher et les poteaux du kiosque'],['Comptoir et étagères',180,'Construit le comptoir du kiosque'],['Toit et enseigne',150,'Pose le toit et l\'enseigne du kiosque']];
 function kioBuild(){const K=KIO(),st=KIOB[K.b];return[tr('town.kio_b',{label:st[2]}),payF(st[1],'Matériaux : '+st[0].toLowerCase()),D('install',rnd(25,40),{yaw:PI,warp:3,label:st[2],say:pick(['Mesurer deux fois, couper une fois!','Ça va être le plus beau kiosque du quartier!']),fx:{energy:-.1}}),...clousStep('Cloue les planches du kiosque'),D('install',rnd(10,20),{yaw:PI,warp:3}),
  F(()=>{K.b++;farmVis();toast('🧺 Kiosque : '+st[0].toLowerCase()+' terminé!',true);if(K.b>=3)say(Mc,'Mon kiosque est prêt! Il me reste juste des choses à vendre.');})];}
-function kioSale(){const L=kioItems();if(!L.length)return 0;let tot=0;const got=[];const n=Math.round(rnd(1,4));for(let k=0;k<n;k++){const it=pick(kioItems());if(!it)break;if(it.used){KIO().used.splice(KIO().used.indexOf(it.used),1);tot+=it.p;got.push(it.used[0]);continue;}
+function kioSale(){const L=kioItems();if(!L.length)return 0;let tot=0;const got=[];const n=Math.round(rnd(1,4));for(let k=0;k<n;k++){const it=pick(kioItems().filter(i=>!i.cards));if(!it)break;if(it.used){KIO().used.splice(KIO().used.indexOf(it.used),1);tot+=it.p;got.push(it.used[0]);continue;}
   const q=Math.min(it.n,it.k==='oeufs'?pick([6,12]):Math.round(rnd(1,4)));const P=POT();P.st[it.k]-=q;if(P.st[it.k]<=0)delete P.st[it.k];tot+=q*(it.k==='oeufs'?EGGP:vegPrice(VK[it.k]));got.push(q+' '+(it.k==='oeufs'?'œufs':VK[it.k].n.toLowerCase()));}
  tot=Math.round(tot);if(tot>0){addMoney(tot,'Kiosque : '+got.slice(0,2).join(', '));KIO().tot+=tot;}return tot;}
 function kioOuting(){const K=KIO();K.d=today();const{KX,KZ}=KIOG.userData;const s=[tr('town.kio',{label:'Ouvre son kiosque de vente'}),F(()=>farmVis()),D('stock',rnd(3,5),{yaw:0,warp:2,label:'Place ses produits sur le comptoir',say:'Des légumes frais du potager!'})];
@@ -5561,6 +5561,64 @@ const FARMPRI=['recolte','nourrir','arroser','oeufs','semer','kiosque','chantier
 function farmUrgent(h){if(need.food<35||need.energy<25||need.hyg<20)return null;const T=today();LIFE.fu=LIFE.fu||{};
  for(const k of FARMPRI){if(LIFE.fu[k]===T)continue;const a=A.find(x=>x.id===k);if(!a||!(a.w(h)>0))continue;LIFE.fu[k]=T;HIST.push(k);if(HIST.length>20)HIST.shift();const s=a.f();if(s&&s.length)return s;}return null;}
 {const _p=planMarcel;planMarcel=()=>{const h=hourOf();if(!LIFE.tokyo&&!flags.trip&&Mc.area!=='route'&&!(Mc.job&&gm<Mc.job.end)&&h>=7&&h<19.5&&Math.random()<.3){const f=farmUrgent(h);if(f)return f;}return _p();};}
+
+/* ================= Cartes de hockey (joueurs et équipes fictifs) ================= */
+const CTEAMS=[['Bleuets du Lac','#2f4fa8'],['Harfangs de Montréal','#e8e8e8'],['Orignaux de Sherbrooke','#6b4a32'],['Pionniers de Trois-Rivières','#c8402f'],['Loups de Gatineau','#5a6470'],
+ ['Bûcherons du Saguenay','#2e7d32'],['Huards de Rimouski','#1a1a2a'],['Tempête de Laval','#7a3fa8'],['Goélands de Gaspé','#3a9ad8'],['Caribous de Rouyn','#e8a33a']];
+const CSPEC=[['Recrue étoile','✨','#4fc3f7'],['Légende','👑','#ffd54f'],['Autographe','✍️','#f48fb1'],['Mur de brique','🧱','#ff8a65'],['Marqueur de 50 buts','🔥','#ff7043']];
+const CARDS=(()=>{let a=20261103;const R=()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};const P=L=>L[Math.floor(R()*L.length)];
+ const FN=['Jean-Guy','Luc','Marc-Olivier','Patrice','Mathis','Olivier','Samuel','Félix','Alexis','Gabriel','Étienne','Maxime','Philippe','Simon','Antoine','Dany','Sylvain','Réjean','Gilles','Yanick','Jonathan','William','Nathan','Thomas','Zachary','Raphaël','Louis','Benoît','Hugo','Émile','Xavier','Jérémie','Charles-Édouard','Ludovic','Normand','Rosaire'];
+ const LN=['Tremblay','Gagnon','Côté','Bouchard','Gauthier','Lavoie','Fortin','Ouellet','Pelletier','Bélanger','Lévesque','Paquette','Girard','Simard','Caron','Beaulieu','Cloutier','Dubé','Poirier','Fournier','Lapointe','Leclerc','Thibault','Nadeau','Landry','Martel','Bédard','Grenier','Lessard','Michaud','Hébert','Desjardins','Couture','Turcotte','Lachance','Parent','Blais','Gosselin','Labrecque','Vachon-Lebel','Plamondon','Charbonneau','Desrosiers','Beausoleil','Laflamme','Gingras','Rioux','Boivin','Marcoux','Bilodeau'];
+ const used=new Set();const L=[];for(let i=0;i<200;i++){let n;do{n=P(FN)+' '+P(LN);}while(used.has(n));used.add(n);const t=Math.floor(R()*CTEAMS.length);const pos=R()<.1?'G':R()<.35?'D':P(['C','AG','AD']);
+  const sp=i>=150?CSPEC[(i-150)%CSPEC.length]:null;const st=pos==='G'?{v:Math.round(10+R()*30),m:(2+R()*1.2).toFixed(2)}:{b:Math.round(R()*(sp?55:35)),p:Math.round(R()*(sp?60:40))};
+  L.push({id:i+1,n,t,pos,sp,st,no:Math.floor(1+R()*98)});}return L;})();
+function CARDST(){const C=LIFE.cartes=LIFE.cartes||{own:{},dup:{},packs:0};return C;}
+const cardCount=()=>Object.keys(CARDST().own).length;
+const cardNorm=()=>Object.keys(CARDST().own).filter(k=>+k<=150).length;
+function openPack(){const C=CARDST();const got=[];for(let i=0;i<8;i++){const sp=Math.random()<.065;const id=sp?151+Math.floor(Math.random()*50):1+Math.floor(Math.random()*150);const nw=!C.own[id];if(nw)C.own[id]=1;else C.dup[id]=(C.dup[id]||0)+1;got.push({id,nw});}
+ C.packs++;cnt('paquet');return got;}
+function cardDesc(c){const T=CTEAMS[c.t];return c.n+' · '+T[0]+' · '+c.pos+(c.sp?' · '+c.sp[1]+' '+c.sp[0]:'');}
+/* ---------- Mini-jeu : ouvrir un paquet ---------- */
+MGD.paquet={n:'Paquet de cartes',e:'🃏',bg:'#13203a',lab:'Ouvre son paquet de cartes',noRec:1,oq:'🃏 Marcel ouvre un paquet de 8 cartes de hockey',ob:'🃏 Ouvrir le paquet avec Marcel',os:'Retourner les cartes une à une',ol:'🤖 Laisser Marcel l\'ouvrir',
+ h:'Touche les cartes pour les retourner une à une. Les cartes spéciales brillent en or! Les joueurs et les équipes sont fictifs.',
+ init(G){G.L=(G.o.cards||[]).map(x=>({...x,c:CARDS[x.id-1],f:0,a:0}));G.n=0;},
+ lay(G){const cols=4,gap=8,cw=Math.min(84,(G.w-24-gap*3)/cols),ch=cw*1.38;const x0=(G.w-(cols*cw+gap*3))/2,y0=Math.max(46,(G.h-(2*ch+gap))/2-20);G.L.forEach((k,i)=>{k.x=x0+(i%cols)*(cw+gap);k.y=y0+Math.floor(i/cols)*(ch+gap);k.w=cw;k.h=ch;});},
+ dn(G,x,y){let k=G.L.find(k=>!k.f&&mgHit(k,x,y));if(!k)k=G.L.find(k=>!k.f);if(!k){G.end=1;return;}k.f=1;G.n++;mgSnd(k.c.sp?'jackpot':'tap');if(k.nw)mgPop(G,k.c.sp?'SPÉCIALE!':'Nouvelle!',k.x+k.w/2,k.y-6,k.c.sp?'#ffd54f':'#9ef0a0');},
+ up(G,dt){G.L.forEach(k=>{if(k.f)k.a=Math.min(1,k.a+dt*4);});},
+ dr(G,g){for(const k of G.L){const sx=Math.abs(Math.cos(k.a*PI));const front=k.a>.5;g.save();g.translate(k.x+k.w/2,k.y+k.h/2);g.scale(Math.max(.04,sx),1);
+   if(!front){mgR(g,-k.w/2,-k.h/2,k.w,k.h,8,'#1e3a8a');g.strokeStyle='#ffd54f';g.lineWidth=2;g.strokeRect(-k.w/2+5,-k.h/2+5,k.w-10,k.h-10);mgE(g,'🏒',0,-6,k.w*.38);mgT(g,'HOCKEY',0,k.h*.28,Math.max(9,k.w*.12),'#ffd54f');}
+   else{const c=k.c,T=CTEAMS[c.t];mgR(g,-k.w/2,-k.h/2,k.w,k.h,8,c.sp?c.sp[2]:'#f4f0e6');mgR(g,-k.w/2+4,-k.h/2+4,k.w-8,k.h*.5,6,T[1]);mgE(g,c.pos==='G'?'🥅':'🏒',0,-k.h*.25+4,k.w*.34);
+    mgT(g,'#'+c.id,-k.w/2+12,-k.h/2+12,10,c.sp?'#1a1a1a':'#fff','left');const nm=c.n.split(' ');mgT(g,nm[0],0,k.h*.1,Math.max(8,k.w*.12),'#1a1a1a',undefined,600);mgT(g,nm.slice(1).join(' '),0,k.h*.21,Math.max(9,k.w*.13),'#1a1a1a');
+    mgT(g,c.pos+' · #'+c.no,0,k.h*.33,Math.max(8,k.w*.1),'#444',undefined,600);if(c.sp)mgE(g,c.sp[1],k.w/2-12,-k.h/2+12,14);if(k.nw){mgR(g,-k.w/2+3,k.h/2-14,26,11,4,'#2e7d32');mgT(g,'NEW',-k.w/2+16,k.h/2-8.5,8,'#fff');}}
+   g.restore();}
+  mgT(g,G.n<G.L.length?'Touche une carte pour la retourner':'Touche pour ranger les cartes dans l\'album',G.w/2,G.h-22,14,'#cfe');},
+ hud:G=>G.L.filter(k=>k.nw).length+' nouvelle(s) · album '+cardCount()+'/200',
+ fin(G){const nw=G.L.filter(k=>k.nw).length,sp=G.L.filter(k=>k.c.sp).length;G.msg=nw+' nouvelle'+(nw>1?'s':'')+' carte'+(nw>1?'s':'')+(sp?' dont '+sp+' spéciale'+(sp>1?'s':''):'')+' · album : '+cardCount()+'/200';return 1;},
+ ap(s,r,o){const L=o.cards||[];const nw=L.filter(x=>x.nw).length,sp=L.filter(x=>CARDS[x.id-1].sp);if(r.auto)say(Mc,sp.length?'Wow! Une carte spéciale : '+CARDS[sp[0].id-1].n+'!':nw?nw+' nouvelles cartes pour mon album!':'Rien que des doubles… ouin.');
+  toast('🃏 Paquet : '+nw+' nouvelle'+(nw>1?'s':'')+(sp.length?' · '+sp.length+' spéciale'+(sp.length>1?'s':''):'')+' · album '+cardCount()+'/200',nw>0);}};
+function cartesOuting(){const n=money>120?pick([1,2,2,3]):1;const pk=[];const s=[...at('dep.caisse','pay',2,{label:'Achète '+n+' paquet'+(n>1?'s':'')+' de cartes de hockey au dépanneur',say:pick(['Des cartes de hockey, svp Raj!','Il me manque juste quelques cartes…','Allez, une spéciale cette fois!'])}),payF(5*n,'Cartes de hockey ('+n+' paquet'+(n>1?'s':'')+')')];
+ for(let i=0;i<n;i++){const o={a:'read',label:'Ouvre un paquet de cartes de hockey',cards:null};s.push(F(()=>{o.cards=openPack();}),...mgSteps('paquet',o),D('read',2,{label:i?undefined:'Regarde ses nouvelles cartes',say:i?undefined:pick(['Celle-là, je l\'avais pas!','Encore un double…','Mon album se remplit!'])}));}
+ s.push(F(()=>{LIFE.cardD=today();LIFE.lastOuting={kind:'acheter des cartes de hockey'};}));return s;}
+A.push({id:'cartes',out:1,w:h=>h>=8&&h<21&&money>25&&today()-(LIFE.cardD??-9)>=2&&cardCount()<200?.9:0,f:()=>cartesOuting()},
+ {id:'album',w:h=>cardCount()>=8&&h>=9&&h<22?.35:0,f:()=>at('home.sofaL','read',rnd(10,18),{label:'Feuillette son album de cartes de hockey ('+cardCount()+'/200)',warp:2,fx:{fun:.5},say:pick(['Il me manque encore la #'+(1+Math.floor(Math.random()*150))+'…','Ma plus belle carte, c\'est celle-là!'])})});
+Object.assign(CHN,{cartes:'🃏 Acheter des cartes de hockey',album:'📒 Regarder son album de cartes'});
+/* doubles en vente au kiosque */
+{const _k=kioItems;kioItems=()=>{const L=_k();const C=LIFE.cartes;if(C){const n=Object.entries(C.dup).filter(([k])=>+k<=150).reduce((s2,[,v])=>s2+v,0);if(n>0)L.push({k:'_cartes',n,p:.25,e:'🃏',cards:1});}return L;};}
+{const _s=kioSale;kioSale=()=>{const C=LIFE.cartes;if(C&&Math.random()<.3){const ks=Object.keys(C.dup).filter(k=>+k<=150&&C.dup[k]>0);if(ks.length){const q=Math.min(ks.length,Math.round(rnd(2,6)));let t=0;for(let i=0;i<q;i++){const k=ks[i];C.dup[k]--;if(!C.dup[k])delete C.dup[k];t+=.25;}t=Math.max(1,Math.round(t));addMoney(t,'Kiosque : '+q+' cartes de hockey en double');KIO().tot+=t;return t;}}return _s();};}
+/* ---------- Album ---------- */
+function albumHTML(){const C=CARDST();const own=C.own;const cell=c=>{const o=own[c.id];const T=CTEAMS[c.t];const bg=o?(c.sp?c.sp[2]:'#f4f0e6'):'rgba(255,255,255,.06)';
+  return '<div title="'+(o?cardDesc(c).replace(/"/g,''):'Carte #'+c.id+' manquante')+'" style="aspect-ratio:.72;border-radius:5px;background:'+bg+';border:1px solid '+(o?T[1]:'var(--trait)')+';display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.55rem;line-height:1.1;color:'+(o?'#1a1a1a':'#7a8496')+';overflow:hidden;padding:2px">'+
+   (o?'<b style="font-size:.6rem">'+(c.sp?c.sp[1]:'#'+c.id)+'</b><span style="text-align:center">'+c.n.split(' ').slice(-1)[0]+'</span>'+(C.dup[c.id]?'<span style="color:#2e7d32">×'+(C.dup[c.id]+1)+'</span>':''):'#'+c.id)+'</div>';};
+ const dups=Object.values(C.dup).reduce((a,b)=>a+b,0);
+ return '<h2 id="skDetT">🃏 Album de cartes de hockey</h2><div class="lv">'+cardCount()+' / 200 cartes</div><div class="mut" style="margin:4px 0 10px">Normales : '+cardNorm()+'/150 · Spéciales : '+(cardCount()-cardNorm())+'/50 · '+C.packs+' paquet'+(C.packs>1?'s':'')+' ouvert'+(C.packs>1?'s':'')+' · '+dups+' double'+(dups>1?'s':'')+(kioOK()?' (vendus au kiosque)':'')+'<br>Les joueurs et les équipes sont fictifs. Le chiffre vert indique combien d\'exemplaires Marcel possède.</div>'+
+  '<button type="button" onclick="skOpen=\'__tro\';skDetail()" style="font:inherit;font-size:.8rem;padding:4px 10px;border-radius:99px;border:1px solid var(--trait);background:#26324a;color:inherit;cursor:pointer;margin-bottom:10px">← Trophées</button>'+
+  '<h3 style="margin:6px 0">Cartes normales</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:4px">'+CARDS.slice(0,150).map(cell).join('')+'</div>'+
+  '<h3 style="margin:12px 0 6px">Cartes spéciales</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:4px">'+CARDS.slice(150).map(cell).join('')+'</div>';}
+{const _d=skDetail;skDetail=()=>{if(skOpen==='__cartes'){$('skDetC').innerHTML=albumHTML();return;}return _d();};}
+{const _f=trophyHTML;trophyHTML=()=>{const t=_f();const b='<button type="button" onclick="skOpen=\'__cartes\';skDetail()" style="display:block;width:100%;text-align:left;font:inherit;font-size:.88rem;padding:9px 12px;margin:0 0 12px;border-radius:12px;border:1px solid var(--trait);background:#1e2a40;color:inherit;cursor:pointer">🃏 <b>Album de cartes de hockey</b> · '+cardCount()+'/200 →</button>';
+  const i=t.indexOf('<div style="border:1px solid var(--trait)');return i>0?t.slice(0,i)+b+t.slice(i):b+t;};}
+TROPHIES.push(['cartes1','🃏','Premier paquet','Ouvrir un premier paquet de cartes de hockey',()=>C_('paquet')>=1],['cartes_sp','✨','Carte rare','Obtenir une première carte spéciale',()=>!!LIFE.cartes&&Object.keys(LIFE.cartes.own).some(k=>+k>150)],
+ ['cartes150','📒','Série complète','Compléter les 150 cartes normales',()=>!!LIFE.cartes&&cardNorm()>=150],['cartes200','🏆','Collectionneur ultime','Compléter les 200 cartes, spéciales comprises',()=>!!LIFE.cartes&&cardCount()>=200]);
 
 /* ---------- Plein écran ---------- */
 {const btn=$('plein'),de=document.documentElement;const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement;
