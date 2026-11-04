@@ -3042,7 +3042,7 @@ function showChoice(q,opts,sub){CHOICE={opts,done:false,pick:null,t0:tReal,dur:2
   $('choix').classList.toggle('on',true);}
 function updateChoice(){if(!CHOICE)return;const el=tReal-CHOICE.t0;$('choixT').style.width=Math.max(0,100-el/CHOICE.dur*100)+'%';if(!CHOICE.done&&el>CHOICE.dur)CHOICE.done=true;}
 function choiceSteps(q,opts,o={}){return[F(()=>showChoice(q,opts,o.sub)),W(()=>!CHOICE||CHOICE.done,{a:o.a||'scratch',label:o.label||'Se demande quoi faire…',max:240,warp:.15,phone:o.phone,pose:o.pose,seatH:o.seatH,yaw:o.yaw}),
-  F(()=>{const c=CHOICE;CHOICE=null;$('choix').classList.toggle('on',false);if(!c)return;let p=c.pick;if(!p){const L2=c.opts.filter(x=>!x.none);p=(o.autoNone&&Math.random()<.5)?c.opts.find(x=>x.none):pick(L2);}if(!p||p.none){if(p)say(Mc,pick(['Non, pas aujourd\'hui.','Je reste tranquille.']));return;}
+  F(()=>{const c=CHOICE;CHOICE=null;$('choix').classList.toggle('on',false);if(!c)return;let p=c.pick;if(!p){const L2=c.opts.filter(x=>!x.none);p=(o.autoNone&&Math.random()<(o.noneP??.5))?c.opts.find(x=>x.none):pick(L2);}if(!p||p.none){if(p)say(Mc,pick(['Non, pas aujourd\'hui.','Je reste tranquille.']));return;}
     if(c.pick)say(Mc,pick(['Bonne idée!','OK, c\'est parti!','Pourquoi pas!']),2);const st=p.fn();if(st&&st.length)Mc.q.unshift(...st);})];}
 const CHN={quai:'🌊 Se promener au bord de l\'eau',rprinc:'🛍️ Flâner sur la rue Principale',bingo:'🎱 Jouer au bingo de la paroisse',puces:'🏷️ Marché aux puces de la paroisse',benev:'📚 Aide aux devoirs à l\'école',trains:'🚆 Regarder passer les trains',pompiers:'🚒 Portes ouvertes à la caserne',ski:'⛷️ Aller skier au Mont Sainte-Neige',cabane:'🍁 Aller à la cabane à sucre',parcnat:'🏕️ Visiter le parc national',patin:'⛸️ Aller patiner au parc',bonhomme:'☃️ Faire un bonhomme de neige',choco:'☕ Boire un chocolat chaud',quilles:'🎳 Jouer aux quilles',micro:'🍺 Aller à la microbrasserie',animal:'🐾 Aller à l\'animalerie',garage:'🔧 Passer au garage',mall:'🛍️ Aller aux Galeries (centre commercial)',electroO:'🕹️ Aller chez Électro-Jeux',arcadeO:'👾 Aller à l\'Arcade Pixel',hockey:'🏒 Regarder le hockey',baseball:'⚾ Regarder le baseball',film:'🎬 Regarder un film',tvshow:'📺 Regarder la télé',pcgame:'🎮 Jouer à l\'ordi',ecoute:'🎧 Écouter de la musique',read:'📖 Lire un roman',guitar:'🎸 Jouer de la guitare',callmom:'📞 Appeler Maman',calljulie:'📞 Appeler Julie',
   textboys:'💬 Texter les boys',vcall:'💻 Appel vidéo avec Luc',paint:'🎨 Peindre',bake:'🧁 Faire de la pâtisserie',puzzle:'🧩 Faire un casse-tête',vacuum:'🧹 Passer l\'aspirateur',plant:'🪴 S\'occuper des plantes',nap:'😴 Faire une sieste',dance:'🕺 Danser dans le salon',yoga:'🧘 Faire du yoga',
@@ -3501,7 +3501,7 @@ function jobsHTML(){const L2=[...JOBS,...JOBS2].map(J=>({J,i:jobInfo(J.id),x:(LI
   <div class="tro">${L2.map(({J,i,x})=>`<div class="${x>0?'ok':''}"><i>${J.t.split(' ')[0]}</i><b>${jobName(J)}</b>${x>0?'Niveau '+i.l+' · '+i.title+'<br>'+Math.round(i.x)+' / '+i.need+' XP<br>'+Math.round(jobRate(J))+' $/h':'Jamais essayé · '+J.r+' $/h'}</div>`).join('')}</div>`;}
 function jobChoice(){const h=hourOf();const ok=[...JOBS,...JOBS2].filter(J=>(!J.need||skLv(J.need[0])>=J.need[1])&&(!J.cond||J.cond(h)));const L2=[...ok].sort(()=>Math.random()-.5).slice(0,3);
   const opts=L2.map(J=>{const hrs=Math.max(2,Math.min(5,Math.round(rnd(2,5)),Math.floor(20-h)));const i=jobInfo(J.id);return{t:J.t,sub:'Niv. '+i.l+' ('+Math.floor(i.x/i.need*100)+' %)'+(i.l>=10?' · '+i.title:'')+' · '+hrs+' h · '+Math.round(jobRate(J)*hrs)+' $',fn:()=>jobShift(J,hrs)};});opts.push({t:'Pas aujourd\'hui',none:1});
-  return choiceSteps('Offres d\'emploi du jour : laquelle Marcel accepte?',opts,{a:'scroll',label:'Regarde les offres d\'emploi sur son cell',phone:{feed:1},autoNone:1});}
+  return choiceSteps('Offres d\'emploi du jour : laquelle Marcel accepte?',opts,{a:'scroll',label:'Regarde les offres d\'emploi sur son cell',phone:{feed:1},autoNone:1,noneP:.25});}
 /* ================= Compétences ================= */
 const SKILLS=[{k:'peche',n:'Pêche',e:'🎣',u:['Le doré et l\'achigan mordent','Grand brochet · poissons vendus 25 % plus cher','Prises plus fréquentes et plus grosses','Le légendaire maskinongé','Maître pêcheur : poissons vendus 2× plus cher']},
   {k:'cuisine',n:'Cuisine',e:'🍳',u:['Recettes gourmet : doré meunière, bourguignon…','Cuisine 25 % plus vite · saumon en croûte, tourtière','Repas plus rassasiants · maskinongé fumé','Contrats de traiteur payants','Grand chef : repas encore plus rassasiants']},
@@ -4209,7 +4209,7 @@ function planMarcel(){const h=hourOf(),wk=dayOf()<5;
    if(free&&!flags.outing&&dayOf()===3&&h>=18&&h<19&&LIFE.bingoD!==day&&money>30&&Math.random()<.5){flags.outing=true;return bingoOuting();}
    if(free&&!flags.outing&&h>=10&&h<19&&!RAIN()&&!SNOWING()&&day-(LIFE.quaiD??-9)>=4&&Math.random()<.35){flags.outing=true;return quaiOuting();}
    if(free&&!flags.outing&&h>=10&&h<18&&money>60&&day-(LIFE.rpD??-9)>=5&&Math.random()<.35){flags.outing=true;return rpOuting();}}
-  if(!flags.jobOff&&h>=8&&h<13.5&&Mc.area==='home'&&!Mc.inCar&&Math.random()<.3){flags.jobOff=true;return jobChoice();}
+  if(!flags.jobOff&&h>=8&&h<13.5&&atHomeLot()&&!Mc.inCar&&Math.random()<.4){flags.jobOff=true;return jobChoice();}
   if(tReal>choiceNext&&h>=8&&h<21.5&&!Mc.inCar&&Math.random()<.6){choiceNext=tReal+rnd(30,65);const c=actChoice();if(c){flags.actCh=true;return c;}}
   return pickRandom();}
 Mc.q=[D('sleep',0,{until:8*60+2,warp:14,pose:'lie',fx:{energy:.17},onEnd:wake})];
@@ -5558,7 +5558,8 @@ function farmHTML(){const P=POT(),C=COOP(),K=KIO(),s=ETG();const beds=P.beds.sli
 
 /* ---------- Priorité aux tâches de la propriété ---------- */
 const FARMPRI=['recolte','nourrir','arroser','oeufs','semer','kiosque','chantier','kiob','coopb','poules'];
-function farmUrgent(h){if(need.food<35||need.energy<25||need.hyg<20)return null;const T=today();LIFE.fu=LIFE.fu||{};
+function atHomeLot(){if(Mc.area==='home'||Mc.area==='etage')return true;if(Mc.area!=='town'||Mc.inCar)return false;const p=Mc.pos;return p.x>-67&&p.x<-44&&p.z>-86&&p.z<-36;}
+function farmUrgent(h){if(need.food<35||need.energy<25||need.hyg<20)return null;if(!flags.jobOff&&h>=8&&h<13.5&&Math.random()<.6)return null;const T=today();LIFE.fu=LIFE.fu||{};
  for(const k of FARMPRI){if(LIFE.fu[k]===T)continue;const a=A.find(x=>x.id===k);if(!a||!(a.w(h)>0))continue;LIFE.fu[k]=T;HIST.push(k);if(HIST.length>20)HIST.shift();const s=a.f();if(s&&s.length)return s;}return null;}
 {const _p=planMarcel;planMarcel=()=>{const h=hourOf();if(!LIFE.tokyo&&!flags.trip&&Mc.area!=='route'&&!(Mc.job&&gm<Mc.job.end)&&h>=7&&h<19.5&&Math.random()<.3){const f=farmUrgent(h);if(f)return f;}return _p();};}
 
