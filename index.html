@@ -3291,13 +3291,13 @@ function tokyoTrip(){const day=Math.floor(gm/1440);LIFE.tokDep=null;LIFE.tokyo={
    {t:'warp',dest:'metro',spot:'siege',label:'Prend le train de l\'aéroport vers le centre-ville'},...at('metro.siege','look',rnd(15,22),{label:'Roule vers le centre de Tokyo',warp:2}),{t:'warp',dest:'tokyo',spot:'gare',label:'Arrive à la gare de Shibuya'},
    tr('tokyo.hotel',{label:'Marche jusqu\'à l\'Hôtel Sakura avec sa valise'}),D('talk',3,{label:'S\'enregistre à l\'Hôtel Sakura',say:'Konnichiwa! Une réservation au nom de Marcel.'}),{t:'warp',dest:'hotel',spot:'entree',label:'Découvre sa chambre d\'hôtel'},
    ...at('hotel.fenetre','look',4,{label:'Admire la vue sur Tokyo depuis sa chambre',say:'Incroyable!'}),F(()=>{cnt('tokyo');})];}
-function tokyoReturn(){const T=LIFE.tokyo;const s=[];if(Mc.area==='hotel')s.push(...at('hotel.bureau','install',4,{label:'Fait sa valise et quitte sa chambre',say:'Déjà la fin… snif.'}));
+function tokyoReturn(){const T=LIFE.tokyo;LIFE.tokRetD=Math.floor(gm/1440);const s=[];if(Mc.area==='hotel')s.push(...at('hotel.bureau','install',4,{label:'Fait sa valise et quitte sa chambre',say:'Déjà la fin… snif.'}));
   s.push(...exitHotel());if(!T.souv||!T.souv.length)s.push(...TK.souvenirs());
   s.push(tr('tokyo.gare',{label:'Se rend à la gare pour l\'aéroport'}),{t:'warp',dest:'metro',spot:'siege',label:'Prend le train vers l\'aéroport'},...at('metro.siege','look',rnd(12,18),{warp:2,label:'Roule vers l\'aéroport'}),
     {t:'warp',dest:'avion',spot:'siege',label:'Embarque sur le vol de retour'},...at('avion.siege','eat',rnd(15,20),{label:'Mange le repas servi à bord',fx:{food:3}}),...at('avion.siege','scroll',rnd(30,45),{label:'Regarde ses photos de voyage',warp:6}),
     ...at('avion.siege','nap',420,{label:'Dort pendant le vol de retour',warp:12,fx:{energy:.1}}),...at('avion.siege','look',5,{label:'Atterrit à Montréal',say:'Bienvenue chez nous!'}),{t:'warp',dest:'aeroport',spot:'arrivee',label:'Arrive à l\'aéroport de Montréal'},
     tr('aeroport.car',{label:'Récupère son auto au stationnement'}),{t:'highway',dest:'town',label:'Revient en ville par l\'autoroute'},{t:'cardrive',to:'home',label:'Rentre à la maison après son voyage'},{t:'getout'},
-    F(()=>{const sv=(LIFE.tokyo&&LIFE.tokyo.souv)||[];LIFE.tokyo=null;LIFE.tokN=(LIFE.tokN||0)+1;LIFE.lastOuting={kind:'en voyage à Tokyo'};MCAR.fuel=Math.max(0,MCAR.fuel-.3);say(Mc,sv.length?'Enfin chez nous! J\'ai rapporté '+sv[0]+'.':'Enfin chez nous… mais quel voyage!');setTask('🗼 Marcel est revenu de son voyage à Tokyo!');}));return s;}
+    F(()=>{const sv=(LIFE.tokyo&&LIFE.tokyo.souv)||[];LIFE.tokyo=null;LIFE.tokRetD=Math.floor(gm/1440);LIFE.tokN=(LIFE.tokN||0)+1;LIFE.lastOuting={kind:'en voyage à Tokyo'};MCAR.fuel=Math.max(0,MCAR.fuel-.3);say(Mc,sv.length?'Enfin chez nous! J\'ai rapporté '+sv[0]+'.':'Enfin chez nous… mais quel voyage!');setTask('🗼 Marcel est revenu de son voyage à Tokyo!');}));return s;}
 function tokyoPlan(){const T=LIFE.tokyo,h=hourOf(),day=Math.floor(gm/1440);T.done=T.done||[];
   if(day>=T.end&&h>=8.5&&!T.ret){T.ret=1;return tokyoReturn();}
   if(T.ret)return[D('look',2)];
@@ -4166,7 +4166,7 @@ function planMarcel(){const h=hourOf(),wk=dayOf()<5;
   if(flags.morning){flags.morning=false;return morning();}
   if(LIFE.tokDep!=null&&Math.floor(gm/1440)>=LIFE.tokDep&&h>=11.5)LIFE.tokDep=Math.floor(gm/1440)+1;
   if(!LIFE.tokyo&&LIFE.tokDep!=null&&Math.floor(gm/1440)>=LIFE.tokDep&&h>=7&&h<11.5&&Mc.area==='home'&&!Mc.inCar&&Julie.area==='none'&&Steve.area==='none')return tokyoTrip();
-  if(!LIFE.tokyo&&LIFE.tokDep==null&&h>=8&&h<21&&Mc.area==='home'&&!Mc.inCar&&!Mc.carry&&((tokCanBook()&&Math.floor(gm/1440)>=(LIFE.tokAsk||0))||Math.floor(gm/1440)-(LIFE.tokOffD??0)>=14))return tokyoChoice();
+  if(!LIFE.tokyo&&LIFE.tokDep==null&&Math.floor(gm/1440)-(LIFE.tokRetD??(LIFE.tokN?(LIFE.tokOffD??-99)+7:-99))>=14&&h>=8&&h<21&&Mc.area==='home'&&!Mc.inCar&&!Mc.carry&&((tokCanBook()&&Math.floor(gm/1440)>=(LIFE.tokAsk||0))||Math.floor(gm/1440)-(LIFE.tokOffD??0)>=14))return tokyoChoice();
   if(flags.forceOutage&&Mc.area==='home'&&powerOn()){flags.forceOutage=false;return evOutage(rnd(40,90));}
   if(delivery&&gm>=delivery.at&&Mc.area==='home'&&Courier.area==='none'&&h>8&&h<21.5)return deliveryEvent();
   if(Mc.carry==='baguette')return[...at('home.fridge','fridge',2,{label:'Range le pain'}),F(()=>Mc.carry=null)];
