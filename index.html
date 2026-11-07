@@ -94,7 +94,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #choixB{display:flex;flex-direction:column;gap:6px}
 #choixB button{display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;font:600 .82rem var(--f-body);color:var(--craie);background:#232b3a;border:1px solid var(--trait);border-radius:10px;padding:8px 10px;cursor:pointer}
 #choixB button:hover{border-color:var(--citrouille)}#choixB button:focus-visible{outline:2px solid var(--citrouille);outline-offset:2px}
-#choixB button small{color:var(--sapin);font-weight:700;white-space:nowrap}#choixB button.non{background:transparent;color:var(--gris)}
+#choixB .row2{display:flex;gap:6px}#choixB .row2 button{flex:1;justify-content:center;text-align:center;font-size:.72rem;padding:6px 8px}#choixB button small{color:var(--sapin);font-weight:700;white-space:nowrap}#choixB button.non{background:transparent;color:var(--gris)}
 #choix .chrono{height:4px;border-radius:99px;background:#283143;margin-top:8px;overflow:hidden}#choix .chrono i{display:block;height:100%;background:var(--citrouille);width:100%}
 #choixS{display:block;color:var(--gris);font-size:.68rem;margin-top:4px}
 #skills{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px}#skTot{display:block;font-size:.72rem;color:var(--gris);margin:-4px 0 8px}
@@ -161,15 +161,18 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #cellB{position:absolute;top:50px;left:8px;z-index:7;width:36px;height:36px;border-radius:10px;border:1px solid var(--trait);background:rgba(18,22,30,.82);backdrop-filter:blur(6px);color:var(--craie);font-size:1rem;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
 #cellB:hover{background:rgba(40,48,64,.9)}#cellB.on{background:var(--citrouille);border-color:var(--citrouille)}#cellB:focus-visible,#cellX:focus-visible,#cell button:focus-visible{outline:2px solid var(--citrouille);outline-offset:2px}
 #cellB.alert:after{content:"";position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;background:var(--brique);border:2px solid var(--nuit)}
-#cell{position:absolute;inset:0;z-index:11;background:rgba(5,8,14,.76);backdrop-filter:blur(3px);display:grid;place-items:center;padding:8px}
+#cell{grid-template-rows:minmax(0,1fr);grid-template-columns:minmax(0,1fr);position:absolute;inset:0;z-index:11;background:rgba(5,8,14,.76);backdrop-filter:blur(3px);display:grid;place-items:center;padding:8px}
 #cell[hidden]{display:none!important}
-.cphone{position:relative;width:min(340px,100%);height:100%;max-height:660px;border-radius:34px;background:#0d0f13;padding:9px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.cphone{box-sizing:border-box;min-height:0;justify-self:center;position:relative;width:min(340px,100%);height:100%;max-height:660px;border-radius:34px;background:#0d0f13;padding:9px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
 .cscr{position:relative;height:100%;border-radius:26px;background:#f4f2ee;color:#1d1d1f;overflow:hidden;display:flex;flex-direction:column;font-family:var(--f-body)}
 .cscr.home{background:radial-gradient(120% 90% at 20% 0%,#4a4f86 0%,#262b52 52%,#141829 100%);color:#fff}
 .cstat{display:flex;justify-content:space-between;align-items:center;padding:10px 18px 6px;font-size:.72rem;font-weight:700;gap:8px}.cstat #cTitle{flex:1;text-align:center;font-weight:700;opacity:.85}
-.cbody{flex:1;min-height:0;overflow-y:auto;padding:6px 12px 14px;-webkit-overflow-scrolling:touch}
-.chome{flex:none;align-self:center;width:96px;height:5px;border-radius:99px;background:rgba(120,120,130,.55);border:0;margin:4px 0 8px;cursor:pointer;padding:0}
-.cscr.home .chome{background:rgba(255,255,255,.55)}
+.cbody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;padding:6px 12px 28px;-webkit-overflow-scrolling:touch}
+.chome{flex:none;align-self:center;min-width:140px;height:34px;border-radius:99px;background:#3d8bfd;color:#fff;font:800 .8rem var(--f-body);border:0;margin:2px 0 10px;cursor:pointer;padding:0 18px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.cscr.home .chome{display:none}.cscr.home .cbody{padding-bottom:18px}
+.chrs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 6px;-webkit-overflow-scrolling:touch}.chr{flex:none;min-width:48px;background:#fff;border-radius:12px;padding:6px 4px;text-align:center;font-size:.8rem;display:flex;flex-direction:column;gap:2px}.chr small{color:#7a7a82;font-size:.62rem}.chr span{font-size:1.15rem}
+.lig7{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee;font-size:.78rem}.lig7:last-child{border-bottom:0}.lig7 span:first-child{width:78px;font-weight:700}.lig7 small{color:#3d8bfd;font-weight:700}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}.cgrid .cinfo{margin:0}
 #cellX{position:absolute;top:-6px;right:-6px;width:34px;height:34px;border-radius:50%;border:1px solid var(--trait);background:#232b3a;color:var(--craie);cursor:pointer;font-size:.9rem;z-index:2}
 .chorl{text-align:center;margin:4px 0 2px}.chorl b{display:block;font:800 2rem var(--f-display);letter-spacing:-.02em}.chorl span{font-size:.78rem;opacity:.8}
 .cicons{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px;padding:8px 6px}
@@ -218,7 +221,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
     <div id="choix" role="dialog" aria-live="polite"><p id="choixQ"></p><div id="choixB"></div><div class="chrono"><i id="choixT"></i></div><small id="choixS"></small></div>
     <div id="mg" hidden><div class="mgh"><b id="mgT"></b><span id="mgS"></span><button id="mgX" type="button" aria-label="Quitter le mini-jeu">✕</button></div><div class="mgbar"><i id="mgB"></i></div><canvas id="mgC"></canvas></div>
     <button id="cellB" type="button" aria-label="Ouvrir le cellulaire de Marcel" title="Cellulaire (met le jeu en pause)">📱</button>
-    <div id="cell" hidden role="dialog" aria-modal="true" aria-label="Cellulaire de Marcel"><div class="cphone"><div class="cscr"><div class="cstat"><b id="cTime">08:00</b><span id="cTitle"></span><span>📶 🔋</span></div><div class="cbody" id="cBody"></div><button class="chome" id="cHome" type="button" aria-label="Retour à l'accueil"></button></div><button id="cellX" type="button" aria-label="Fermer le cellulaire">✕</button></div></div>
+    <div id="cell" hidden role="dialog" aria-modal="true" aria-label="Cellulaire de Marcel"><div class="cphone"><div class="cscr"><div class="cstat"><b id="cTime">08:00</b><span id="cTitle"></span><span>📶 🔋</span></div><div class="cbody" id="cBody"></div><button class="chome" id="cHome" type="button" aria-label="Retour à la liste des applications">🏠 Accueil</button></div><button id="cellX" type="button" aria-label="Fermer le cellulaire">✕</button></div></div>
     <div id="fondu"></div>
     <div id="chargement">Construction du quartier…</div>
   </div>
@@ -5262,8 +5265,9 @@ function mgOffer(id,o){const d=MGD[id];MG.offer=true;MG.id=id;MG.o=o;MG.lastOffe
   const mk=(t,sub,cls,fn)=>{const b=document.createElement('button');b.type='button';if(cls)b.className=cls;b.innerHTML='<span>'+t+'</span>'+(sub?'<small>'+sub+'</small>':'');b.onclick=fn;B.appendChild(b);};
   mk(d.ob||'🎮 Aider Marcel',d.os||'Jouer au mini-jeu (prime si tu réussis)','',()=>{if(!CHOICE||!CHOICE.mg)return;CHOICE=null;$('choix').classList.toggle('on',false);MG.offer=false;mgSnd('tap');mgStart(id,o);});
   mk(d.ol||'🤖 Laisser Marcel faire','','non',()=>{if(CHOICE&&CHOICE.mg)CHOICE.done=true;});
-  mk('🚫 Ne plus proposer « '+d.n+' »','Seulement ce mini-jeu · réactivable dans 🏆 Trophées','non',()=>{LIFE.mgDis=LIFE.mgDis||{};LIFE.mgDis[id]=1;toast('🚫 « '+d.n+' » ne sera plus proposé',false);if(CHOICE&&CHOICE.mg)CHOICE.done=true;});
-  mk('🚫 Ne plus proposer aucun mini-jeu','Réactivable dans 🏆 Trophées','non',()=>{mgSet(true);if(CHOICE&&CHOICE.mg)CHOICE.done=true;});
+  const r2=document.createElement('div');r2.className='row2';B.appendChild(r2);const mk2=(t,fn)=>{const b=document.createElement('button');b.type='button';b.className='non';b.innerHTML='<span>'+t+'</span>';b.onclick=fn;r2.appendChild(b);};
+  mk2('🚫 Plus ce mini-jeu',()=>{LIFE.mgDis=LIFE.mgDis||{};LIFE.mgDis[id]=1;toast('🚫 « '+d.n+' » ne sera plus proposé (réactivable dans 🏆 Trophées)',false);if(CHOICE&&CHOICE.mg)CHOICE.done=true;});
+  mk2('🚫 Plus aucun',()=>{mgSet(true);if(CHOICE&&CHOICE.mg)CHOICE.done=true;});
   $('choix').classList.toggle('on',true);}
 function mgSet(off){MG.off=off;try{localStorage.setItem('marcel_mg_off',off?'1':'0');}catch(e){}toast(off?'Mini-jeux désactivés':'🎮 Mini-jeux activés!',!off);if(skOpen==='__tro')skDetail();}
 function mgTick(){if(!MG.offer||MG.on)return;if(!CHOICE||!CHOICE.mg||CHOICE.done){if(CHOICE&&CHOICE.mg){CHOICE=null;$('choix').classList.toggle('on',false);}MG.offer=false;MG.res={s:mgAuto(MG.id,MG.o),auto:1};}}
@@ -5333,6 +5337,7 @@ TROPHIES.push(['mg1','🎮','Coup de main','Jouer un premier mini-jeu avec Marce
    dis+'<div class="mut" style="margin-top:6px;font-size:.85rem">'+(L||'Aucun record encore. Touche « Aider Marcel » quand un mini-jeu est proposé!')+'</div></div>';const t=_f();const i=t.indexOf('</div>',t.indexOf('class="mut"'));return i>0?t.slice(0,i+6)+h+t.slice(i+6):h+t;};}
 
 $('skDetC').addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;if(a&&a.indexOf('mgen:')===0){const k=a.slice(5);if(LIFE.mgDis)delete LIFE.mgDis[k];if(MGD[k])toast('🎮 « '+MGD[k].n+' » est de nouveau proposé',true);if(skOpen==='__tro')skDetail();}});
+
 
 /* ================= Potager, poulailler, kiosque, 2e étage et roulette du chef ================= */
 const VEG=[['laitue','Laitues','🥬',3,'#8fd16a','leaf',3,'laitue',0],['radis','Radis','🌱',2,'#d8304a','root',2,null,0],['carotte','Carottes','🥕',4,'#f08a2a','root',2.5,'carottes',0],
@@ -6051,7 +6056,7 @@ function cellMapSVG(list){const W=300,Hh=150;const cols=5,rows=3;const pins=list
    pins.map(({d,x,y})=>`<g class="pin" data-a="dest:${d.id}" role="button" aria-label="${d.n}"><circle cx="${x}" cy="${y}" r="${MAPD&&MAPD.id===d.id?11:8}" fill="${MAPD&&MAPD.id===d.id?'#3d8bfd':ok(d)?'#fff':'#c9c5b6'}" stroke="${MAPD&&MAPD.id===d.id?'#fff':'#8a8678'}" stroke-width="1.5"/><text x="${x}" y="${y+4}" font-size="${MAPD&&MAPD.id===d.id?12:10}" text-anchor="middle">${d.e}</text></g>`).join('')+
    `<g><circle cx="150" cy="70" r="7" fill="#3d8bfd" stroke="#fff" stroke-width="2.5"/></g></svg>`;}
 function cellRender(){const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);const app=CELL.app;scr.classList.toggle('home',!app);$('cTitle').textContent=app?(CAPPS.find(a=>a[0]===app)||[0,0,''])[2]:'';let h='';
-  if(!app){const due=LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1;h=`<div class="chorl"><b>${fmt(gm)}</b><span>${DAYS[dayOf()]} · ${cNum(money)} $</span></div><div class="cicons">`+CAPPS.map(([k,e,n,bg])=>`<button type="button" class="cic" data-a="app:${k}"><i style="background:${bg}">${e}</i>${n}${k==='banque'&&due?'<u>1</u>':k==='messages'&&frUnread()>0?'<u>'+frUnread()+'</u>':''}</button>`).join('')+`</div><div class="cmut" style="color:#c9cdea;text-align:center;font-size:.7rem">Le jeu est en pause tant que le cellulaire est ouvert.</div>`;}
+  if(!app){const due=LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1&&LIFE.fixSeen!==LIFE.fixNext;h=`<div class="chorl"><b>${fmt(gm)}</b><span>${DAYS[dayOf()]} · ${cNum(money)} $</span></div><div class="cicons">`+CAPPS.map(([k,e,n,bg])=>`<button type="button" class="cic" data-a="app:${k}"><i style="background:${bg}">${e}</i>${n}${k==='banque'&&due?'<u>1</u>':k==='messages'&&frUnread()>0?'<u>'+frUnread()+'</u>':''}</button>`).join('')+`</div><div class="cmut" style="color:#c9cdea;text-align:center;font-size:.7rem">Le jeu est en pause tant que le cellulaire est ouvert.</div>`;}
   else if(app==='carte'){const list=(CELL.tab==='lieux'?mapDests():mapJobs()).filter(d=>CELL.tab==='travail'||CELL.cat==='tous'||mapCatOf(d.id)===CELL.cat);
     list.sort((a,b)=>(mapOk(b)===true)-(mapOk(a)===true)||a.n.localeCompare(b.n,'fr'));
     h=`<div class="cchips" role="tablist"><button type="button" data-a="tab:lieux" class="${CELL.tab==='lieux'?'on':''}">📍 Lieux</button><button type="button" data-a="tab:travail" class="${CELL.tab==='travail'?'on':''}">💼 Travail</button></div>`;
@@ -6078,14 +6083,14 @@ $('cellB').addEventListener('click',()=>CELL.on?cellClose():cellOpen());
 $('cellX').addEventListener('click',cellClose);$('cHome').addEventListener('click',()=>{CELL.app=null;cellRender();});
 $('cell').addEventListener('click',e=>{if(e.target===$('cell'))cellClose();});
 $('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,i=a.indexOf(':'),k=i<0?a:a.slice(0,i),v=i<0?'':a.slice(i+1);
-  if(k==='app'){CELL.app=v;if(v==='carte'){CELL.tab='lieux';}cellRender();}
+  if(k==='app'){CELL.app=v;if(v==='banque')LIFE.fixSeen=LIFE.fixNext;if(v==='carte'){CELL.tab='lieux';}cellRender();}
   else if(k==='tab'){CELL.tab=v;cellRender();}else if(k==='cat'){CELL.cat=v;cellRender();}
   else if(k==='cancel'){MAPD=null;toast('Destination annulée',false);cellRender();}
   else if(k==='gocarte'){CELL.app='carte';CELL.tab='travail';cellRender();}
   else if(k==='jobsall'){$('bJob').click();}
   else if(k==='dest'){const d=[...mapDests(),...mapJobs()].find(x=>x.id===v);if(!d)return;const r=mapOk(d);if(r!==true){toast('📍 '+d.n+' : '+r,false);return;}MAPD=d;try{SFX.ping();}catch(er){}toast('📍 Marcel ira : '+d.n,true);cellRender();}});
 if(document.addEventListener)document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CELL.on&&!(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName)))cellClose();});
-{const _u=ui;ui=()=>{_u();try{const due=LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1;$('cellB').classList.toggle('alert',(due||frUnread()>0)&&!CELL.on);}catch(e){}};}
+{const _u=ui;ui=()=>{_u();try{const due=LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1&&LIFE.fixSeen!==LIFE.fixNext;$('cellB').classList.toggle('alert',(due||frUnread()>0)&&!CELL.on);}catch(e){}};}
 
 /* ================= Contacts, amitié, Messages, Livraison, Bourse ================= */
 let FRCH=null,INVITE=null;
@@ -6398,7 +6403,7 @@ function livHTML(){const t=CELL.lt||'resto';let h='';
     else h+=RESTOS.map((r,i)=>`<button type="button" class="crow" data-a="lr:${i}"><span>${r[3]} ${r[0]}<small>Livraison en 25 à 45 min</small></span><em>›</em></button>`).join('');}
   else if(t==='epicerie'){const L=CELL.lg||(CELL.lg=shopList()),fee=Math.round(7*(1-dl)),cost=Math.round(L.reduce((s2,k)=>s2+GROC[k][2],0)+fee);
     h+=`<div class="cinfo"><b>🛒 Épicerie du quartier</b><br><span class="cmut">Marcel commande ce qui manque dans son frigo et son garde-manger.</span><br>`+L.map(k=>GROC[k][0]).join(', ')+`</div><button type="button" class="crow${delivery?' no':''}" data-a="lg"><span>Commander ${L.length} articles<small>Livraison ${fee} $ · arrivée dans 1 à 2 h</small></span><em>${cost} $</em></button>`;}
-  else{const L=SHOP.filter(x=>!OWN[x.id]).sort((a,b)=>a.prix-b.prix).slice(0,14);h+=`<div class="cmut" style="margin-bottom:6px">Achats pour la maison, livrés à la porte.</div>`+(L.map(it=>`<button type="button" class="crow${delivery||money<it.prix?' no':''}" data-a="lb:${it.id}"><span>${it.emo} ${it.nom}<small>Livraison en 1 à 2 h</small></span><em>${cNum(it.prix)} $</em></button>`).join('')||'<div class="cmut">Rien de nouveau à acheter.</div>');}
+  else{const L=SHOP.filter(x=>!OWN[x.id]).sort((a,b)=>a.prix-b.prix).slice(0,60);h+=`<div class="cmut" style="margin-bottom:6px">Achats pour la maison, livrés à la porte.</div>`+(L.map(it=>`<button type="button" class="crow${delivery||money<it.prix?' no':''}" data-a="lb:${it.id}"><span>${it.emo} ${it.nom}<small>Livraison en 1 à 2 h</small></span><em>${cNum(it.prix)} $</em></button>`).join('')||'<div class="cmut">Rien de nouveau à acheter.</div>');}
   return h;}
 function bouHTML(){const B=BO(),t=CELL.bt||'marche',tot=boVal(),pl=tot-boCost()+B.rl-(B.bf||0),open=boOpen();
   let h=`<div class="cinfo" style="text-align:center"><span class="cmut">Valeur du portefeuille</span><div class="cgros" style="margin:2px 0 0">${px2(tot)} $</div><span class="${pl>=0?'cup':'cdn'}" style="font-weight:800;font-size:.76rem">${pl>=0?'+':''}${px2(pl)} $ au total</span><div class="cmut" style="margin-top:4px">${open?'🟢 Marché ouvert jusqu\'à 16 h':'🔴 Marché fermé · lundi au vendredi, 9 h 30 à 16 h'}<br>Frais par transaction : ${px2(boFee())} $</div></div>`;
@@ -6427,6 +6432,78 @@ $('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.close
   else if(k==='lt'){CELL.lt=v;CELL.lr=null;}else if(k==='lr')CELL.lr=+v;else if(k==='lback')CELL.lr=null;else if(k==='lo')livOrder(+v1,+v2);else if(k==='lg')livGroc();else if(k==='lb')livShop(v);
   else if(k==='bt'){CELL.bt=v;CELL.bs=null;}else if(k==='bs')CELL.bs=v;else if(k==='bback')CELL.bs=null;else if(k==='bb')boTrade(v1,'b',v2==='max'?'max':+v2);else if(k==='bl')boTrade(v1,'s',v2==='max'?'max':+v2);
   else r=false;if(r)cellRender();});
+/* ================= App Crypto (24 h/24) et Météo complète ================= */
+const CRY=[['BTC','Bitcoin','₿',95000,.012,'#f7931a'],['ETH','Ethereum','Ξ',4200,.016,'#627eea'],['SOL','Solana','◎',210,.023,'#14c8a0'],['XRP','Ripple','✕',3.2,.02,'#4a8fd8'],['DOGE','Dogecoin','🐕',.38,.032,'#c2a633'],['LTC','Litecoin','Ł',120,.018,'#9a9aa8'],['ADA','Cardano','🔷',1.1,.024,'#2a6fd0']],CRBY={};CRY.forEach(c=>CRBY[c[0]]=c);
+const CRYFEE=.01;
+const CR=()=>{if(LIFE.cr&&LIFE.cr.px)return LIFE.cr;const o={px:{},pos:{},news:[],m:0,h:Math.floor(gm/60),rl:0,fees:0};
+  for(const c of CRY){let p=c[3];const a=[p];for(let i=0;i<59;i++){p*=Math.exp((Math.random()-.5)*2*c[4]*1.7);a.push(p);}const k=c[3]/a[a.length-1];o.px[c[0]]=a.map(v=>v*k);}LIFE.cr=o;return o;};
+const crLast=id=>{const a=CR().px[id];return a[a.length-1];};
+const crVal=()=>{const B=CR();return Object.keys(B.pos).reduce((t,k)=>t+B.pos[k].q*crLast(k),0);};
+const crCost=()=>{const B=CR();return Object.keys(B.pos).reduce((t,k)=>t+B.pos[k].cb,0);};
+const cpx=v=>v>=100?v.toLocaleString('fr-CA',{minimumFractionDigits:2,maximumFractionDigits:2}):v>=1?px2(v):(Math.round(v*10000)/10000).toFixed(4).replace('.',',');
+const cqty=q=>q>=100?q.toFixed(2).replace('.',','):q>=1?q.toFixed(3).replace('.',','):q.toFixed(5).replace('.',',');
+const CNUP=["{n} bondit : de grosses entreprises l'adoptent","Une célébrité parle de {n} : ruée vers l'achat","{n} : mise à jour réussie du réseau"],CNDN=["{n} chute : une plateforme d'échange a des ennuis","Un pays menace d'interdire {n}","{n} : panne du réseau, les gens vendent"];
+function crStep(){const B=CR();B.m=B.m*.9+(Math.random()-.5)*.02;
+  for(const c of CRY){const a=B.px[c[0]];let p=a[a.length-1];const z=(Math.random()+Math.random()+Math.random()-1.5)*2;let r=c[4]*z+B.m*(c[0]==='BTC'?.8:1.2)+.0002;
+    if(Math.random()<.006){const up=Math.random()<.52;r+=(up?1:-1)*rnd(.06,.14);B.news.unshift({t:gm,s:c[0],d:up?1:-1,tx:pick(up?CNUP:CNDN).replace('{n}',c[1])});if(B.news.length>8)B.news.pop();}
+    p=Math.max(c[3]*.02,p*Math.exp(r));a.push(p);if(a.length>60)a.shift();}}
+function crCatch(){const B=CR(),cur=Math.floor(gm/60);if(B.h==null)B.h=cur;if(cur<=B.h)return;for(let hi=Math.max(B.h+1,cur-120);hi<=cur;hi++)crStep();B.h=cur;}
+{const _fh=frHourly;frHourly=function(){try{crCatch();}catch(e){}return _fh.apply(this,arguments);};}
+function crTrade(id,side,v){const B=CR(),c=CRBY[id];if(!c)return;const px=crLast(id),P=B.pos[id]||{q:0,cb:0};
+  if(side==='b'){let amt=v==='max'?Math.floor(money):+v;if(amt<1||money<amt){toast('Pas assez d\'argent',false);return;}
+    const fee=amt*CRYFEE,u=(amt-fee)/px;addMoney(-amt,'Achat '+c[1]);B.pos[id]={q:P.q+u,cb:P.cb+amt};B.fees+=fee;toast('🪙 Acheté : '+cqty(u)+' '+id+' à '+cpx(px)+' $',true);}
+  else{const fr=v==='all'?1:+v;const u=P.q*fr;if(!(u>0)){toast('Tu n\'as pas de '+c[1],false);return;}
+    const gross=u*px,fee=gross*CRYFEE,net=Math.round(gross-fee),cbPart=P.cb*fr;addMoney(net,'Vente '+c[1]);B.rl+=net-cbPart;B.fees+=fee;
+    if(fr>=.999)delete B.pos[id];else B.pos[id]={q:P.q-u,cb:P.cb-cbPart};toast('🪙 Vendu : '+cqty(u)+' '+id+' à '+cpx(px)+' $',true);}}
+function cryHTML(){crCatch();const B=CR(),t=CELL.ct||'marche',tot=crVal(),pl=tot-crCost()+B.rl;
+  let h=`<div class="cinfo" style="text-align:center"><span class="cmut">Valeur de tes cryptos</span><div class="cgros" style="margin:2px 0 0">${cNum(tot)} $</div><span class="${pl>=0?'cup':'cdn'}" style="font-weight:800;font-size:.76rem">${pl>=0?'+':''}${cNum(pl)} $ au total</span><div class="cmut" style="margin-top:4px">🟢 Ouvert 24 h/24, 7 j/7 · frais ${Math.round(CRYFEE*100)} % par transaction</div></div>`;
+  const chg=a=>{const p=a[a.length-1],p0=a[Math.max(0,a.length-24)];return (p/p0-1)*100;};
+  if(CELL.cs&&CRBY[CELL.cs]){const c=CRBY[CELL.cs],a=B.px[c[0]],p=a[a.length-1],ch=chg(a),P=B.pos[c[0]],up=ch>=0,col=up?'#1f8a4c':'#c0392b';
+    const mn=Math.min(...a),mx=Math.max(...a),rg=mx-mn||1,pts=a.map((v,i)=>(8+i/(a.length-1)*284).toFixed(1)+','+(100-(v-mn)/rg*86).toFixed(1)).join(' ');
+    h+=`<button type="button" class="cback" data-a="cback">‹ Marché</button><div class="ch2">${c[2]} ${c[1]} <span class="cmut">${c[0]}</span></div><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font:800 1.3rem var(--f-display)">${cpx(p)} $</b><b class="${up?'cup':'cdn'}">${up?'▲':'▼'} ${Math.abs(ch).toFixed(1).replace('.',',')} % (24 h)</b></div>
+     <svg class="cbig" viewBox="0 0 300 112" role="img" aria-label="Cours de ${c[1]}"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round"/></svg><div class="cmut" style="display:flex;justify-content:space-between"><span>Bas ${cpx(mn)} $</span><span>Haut ${cpx(mx)} $</span></div>
+     <div class="cinfo" style="margin-top:8px">${P?`<b>Tu possèdes ${cqty(P.q)} ${c[0]}</b> · valeur ${cNum(P.q*p)} $<br><span class="cmut">Investi ${cNum(P.cb)} $ · </span><b class="${P.q*p>=P.cb?'cup':'cdn'}">${P.q*p>=P.cb?'+':''}${cNum(P.q*p-P.cb)} $</b>`:'<span class="cmut">Tu ne possèdes pas de '+c[1]+'.</span>'}</div>
+     <div class="cmut">Acheter pour</div><div class="cact">`+[25,100,500].map(q=>`<button type="button" class="pri${money<q?' no':''}" data-a="cb:${c[0]}|${q}">${q} $</button>`).join('')+`<button type="button" class="pri${money<1?' no':''}" data-a="cb:${c[0]}|max">Max</button></div><div class="cmut">Vendre</div><div class="cact">`+[['.25','25 %'],['.5','50 %'],['all','Tout']].map(q=>`<button type="button" class="${P?'':'no'}" data-a="cl:${c[0]}|${q[0]}">${q[1]}</button>`).join('')+`</div>`;return h;}
+  h+=`<div class="cchips"><button type="button" data-a="ct:marche" class="${t==='marche'?'on':''}">Marché</button><button type="button" data-a="ct:port" class="${t==='port'?'on':''}">Portefeuille</button><button type="button" data-a="ct:news" class="${t==='news'?'on':''}">Nouvelles</button></div>`;
+  const row=c=>{const a=B.px[c[0]],p=a[a.length-1],ch=chg(a),up=ch>=0,P=B.pos[c[0]];return`<button type="button" class="crow" data-a="cs:${c[0]}"><span>${c[2]} <b>${c[0]}</b><small>${c[1]}${P?' · '+cqty(P.q):''}</small></span><span style="display:flex;align-items:center;gap:8px">${spark(a.slice(-30),54,22,up?'#1f8a4c':'#c0392b')}<span style="text-align:right;min-width:62px"><b>${cpx(p)} $</b><br><small class="${up?'cup':'cdn'}" style="font-weight:700">${up?'+':''}${ch.toFixed(1).replace('.',',')} %</small></span></span></button>`;};
+  if(t==='marche')h+=CRY.map(row).join('');
+  else if(t==='port'){const L=CRY.filter(c=>B.pos[c[0]]);h+=L.length?L.map(row).join('')+`<div class="cinfo"><div style="display:flex;justify-content:space-between"><span>Gains réalisés</span><b class="${B.rl>=0?'cup':'cdn'}">${B.rl>=0?'+':''}${cNum(B.rl)} $</b></div><div style="display:flex;justify-content:space-between"><span>Frais payés</span><b>${px2(B.fees)} $</b></div></div>`:'<div class="cmut">Ton portefeuille est vide. Choisis une crypto dans l\'onglet Marché.</div>';}
+  else h+=(B.news.length?B.news.map(n=>`<div class="cinfo"><b class="${n.d>0?'cup':'cdn'}">${n.d>0?'▲':'▼'} ${n.s}</b> · ${n.tx}<br><span class="cmut">${fmt(n.t)}</span></div>`).join(''):'<div class="cmut">Aucune nouvelle pour l\'instant. Les cryptos bougent beaucoup : ça peut monter vite, mais aussi descendre vite!</div>');
+  return h;}
+CAPPS.push(['crypto','🪙','Crypto','linear-gradient(135deg,#f7b733,#e2571c)']);
+
+/* Météo : prévisions déterministes par jour */
+function wxHash(n){let x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+function wxDay(off){const dn=dayN()+off,tb=tempBase();const r=wxHash(dn*3+1),r2=wxHash(dn*5+7),cold=tb<=1;
+  let k=r<.45?'soleil':r<.7?'nuages':r<.9?(cold?'neige':'pluie'):(cold?'tempete':'orage');if(off===0)k=weather;
+  const e={soleil:'☀️',nuages:'⛅',pluie:'🌧️',neige:'🌨️',orage:'⛈️',tempete:'❄️'}[k]||'☀️';
+  const t={soleil:'Ensoleillé',nuages:'Nuageux',pluie:'Pluie',neige:'Neige',orage:'Orage',tempete:'Tempête de neige'}[k]||'Dégagé';
+  const adj=(k==='pluie'||k==='orage'?-3:0)+Math.round((r2-.5)*6);const hi=Math.round(tb+5+adj),lo=Math.round(tb-4+adj*.6);
+  return{k,e,t,hi,lo,pp:k==='soleil'?5+Math.round(r2*10):k==='nuages'?25+Math.round(r2*20):70+Math.round(r2*25)};}
+const SUNT=[[7.5,16.6],[7.2,17.3],[6.4,18.1],[6.2,19.6],[5.3,20.4],[4.9,21],[5.1,20.9],[5.7,20.2],[6.4,19],[7,17.8],[7.2,16.7],[7.5,16.4]];
+const fh=v=>{const h=Math.floor(v),m=Math.round((v-h)*60);return h+' h '+String(m).padStart(2,'0');};
+function meteoHTML(){const h=hourOf(),tp=tempNow(),ic=SNOWING()?'🌨️':weather==='orage'?'⛈️':RAIN()?'🌧️':weather==='nuages'?'⛅':(night>.5?'🌙':'☀️');
+  const desc=weather==='tempete'?'Tempête de neige':weather==='neige'?'Neige':weather==='orage'?'Orage':RAIN()?'Pluie':weather==='nuages'?'Nuageux':night>.5?'Dégagé':'Ensoleillé';
+  const wind=Math.round((weather==='tempete'?42:weather==='orage'?28:RAIN()||weather==='neige'?18:weather==='nuages'?12:7)+wxHash(Math.floor(gm/60))*8);
+  const feels=Math.round(tp-(wind>15?wind/9:0)-(tp<0?2:0)),hum=Math.min(99,Math.round((RAIN()||SNOWING()?86:weather==='nuages'?66:48)+(wxHash(Math.floor(gm/180))-.5)*12));
+  const sn=Math.round((LIFE.snowD||0)*40),sun=SUNT[MON()],uv=night>.5||RAIN()||SNOWING()?0:Math.round(((SEASON()==='ete'?8:SEASON()==='hiver'?1:4)*(weather==='nuages'?.5:1))*Math.max(0,Math.sin((h-6)/12*PI)));
+  const td=wxDay(0);
+  let o=`<div style="text-align:center"><div class="cgros" style="margin-bottom:0">${ic} ${tp} °C</div><div class="cmut" style="font-size:.8rem">${desc} · ressenti ${feels} °C</div><div class="cmut">Montréal · ${DAYS[dayOf()]} · max ${td.hi} ° / min ${td.lo} °</div></div>`;
+  const hrs=[];for(let i=0;i<12;i++){const hh=(Math.floor(h)+i)%24,tt=Math.round(tempBase()+5*Math.sin((hh-9)/24*PI*2)-(i<3&&RAIN()?3:0)),dark=hh>=sun[1]||hh<sun[0];const w2=i<3?weather:wxDay(hh<Math.floor(h)?1:0).k;const e=({pluie:'🌧️',orage:'⛈️',neige:'🌨️',tempete:'❄️',nuages:dark?'☁️':'⛅',soleil:dark?'🌙':'☀️'})[w2]||'☀️';hrs.push(`<div class="chr"><small>${i===0?'Maint.':hh+' h'}</small><span>${e}</span><b>${tt}°</b></div>`);}
+  o+=`<div class="cmut" style="margin-top:8px">Prochaines heures</div><div class="chrs">${hrs.join('')}</div>`;
+  o+=`<div class="cmut" style="margin-top:6px">Prévisions sur 7 jours</div><div class="cinfo" style="padding:4px 10px">`+[0,1,2,3,4,5,6].map(i=>{const d=wxDay(i);return`<div class="lig7"><span>${i===0?'Aujourd\'hui':DAYS[(dayOf()+i)%7].slice(0,3)}</span><span>${d.e} <small>${d.pp} %</small></span><b>${d.hi}° <span class="cmut">${d.lo}°</span></b></div>`;}).join('')+`</div>`;
+  o+=`<div class="cgrid"><div class="cinfo"><span class="cmut">💨 Vent</span><br><b>${wind} km/h</b></div><div class="cinfo"><span class="cmut">💧 Humidité</span><br><b>${hum} %</b></div><div class="cinfo"><span class="cmut">🌅 Lever</span><br><b>${fh(sun[0])}</b></div><div class="cinfo"><span class="cmut">🌇 Coucher</span><br><b>${fh(sun[1])}</b></div><div class="cinfo"><span class="cmut">🕶️ Indice UV</span><br><b>${uv}</b></div><div class="cinfo"><span class="cmut">❄️ Neige au sol</span><br><b>${sn} cm</b></div></div>`;
+  if(RAIN()||SNOWING()||weather==='orage')o+=`<div class="cban"><span>${weather==='tempete'?'⚠️ Avertissement de tempête : reste au chaud!':weather==='orage'?'⚠️ Orage : évite de rester dehors.':'☔ Prends un parapluie ou une tuque.'}</span></div>`;
+  return o;}
+{const _cr2=cellRender;cellRender=function(){const app=CELL.app;if(app!=='crypto'&&app!=='meteo')return _cr2();
+  const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent=(CAPPS.find(a=>a[0]===app)||[0,0,''])[2];
+  let h='';try{h=app==='crypto'?cryHTML():meteoHTML();}catch(e){console.error(e);h='<div class="cmut">Erreur d\'affichage.</div>';}
+  const key=app+'|'+(CELL.ct||'')+(CELL.cs||''),keep=B.scrollTop,same=CELL._sv2===key;B.innerHTML=h;CELL._sv2=key;B.scrollTop=same?keep:0;};}
+$('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,i=a.indexOf(':'),k=i<0?a:a.slice(0,i),v=i<0?'':a.slice(i+1),[v1,v2]=v.split('|');let r=true;
+  if(k==='app'){CELL.cs=null;}else if(k==='ct'){CELL.ct=v;CELL.cs=null;}else if(k==='cs')CELL.cs=v;else if(k==='cback')CELL.cs=null;
+  else if(k==='cb')crTrade(v1,'b',v2==='max'?'max':+v2);else if(k==='cl')crTrade(v1,'s',v2==='all'?'all':+v2);else r=false;if(r&&CELL.app==='crypto')cellRender();});
+
+
 
 resize();const LOADED=loadGame();chooseShot();shot={type:'piece',t:0,dur:9,seed:.6,cut:true,ctx:shotCtx()};if(LOADED)setTimeout(()=>toast('Partie reprise : '+fmtDay(),true),600);else setTimeout(()=>toast('Nouvelle partie : lundi 1er juin',true),600);
 enhanceWorld();$('chargement').hidden=true;requestAnimationFrame(tick);initCloud();
