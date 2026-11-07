@@ -4201,11 +4201,11 @@ function planMarcel(){const h=hourOf(),wk=dayOf()<5;
   if(fwDay()&&h>=21.2&&h<22.9&&!flags.fw&&Mc.area!=='route'){flags.fw=true;return fireworksOuting();}
   if(h>=22.7||h<5||(need.energy<8&&h>19.5))return bedtime();
   if(isReveillon()&&h>=17&&h<21.5&&!flags.reveillon&&!Mc.inCar&&Mc.area!=='route')return reveillon();
-  if(!flags.actCh&&h>=(flags.actH||10)&&h<21&&!Mc.inCar&&!Mc.carry&&Mc.area!=='route'&&Julie.area==='none'&&Steve.area==='none'){const c=actChoice();if(c){flags.actCh=true;return c;}}
+  if(!flags.actCh&&h>=(flags.actH||10)&&h<21&&!Mc.inCar&&!Mc.carry&&Mc.area!=='route'&&Julie.area==='none'&&Steve.area==='none'&&frFree()){const c=actChoice();if(c){flags.actCh=true;return c;}}
   if(need.energy<12)return at('home.nap','nap',45,{label:'Tombe de fatigue sur le divan',warp:4,fx:{energy:.3}});
   if(flags.morning){flags.morning=false;return morning();}
   if(LIFE.tokDep!=null&&Math.floor(gm/1440)>=LIFE.tokDep&&h>=11.5)LIFE.tokDep=Math.floor(gm/1440)+1;
-  if(!LIFE.tokyo&&LIFE.tokDep!=null&&Math.floor(gm/1440)>=LIFE.tokDep&&h>=7&&h<11.5&&Mc.area==='home'&&!Mc.inCar&&Julie.area==='none'&&Steve.area==='none')return tokyoTrip();
+  if(!LIFE.tokyo&&LIFE.tokDep!=null&&Math.floor(gm/1440)>=LIFE.tokDep&&h>=7&&h<11.5&&Mc.area==='home'&&!Mc.inCar&&Julie.area==='none'&&Steve.area==='none'&&frFree())return tokyoTrip();
   if(!LIFE.tokyo&&LIFE.tokDep==null&&Math.floor(gm/1440)-(LIFE.tokRetD??(LIFE.tokN?(LIFE.tokOffD??-99)+7:-99))>=14&&h>=8&&h<21&&Mc.area==='home'&&!Mc.inCar&&!Mc.carry&&((tokCanBook()&&Math.floor(gm/1440)>=(LIFE.tokAsk||0))||Math.floor(gm/1440)-(LIFE.tokOffD??0)>=14))return tokyoChoice();
   if(flags.forceOutage&&Mc.area==='home'&&powerOn()){flags.forceOutage=false;return evOutage(rnd(40,90));}
   if(delivery&&gm>=delivery.at&&Mc.area==='home'&&Courier.area==='none'&&h>8&&h<21.5)return deliveryEvent();
@@ -4228,11 +4228,11 @@ function planMarcel(){const h=hourOf(),wk=dayOf()<5;
   if(contract&&h>=8.5&&h<18&&(flags.workSess||0)<(wk?3:1)&&Math.random()<(wk?.7:.25))return workSession();
   if(money>600&&!delivery&&h>9&&h<21.5&&Math.floor(gm/1440)-(LIFE.catD??-9)>=2&&Math.random()<.5){const cc=catalogChoice();if(cc)return cc;}
   if(money>700&&!delivery&&h>9&&h<21.5&&Math.random()<.2){const sh=shopOnline();if(sh)return sh;}
-  if(!flags.outing&&Julie.area==='none'&&Steve.area==='none'&&Math.random()<(dayOf()>=4?.32:.16)){const o=pickOuting();if(o){flags.outing=true;return o;}}
+  if(!flags.outing&&Julie.area==='none'&&Steve.area==='none'&&frFree()&&Math.random()<(dayOf()>=4?.32:.16)){const o=pickOuting();if(o){flags.outing=true;return o;}}
   if(flags.social<2&&h>=10&&h<20&&(need.social<55?Math.random()<.55:Math.random()<.18)){
     const opts=[];if(h>13&&h<20)opts.push(steveVisit);if(h<18.5)opts.push(julieCafe);if(weather!=='pluie'&&h<17.5)opts.push(juliePark);
-    if(opts.length&&Julie.area==='none'&&Steve.area==='none')return pick(opts)();}
-  {const day=Math.floor(gm/1440);const free=!Mc.inCar&&!Mc.carry&&Mc.area!=='route'&&Julie.area==='none'&&Steve.area==='none';
+    if(opts.length&&Julie.area==='none'&&Steve.area==='none'&&frFree())return pick(opts)();}
+  {const day=Math.floor(gm/1440);const free=!Mc.inCar&&!Mc.carry&&Mc.area!=='route'&&Julie.area==='none'&&Steve.area==='none'&&frFree();
    if(free&&(LIFE.snowD||0)>.25&&!flags.pelle&&h>=7.5&&h<18&&weather!=='tempete')return A.find(a=>a.id==='pelle').f();
    if(free&&!flags.peche&&h>=7&&h<16&&!RAIN()&&fishSeason()&&day-(LIFE.pecheD??-9)>=2&&Math.random()<.5)return fishingOuting();
    if(free&&!flags.outing&&h>=10&&h<17&&money>120&&day-(LIFE.mallD??-9)>=5&&Math.random()<.5){flags.outing=true;return mallOuting();}
@@ -6042,7 +6042,7 @@ function cellMapSVG(list){const W=300,Hh=150;const cols=5,rows=3;const pins=list
    pins.map(({d,x,y})=>`<g class="pin" data-a="dest:${d.id}" role="button" aria-label="${d.n}"><circle cx="${x}" cy="${y}" r="${MAPD&&MAPD.id===d.id?11:8}" fill="${MAPD&&MAPD.id===d.id?'#3d8bfd':ok(d)?'#fff':'#c9c5b6'}" stroke="${MAPD&&MAPD.id===d.id?'#fff':'#8a8678'}" stroke-width="1.5"/><text x="${x}" y="${y+4}" font-size="${MAPD&&MAPD.id===d.id?12:10}" text-anchor="middle">${d.e}</text></g>`).join('')+
    `<g><circle cx="150" cy="70" r="7" fill="#3d8bfd" stroke="#fff" stroke-width="2.5"/></g></svg>`;}
 function cellRender(){const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);const app=CELL.app;scr.classList.toggle('home',!app);$('cTitle').textContent=app?(CAPPS.find(a=>a[0]===app)||[0,0,''])[2]:'';let h='';
-  if(!app){const due=LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1;h=`<div class="chorl"><b>${fmt(gm)}</b><span>${DAYS[dayOf()]} · ${cNum(money)} $</span></div><div class="cicons">`+CAPPS.map(([k,e,n,bg])=>`<button type="button" class="cic" data-a="app:${k}"><i style="background:${bg}">${e}</i>${n}${k==='banque'&&due?'<u>1</u>':''}</button>`).join('')+`</div><div class="cmut" style="color:#c9cdea;text-align:center;font-size:.7rem">Le jeu est en pause tant que le cellulaire est ouvert.</div>`;}
+  if(!app){const due=LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1;h=`<div class="chorl"><b>${fmt(gm)}</b><span>${DAYS[dayOf()]} · ${cNum(money)} $</span></div><div class="cicons">`+CAPPS.map(([k,e,n,bg])=>`<button type="button" class="cic" data-a="app:${k}"><i style="background:${bg}">${e}</i>${n}${k==='banque'&&due?'<u>1</u>':k==='messages'&&frUnread()>0?'<u>'+frUnread()+'</u>':''}</button>`).join('')+`</div><div class="cmut" style="color:#c9cdea;text-align:center;font-size:.7rem">Le jeu est en pause tant que le cellulaire est ouvert.</div>`;}
   else if(app==='carte'){const list=(CELL.tab==='lieux'?mapDests():mapJobs()).filter(d=>CELL.tab==='travail'||CELL.cat==='tous'||mapCatOf(d.id)===CELL.cat);
     list.sort((a,b)=>(mapOk(b)===true)-(mapOk(a)===true)||a.n.localeCompare(b.n,'fr'));
     h=`<div class="cchips" role="tablist"><button type="button" data-a="tab:lieux" class="${CELL.tab==='lieux'?'on':''}">📍 Lieux</button><button type="button" data-a="tab:travail" class="${CELL.tab==='travail'?'on':''}">💼 Travail</button></div>`;
@@ -6076,7 +6076,251 @@ $('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.close
   else if(k==='jobsall'){$('bJob').click();}
   else if(k==='dest'){const d=[...mapDests(),...mapJobs()].find(x=>x.id===v);if(!d)return;const r=mapOk(d);if(r!==true){toast('📍 '+d.n+' : '+r,false);return;}MAPD=d;try{SFX.ping();}catch(er){}toast('📍 Marcel ira : '+d.n,true);cellRender();}});
 if(document.addEventListener)document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CELL.on&&!(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName)))cellClose();});
-{const _u=ui;ui=()=>{_u();try{const due=LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1;$('cellB').classList.toggle('alert',due&&!CELL.on);}catch(e){}};}
+{const _u=ui;ui=()=>{_u();try{const due=LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1;$('cellB').classList.toggle('alert',(due||frUnread()>0)&&!CELL.on);}catch(e){}};}
+
+/* ================= Contacts, amitié, Messages, Livraison, Bourse ================= */
+let FRCH=null,INVITE=null;
+const frFree=()=>!FRCH||FRCH.area==='none';
+const FTIT=[['Connaissance','Connaissance'],['Copain','Copine'],['Ami','Amie'],['Bon ami','Bonne amie'],['Ami proche','Amie proche'],['Complice','Complice'],['Confident','Confidente'],['Frère de cœur','Sœur de cœur'],['Meilleur ami','Meilleure amie'],['Inséparable','Inséparable'],['Légende','Légende']];
+const PK={liv:s=>'Livraison : frais −'+10*s+' %',resto:s=>'Restos : −'+10*s+' % sur les repas',assur:s=>'Assurances −'+10*s+' %',hydro:s=>'Hydro-Québec −'+10*s+' %',bfee:s=>'Bourse : frais de courtage −'+50*s+' %',tuyau:s=>'Bourse : tuyaux '+(s>1?'très ':'')+'fiables',cadeau:s=>'Petit cadeau chaque semaine (~'+10*s+' $)'};
+const CKIND=['cafe','parc','souper'];
+const CSP=[{id:'julie',n:'Julie',g:'f',e:'☕',role:'Amie de longue date',bk:'julie',hobby:'les terrasses et les marches',perk:'cadeau',kinds:['cafe','parc','souper'],bg:'#3e7a5a'},
+ {id:'steve',n:'Steve',g:'m',e:'🏒',role:'Voisin et chum de hockey',bk:'steve',hobby:'le hockey et les jeux vidéo',perk:'tuyau',kinds:['game'],bg:'#c9a14a'},
+ {id:'maman',n:'Maman',g:'f',e:'❤️',role:'Maman',bk:'maman',hobby:'le tricot et les bons petits plats',perk:'cadeau',kinds:['maman'],bg:'#c2306a'}];
+const CD=[
+['rejean','Réjean Gagnon','m','🔧','Mécano au Garage Réjean','garage','la pêche blanche','assur',['#d9a98a','#6b6b6b','#2f5d8a','#2a2f3a',0,1,1.02],["Ton char fait-tu encore un bruit bizarre?","J'ai du temps jeudi si tu veux un changement d'huile.","Les pneus d'hiver, c'est pas pour décorer, Marcel!"],["Un char, ça se traite comme un chien : faut le promener.","Pis moi, je me contente de le promener au garage!"]],
+['nadia','Nadia Haddad','f','💊','Pharmacienne à la Pharmacie du Coin','pharma','le yoga','cadeau',['#c98e66','#120e0c','#e8e8ee','#3a3f4d',1,0,.97],["N'oublie pas de boire de l'eau aujourd'hui 💧","Nouvel arrivage de crème solaire, si t'en as besoin!","Je fais du yoga au parc samedi, tu viens?"],["Dix minutes d'étirements par jour, ça change une vie.","Je m'étire déjà… en cherchant mes clés."]],
+['gilles','Gilles Roy','m','🥖','Boulanger à la Boulangerie Saint-Jean','boul','la pétanque','cadeau',['#f2cfb5','#d8d4cc','#f4f1ea','#5a4a3a',0,0,1],["Les croissants sortent du four 🥐 Viens vite!","Il me reste une baguette avec ton nom dessus.","Pétanque dimanche au parc, t'es de la partie?"],["Le secret du bon pain? La patience.","Moi, j'ai plutôt la patience d'un micro-ondes."]],
+['francine','Francine Lavoie','f','📚','Libraire à la librairie du centre-ville','lib','les polars','tuyau',['#f2cfb5','#8a8f98','#8a4a6a','#2f3442',1,0,.96],["J'ai un polar qui va te garder réveillé toute la nuit 📖","Nouvelle table de best-sellers à la librairie!","Je te garde le dernier tome de ta série."],["Un bon livre, c'est un voyage sans valise.","Pis un bon café, c'est le billet."]],
+['kevin','Kevin Bouchard','m','☕','Barista au Café Lune','cafe','le skateboard','resto',['#e8c2a0','#5a3b2a','#3a3a3a','#1f2430',0,0,.98],["Nouveau latte à l'érable au Café Lune 🍁","J'ai pratiqué un kickflip toute la matinée 🛹","Ton allongé habituel t'attend!"],["Le café, c'est une science. Moi, je fais de l'art.","Moi, je fais surtout du bruit en le buvant."]],
+['sophie','Sophie Pelletier','f','🏥','Infirmière à l\'hôpital','hopital','la course à pied','cadeau',['#f2cfb5','#b07a3a','#3e8a9a','#2f3442',1,0,.96],["Quart de nuit terminé, je m'écroule 😴","Je prépare mon premier demi-marathon 🏃‍♀️","Mange des légumes, ordre de l'infirmière!"],["Dix mille pas par jour, ça garde le médecin loin.","Moi, je les fais dans mon salon."]],
+['ahmed','Ahmed Benali','m','🛒','Épicier à l\'épicerie du quartier','epic','le soccer','liv',['#a87a5a','#120e0c','#4a7a3a','#3d4252',0,1,1.01],["Les fraises du Québec viennent d'arriver 🍓","Je te garde du bon fromage en grains.","Match de soccer samedi, il nous manque un joueur!"],["Les clients, c'est comme la famille : ils reviennent toujours.","Surtout quand on leur offre un petit goûter!"]],
+['jonathan','Jonathan Cloutier','m','💪','Coach au gym','gym','la musculation','cadeau',['#d9a98a','#2a1d15','#c8402f','#1f2430',0,0,1.06],["Jambes aujourd'hui. Pas d'excuses! 🏋️","Une séance d'essai gratuite pour toi, mon Marcel.","T'as bu ta protéine? 😄"],["Chaque répétition compte!","Moi, je compte surtout les minutes avant le repos."]],
+['melanie','Mélanie Fortin','f','🎳','Gérante du salon de quilles','quilles','les soirées de ligue','liv',['#e8c2a0','#a8452a','#d86a8f','#2f3442',1,0,.97],["Soirée de ligue jeudi, on a besoin de toi 🎳","J'ai fait un abat hier! Enfin!","Les souliers de location sentent le désinfectant, t'inquiète pas."],["Un abat, c'est 10 % de talent et 90 % de chance.","Alors moi, c'est zéro et zéro."]],
+['patrick','Patrick Côté','m','🏒','Arbitre à l\'aréna','arena','le hockey','tuyau',['#f2cfb5','#5a3b2a','#222222','#111111',0,0,1],["Dur match hier, on m'a traité de tous les noms 🏒","Ça te tente un match de ligue du midi?","Je siffle ce soir à 18 h 30, viens voir!"],["Un bon arbitre, on l'oublie après le match.","Moi, c'est plutôt les fautes qu'on se rappelle."]],
+['chantal','Chantal Morin','f','📮','Postière au bureau de poste','poste','le tricot','liv',['#f2cfb5','#d8d4cc','#2a4aa8','#2f3442',0,0,.95],["Ton colis est arrivé au bureau de poste! 📦","Je tricote des tuques pour tout le quartier 🧶","Beau temps pour une marche, non?"],["Chaque lettre raconte quelque chose.","Surtout les factures : elles racontent toujours la même histoire."]],
+['yves','Yves Bergeron','m','🔨','Quincaillier à la Quincaillerie Gagnon','quinc','la menuiserie','hydro',['#d9a98a','#6b6b6b','#a86a2a','#3a3f4d',0,1,1.03],["Rabais sur les perceuses cette semaine 🔨","Si t'as un projet de bricolage, passe me voir!","J'ai gardé ta vis spéciale, celle qu'on trouve nulle part."],["Mesure deux fois, coupe une fois.","Moi, je mesure une fois et je coupe trop court."]],
+['amelie','Amélie Gauthier','f','🏦','Conseillère à la caisse populaire','casse','les finances personnelles','bfee',['#e8c2a0','#2a1d15','#2f5d8a','#2a2f3a',1,0,.97],["Pense à mettre de l'argent de côté cette semaine 💰","Tu devrais regarder les placements, Marcel!","Les taux d'intérêt montent, vérifie ton épargne."],["Épargner un peu chaque semaine, c'est le vrai secret.","Mon secret à moi : ne jamais ouvrir mon relevé."]],
+['camille','Camille Lefebvre','f','🐾','Vétérinaire à la clinique Patte','animal','la randonnée','cadeau',['#f2cfb5','#b07a3a','#4a8a5a','#3d4252',1,0,.98],["J'ai soigné un petit renard aujourd'hui 🦊","Les chiots sont en adoption, viens voir!","Comment va ton animal préféré?"],["Les animaux sont plus honnêtes que les gens.","Surtout le chat qui me regarde de haut."]],
+['marcandre','Marc-André Poirier','m','🎰','Croupier au casino','casino','le poker','tuyau',['#d9a98a','#120e0c','#8a2a3a','#111111',0,0,1.02],["La maison gagne toujours, mais pas ce soir 😏","Soirée poker entre amis samedi?","Un conseil : ne mise jamais le loyer."],["Le secret du poker : garder son visage neutre.","Le mien trahit tout. Je suis un livre ouvert."]],
+['isabelle','Isabelle Nadeau','f','📸','Étudiante en design, voisine','he180','la photo','resto',['#c98e66','#120e0c','#d9622b','#2f3442',1,0,.96],["Je cherche un modèle pour mon projet photo 📸","Expo de fin de session jeudi, viens!","Tu connais un bon endroit pour des photos d'automne?"],["Une bonne photo, c'est de la lumière et de la patience.","Moi, c'est plutôt un doigt devant l'objectif."]],
+['olivier','Olivier Bélanger','m','💻','Développeur à la maison, voisin','he112','les jeux vidéo','bfee',['#f2cfb5','#2a1d15','#2a2a3a','#2f3442',0,0,1],["Je code un jeu de société, tu veux tester? 🎲","Ton wifi tient le coup? Je peux regarder ça.","Soirée LAN chez moi vendredi!"],["Un bon programmeur, c'est quelqu'un de paresseux avec méthode.","Ah, moi, j'ai juste la paresse."]],
+['josee','Josée Lachance','f','🎨','Artiste peintre, voisine','hw155','la peinture','resto',['#f2cfb5','#a8452a','#7a5ad8','#3a3f4d',1,0,.97],["J'ai fini ma toile du lac, viens la voir! 🎨","Vernissage samedi dans mon atelier.","Le ciel est magnifique ce soir, regarde dehors!"],["Chaque couleur a une humeur.","La mienne, c'est toujours beige."]],
+['raymond','Raymond Dubé','m','🃏','Retraité, voisin','hw45','les jeux de cartes','hydro',['#f2cfb5','#d8d4cc','#6b4a2a','#3a3f4d',0,1,.98],["Une partie de cribbage, ça te tente? 🃏","Dans mon temps, l'hiver durait six mois.","Les outardes passent, ça sent l'automne."],["Faut jamais se fier à la météo, regarde le ciel!","Je me fie surtout à mon genou."]],
+['mathilde','Mathilde Girard','f','🏫','Enseignante à l\'école, voisine','he20','la lecture','assur',['#e8c2a0','#5a3b2a','#2e8a7a','#2f3442',1,0,.97],["Corrections jusqu'à minuit… 📝","Mes élèves ont fait un bonhomme de neige géant!","Viens parler de ton métier à ma classe un de ces jours!"],["Enseigner, c'est semer des petites graines.","Moi, j'ai surtout semé des tomates."]]];
+const CONTACTS=[...CSP,...CD.map(d=>({id:d[0],n:d[1],g:d[2],e:d[3],role:d[4],bk:d[5],hobby:d[6],perk:d[7],kinds:CKIND,bg:d[8][2],look:{skin:d[8][0],hair:d[8][1],shirt:d[8][2],pants:d[8][3],long:!!d[8][4],beard:!!d[8][5],h:d[8][6],coat:d[8][2]},o:d[9],d:d[10]}))];
+const CBY={};CONTACTS.forEach(c=>{CBY[c.id]=c;});
+for(const c of CONTACTS)if(!c.sp&&c.o){TT[c.id]=c.o.map(t=>[['e',t]]);WHO[c.id]=[c.n.split(' ')[0],'en ligne'];}
+const cOpen=c=>c.o||(TT[c.id]||[]).map(d=>d[0][1]);
+/* --- progression d'amitié (comme les niveaux d'emploi) --- */
+function frInfo(id){let x=(LIFE.fr&&LIFE.fr[id])||0,l=0;while(l<99&&x>=xpNeed(l)){x-=xpNeed(l);l++;}const c=CBY[id];return{l,x,need:xpNeed(l),title:FTIT[Math.min(10,Math.floor(l/10))][c&&c.g==='f'?1:0]};}
+const frS=c=>{const l=frInfo(c.id).l;return l>=30?2:l>=10?1:0;};
+const frPerk=k=>CONTACTS.reduce((t,c)=>c.perk===k?t+frS(c):t,0);
+const frDisc=k=>Math.min(.5,.1*frPerk(k));
+const MS=id=>{LIFE.msg=LIFE.msg||{};return LIFE.msg[id]||(LIFE.msg[id]={log:[],un:0,pend:null,cd:0,gd:-9,id:0,t:-99999});};
+function msgAdd(id,who,text,unread){const m=MS(id);m.log.push([who,text,gm]);if(m.log.length>14)m.log.shift();m.t=gm;if(unread)m.un++;}
+const frUnread=()=>{try{return CONTACTS.reduce((s2,c)=>s2+((LIFE.msg&&LIFE.msg[c.id]&&LIFE.msg[c.id].un)||0),0);}catch(e){return 0;}};
+function frXP(id,v){const c=CBY[id];if(!c||!(v>0))return;LIFE.fr=LIFE.fr||{};LIFE.frb=LIFE.frb||{};const b=frInfo(id).l;LIFE.fr[id]=(LIFE.fr[id]||0)+v;const a=frInfo(id).l;if(a<=b)return;const nm=c.n.split(' ')[0];
+  for(let L=b+1;L<=a;L++){if(DS)DS.lv.push('🤝 '+nm+' niveau '+L);
+    if(L%10===0&&(LIFE.frb[id]||0)<L){LIFE.frb[id]=L;const gift=15*L,t=FTIT[Math.min(10,L/10)][c.g==='f'?1:0];addMoney(gift,'Cadeau de '+nm+' (niv. '+L+')');
+      setTask('🤝 '+nm+' niveau '+L+' — vous êtes maintenant '+t.toLowerCase()+'!'+((L===10||L===30)?' Avantage : '+PK[c.perk](L>=30?2:1):''));
+      msgAdd(id,'e',pick(["Tu sais, t'es devenu un vrai ami pour moi. Je t'ai glissé un petit quelque chose!","Déjà niveau "+L+" entre nous! Un petit cadeau pour toi.","On a fait du chemin, Marcel. Merci d'être là! 🎁"]),true);
+      say(Mc,pick(['Niveau '+L+' avec '+nm+'! Quelle belle amitié!','Je tiens à '+nm+'!']),3);cnt('frmile');}
+    else toast('🤝 '+nm+' : niveau '+L,true);}}
+/* --- genres de sorties --- */
+const KINDS={cafe:{e:'☕',n:'Café',ok:h=>(h>=8.5&&h<17.5)?true:'Le café ferme bientôt (de 8 h 30 à 17 h 30)',txt:["On prend un café au Café Lune?","Un café, ça te tente?"]},
+ parc:{e:'🌳',n:'Parc',ok:h=>RAIN()?'Il pleut dehors':(h>=9&&h<17)?true:'Trop tard pour le parc',txt:["Une marche au parc, ça te dit?","Tu viens prendre l'air au parc?"]},
+ souper:{e:'🍝',n:'Souper',ok:h=>(h>=15.5&&h<19)?true:'Pas l\'heure du souper (15 h 30 à 19 h)',txt:["Je viendrais souper chez toi? 😄","Souper ensemble ce soir?"]},
+ game:{e:'🎮',n:'Soirée jeux',ok:h=>(h>=13&&h<20)?true:'De 13 h à 20 h seulement',txt:["Une game chez toi tantôt?","NHL ou hockey à la télé ce soir?"]},
+ maman:{e:'🍲',n:'Souper chez Maman',ok:h=>flags.maman?'Déjà soupé chez Maman aujourd\'hui':(h>=15.5&&h<18.5)?true:'Souper entre 15 h 30 et 18 h 30',txt:["Viens souper, j'ai fait du pâté chinois!","Tu viens manger chez moi, mon grand?"]}};
+function chOf(c){if(c.ch)return c.ch;const ch=new Ch(c.n.split(' ')[0],c.look,{npc:1});setArea(ch,'none');ch.m.root.visible=false;c.ch=ch;return ch;}
+const frTalk=c=>[['p',fill(c.d[0])],['m',fill(c.d[1])],...genTalk(c.id,2)];
+function meetGen(c,k){const ch=chOf(c),nm=c.n.split(' ')[0];FRCH=ch;flags.social++;const home=tr('town.b_'+c.bk);
+  const xpS=v=>F(()=>{frXP(c.id,v);cnt('fr_meet');FRCH=null;});
+  if(k==='cafe'){const T=gm+110;
+    ch.q=[F(()=>spawnAt(ch,c.bk)),D('look',rnd(5,15)),tr('cafe.seatB'),W(()=>Mc.area==='cafe'&&Mc.act==='talk'||gm>T),D('talk',0,{until:T,pose:'sit',seatH:.47,yaw:-PI/2,partner:Mc}),home,F(()=>despawn(ch))];
+    return[D('text',3,{label:'Texte '+nm,phone:{chat:c.id}}),...at('cafe.order','order',3,{label:'Va rejoindre '+nm+' au Café Lune',say:pick(['Deux allongés, svp!','Un latte et un thé, svp!'])}),
+      tr('cafe.seatA'),W(()=>ch.area==='cafe'&&ch.q[0]&&ch.q[0].t!=='path',{a:'scroll',pose:'sit',seatH:.47,yaw:PI/2,max:60,phone:{feed:1}}),
+      D('talk',0,{until:T,label:'Jase avec '+nm+' autour d\'un café',pose:'sit',seatH:.47,yaw:PI/2,fx:{fun:.6,social:1.4,food:.2},speaker:true,chat:frTalk(c),partner:ch}),F(()=>{Mc.carry='coffee';}),xpS(50)];}
+  if(k==='parc'){const T=gm+100;
+    ch.q=[F(()=>spawnAt(ch,c.bk)),tr('town.benchB'),W(()=>Mc.act==='talk'||gm>T),D('talk',0,{until:T,pose:'sit',seatH:.47,yaw:PI/4,partner:Mc}),home,F(()=>despawn(ch))];
+    return[D('text',3,{label:'Propose une marche à '+nm,phone:{chat:c.id}}),...at('town.benchA','scroll',1,{label:'Va au parc rejoindre '+nm}),
+      W(()=>ch.area==='town'&&ch.q[0]&&ch.q[0].t!=='path',{a:'scroll',pose:'sit',seatH:.47,yaw:PI/4,max:60,phone:{feed:1}}),
+      D('talk',0,{until:T,label:'Jase avec '+nm+' sur un banc du parc',pose:'sit',seatH:.47,yaw:PI/4,fx:{fun:.6,social:1.4},speaker:true,chat:frTalk(c),partner:ch}),xpS(45)];}
+  const T=gm+150;flags.supper=true;
+  ch.q=[D('look',rnd(25,35)),F(()=>spawnAt(ch,c.bk)),tr('home.eat2'),W(()=>(Mc.area==='home'&&Mc.act==='eat')||gm>T),D('eat',0,{until:T,pose:'sit',seatH:.47,yaw:-PI/2,partner:Mc}),home,F(()=>despawn(ch))];
+  return[D('text',3,{label:'Invite '+nm+' à souper',phone:{chat:c.id}}),...at('home.fridge','fridge',3,{label:'Prépare une lasagne pour deux'}),...at('home.stove','cook',25,{say:'La recette de grand-maman…'}),
+    ...at('home.eat','talk',1),W(()=>ch.area==='home'&&ch.q[0]&&ch.q[0].t!=='path',{a:'scroll',pose:'sit',seatH:.47,yaw:PI/2,max:60,phone:{feed:1}}),
+    D('eat',0,{until:T,label:'Soupe avec '+nm,pose:'sit',seatH:.47,yaw:PI/2,fx:{food:2.5,social:1.4,fun:.5},speaker:true,chat:[['p','Wow, ça sent tellement bon!'],['m','La recette de ma grand-mère.'],...frTalk(c).slice(0,4)],partner:ch}),F(()=>{flags.dirty=true;}),xpS(70)];}
+function meetContact(c,k){if(c.kinds===CKIND)return meetGen(c,k);
+  const f=({julie:{cafe:julieCafe,parc:juliePark,souper:julieSouper},steve:{game:steveVisit},maman:{maman:mamanSouper}})[c.id];return f&&f[k]?f[k]():null;}
+{const _a=julieCafe;julieCafe=()=>[..._a(),F(()=>frXP('julie',50))];const _b=juliePark;juliePark=()=>[..._b(),F(()=>frXP('julie',45))];const _c=julieSouper;julieSouper=()=>[..._c(),F(()=>frXP('julie',70))];
+ const _d=steveVisit;steveVisit=()=>[..._d(),F(()=>frXP('steve',60))];const _e=mamanSouper;mamanSouper=()=>[..._e(),F(()=>frXP('maman',65))];}
+{const _p2=planMarcel;planMarcel=()=>{if(INVITE){const iv=INVITE,c=CBY[iv.id],K=KINDS[iv.k],h=hourOf();
+   if(gm-iv.at>300){INVITE=null;toast('✉️ '+c.n+' : l\'invitation est tombée à l\'eau',false);}
+   else if(!LIFE.tokyo&&!Mc.inCar&&!Mc.job&&!Mc.carry&&!flags.morning&&Mc.area!=='route'&&h>=5&&h<22.6&&Julie.area==='none'&&Steve.area==='none'&&frFree()){
+     INVITE=null;const r=K.ok(h);
+     if(r===true){try{const st=meetContact(c,iv.k);if(st&&st.length){say(Mc,pick(['Allons voir '+c.n.split(' ')[0]+'!','Rendez-vous avec '+c.n.split(' ')[0]+', c\'est parti!']),2.8);return st;}}catch(e){console.error(e);}}
+     else toast('✉️ '+c.n+' : '+r,false);}}
+  return _p2();};}
+/* --- Messages : conversations, invitations, cadeaux --- */
+const RPL=["Hahaha, t'es drôle!","Exactement!","Je pensais pareil 😄","On se reparle bientôt!","Ça me fait plaisir de te lire.","Haha, c'est vrai!","T'es un bon, Marcel.","Bonne journée à toi!"];
+const MYQ=["Pis, quoi de neuf?","Comment va ta journée?","Tu fais quoi de bon?","Ça fait longtemps! Ça va?","J'ai pensé à toi. Ça va bien?"];
+const MYR=["😄 Haha!","👍 Bonne idée","🙌 Merci!","Pis toi, ça va?","😂😂","Ça me tente!"];
+function frInvite(id,k){const c=CBY[id],m=MS(id),K=KINDS[k],l=frInfo(id).l,h=hourOf();
+  if(INVITE){toast('Marcel a déjà un rendez-vous de prévu',false);return;}if(gm<(m.icd||0)){toast(c.n.split(' ')[0]+' n\'est pas disponible pour l\'instant',false);return;}
+  const r=K.ok(h);if(r!==true){toast(K.e+' '+r,false);return;}
+  msgAdd(id,'m',pick(K.txt));
+  if(Math.random()<.55+Math.min(.4,l*.01)){msgAdd(id,'e',pick(["Avec plaisir! J'arrive!","Parfait, on se voit là-bas!","Oui! Donne-moi quelques minutes."]));INVITE={id,k,at:gm};m.pend=null;toast('✉️ '+c.n.split(' ')[0]+' a accepté! Marcel y va dès qu\'il est libre.',true);}
+  else{msgAdd(id,'e',pick(["Désolé, je suis pris aujourd'hui.","Pas aujourd'hui, mais bientôt!","Je travaille, malheureusement."]));m.icd=gm+120;toast('✉️ '+c.n.split(' ')[0]+' est occupé(e) pour l\'instant',false);}
+  CELL._bot=1;}
+function frJaser(id){const c=CBY[id],m=MS(id);if(gm<(m.cd||0)){toast('Laisse un peu de temps avant de réécrire à '+c.n.split(' ')[0],false);return;}
+  m.cd=gm+120;msgAdd(id,'m',pick(MYQ));const o=cOpen(c);msgAdd(id,'e',fill(pick(o.length?o:RPL)));need.social=Math.min(100,need.social+2.5);frXP(id,4);cnt('fr_text');toast('💬 +4 pts d\'amitié avec '+c.n.split(' ')[0],true);CELL._bot=1;}
+function frGift(id){const c=CBY[id],m=MS(id),dn=dayN();if(m.gd===dn){toast('Tu as déjà offert un cadeau à '+c.n.split(' ')[0]+' aujourd\'hui',false);return;}if(money<15){toast('Pas assez d\'argent',false);return;}
+  m.gd=dn;addMoney(-15,'Cadeau pour '+c.n.split(' ')[0]);msgAdd(id,'e',pick(["Oh wow, merci Marcel!","Pour moi? T'es trop gentil! 🥰","Tu n'aurais pas dû! Merci!"]));frXP(id,14);cnt('fr_gift');CELL._bot=1;}
+function frReply(id,i){const m=MS(id),p=m.pend;if(!p)return;const txt=p.opts?p.opts[i]:null;if(txt){msgAdd(id,'m',txt);msgAdd(id,'e',pick(RPL));frXP(id,5);need.social=Math.min(100,need.social+2);cnt('fr_text');}m.pend=null;CELL._bot=1;}
+function frAnswer(id,yes){const c=CBY[id],m=MS(id),p=m.pend;if(!p||p.t!=='inv')return;m.pend=null;
+  if(yes&&!INVITE){msgAdd(id,'m',"Avec plaisir! J'arrive!");INVITE={id,k:p.k,at:gm};toast('✉️ Rendez-vous accepté : Marcel y va dès qu\'il est libre',true);}
+  else if(yes){msgAdd(id,'m',"Je suis déjà pris, désolé!");msgAdd(id,'e','Pas de souci, une autre fois!');}
+  else{msgAdd(id,'m',"Pas aujourd'hui, désolé!");msgAdd(id,'e','Pas de souci, une autre fois!');}CELL._bot=1;}
+function frHourly(){const hi=Math.floor(gm/60);if(LIFE.frH==null){LIFE.frH=hi;return;}if(hi===LIFE.frH)return;LIFE.frH=hi;const h=hourOf();
+  for(const c of CONTACTS){const m=MS(c.id);if(m.pend&&gm>m.pend.exp)m.pend=null;}
+  if(h<8||h>=22||Math.random()>.45)return;
+  const pool=CONTACTS.filter(c=>{const m=MS(c.id);return m.un<2&&gm-m.t>240&&!m.pend;});if(!pool.length)return;
+  const wts=pool.map(c=>1+frInfo(c.id).l*.15),tw=wts.reduce((a,b)=>a+b,0);let r0=Math.random()*tw,c=pool[0];for(let i=0;i<pool.length;i++){r0-=wts[i];if(r0<=0){c=pool[i];break;}}
+  const m=MS(c.id),l=frInfo(c.id).l,s=frS(c),nm=c.n.split(' ')[0],r=Math.random();LIFE.frGift=LIFE.frGift||{};
+  if(c.perk==='cadeau'&&s>0&&gm-(LIFE.frGift[c.id]??-99999)>=7*1440&&r<.55){LIFE.frGift[c.id]=gm;const v=Math.round(rnd(7,13)*s);addMoney(v,'Cadeau de '+nm);msgAdd(c.id,'e',pick(["Je t'ai glissé un petit quelque chose 🎁 (+"+v+" $)","Pour toi, juste parce que t'es toi! 🎁 (+"+v+" $)"]),true);return;}
+  if(c.perk==='tuyau'&&s>0&&r<.5){const B=BO(),free=STK.filter(x=>!(B.tips[x[0]]&&gm<B.tips[x[0]].until));if(free.length){const sk=pick(free),dir=Math.random()<.5?1:-1,good=Math.random()<Math.min(.9,.55+.15*frPerk('tuyau'));B.tips[sk[0]]={dir,until:gm+2*1440,good,by:c.id};
+    msgAdd(c.id,'e',"Tuyau pour la Bourse 📈 : "+sk[1]+" ("+sk[0]+") devrait "+(dir>0?"monter 🚀":"baisser 📉")+" d'ici deux jours.",true);return;}}
+  if(!INVITE&&!MAPD&&r<Math.min(.4,.1+l*.012)){const ks=c.kinds.filter(k=>KINDS[k].ok(h)===true);if(ks.length){const k=pick(ks);msgAdd(c.id,'e',pick(KINDS[k].txt),true);m.pend={t:'inv',k,exp:gm+240};toast('✉️ '+nm+' t\'invite : '+KINDS[k].e+' '+KINDS[k].n,true);try{SFX.ping();}catch(e){}return;}}
+  const o=cOpen(c);msgAdd(c.id,'e',fill(pick(o.length?o:RPL)),true);m.pend={t:'chat',opts:[...MYR].sort(()=>Math.random()-.5).slice(0,3),exp:gm+600};toast('💬 '+nm+' t\'a écrit',true);try{SFX.ping();}catch(e){}}
+/* ---------- Bourse ---------- */
+const STK=[['HYDQ','Hydro-Nord','💡',62,.007,.25,.0001,.004],['SIRP',"Sirop d'érable Cie",'🍁',38,.012,.7,.0001,0],['POUT','Poutine Express','🍟',24,.016,.9,.0001,0],['CARI','Caribou Tech','🦌',112,.028,1.4,.0001,0],
+ ['NEIG','Neige Transport','🚌',47,.014,.8,.0001,.003],['FEUI',"Mines Feuille d'Or",'⛏️',18,.035,1.1,0,0],['LACS','Immobilier des Lacs','🏘️',55,.009,.5,.0001,.005],['PUCK','Équipement Puck','🏒',31,.02,1,.0001,0]];
+const SBY={};STK.forEach(s=>{SBY[s[0]]=s;});
+const BO=()=>{if(LIFE.bo&&LIFE.bo.px)return LIFE.bo;const o={px:{},pos:{},news:[],tips:{},m:0,h:Math.floor(gm/60),rl:0,fees:0,div:0};
+  for(const s of STK){let p=s[3];const a=[p];for(let i=0;i<59;i++){p*=Math.exp((Math.random()-.5)*2*s[4]/Math.sqrt(7)*1.7);a.push(p);}const k=s[3]/a[a.length-1];o.px[s[0]]=a.map(v=>Math.round(v*k*100)/100);}LIFE.bo=o;return o;};
+const boOpen=()=>dayOf()<5&&hourOf()>=9.5&&hourOf()<16;
+const boLast=sym=>{const a=BO().px[sym];return a[a.length-1];};
+const boVal=()=>{const B=BO();return Object.keys(B.pos).reduce((t,k)=>t+B.pos[k].q*boLast(k),0);};
+const boCost=()=>{const B=BO();return Object.keys(B.pos).reduce((t,k)=>t+B.pos[k].q*B.pos[k].avg,0);};
+const boFee=()=>Math.round(495*(1-Math.min(1,.5*frPerk('bfee'))))/100;
+const NUP=["{n} dépasse les attentes ce trimestre","{n} annonce un gros contrat","Un analyste recommande l'achat de {n}","{n} dévoile un nouveau produit populaire"],NDN=["{n} déçoit les analystes","Incident de production chez {n}","Un analyste abaisse sa cible pour {n}","{n} avertit : les profits seront plus bas"];
+function boStep(){const B=BO();B.m=B.m*.85+(Math.random()-.5)*.012;
+  for(const s of STK){const a=B.px[s[0]];let p=a[a.length-1];const sd=s[4]/Math.sqrt(7),tp=B.tips[s[0]];let dr=s[6];if(tp&&gm<tp.until)dr+=tp.dir*(tp.good?.25:-.15)*sd;
+    const z=(Math.random()+Math.random()+Math.random()-1.5)*2;let r=dr+s[5]*B.m+sd*z;
+    if(Math.random()<.004){const up=Math.random()<.5;r+=(up?1:-1)*rnd(.05,.11);B.news.unshift({t:gm,s:s[0],d:up?1:-1,tx:pick(up?NUP:NDN).replace('{n}',s[1])});if(B.news.length>10)B.news.pop();}
+    p=Math.max(1,p*Math.exp(r));a.push(Math.round(p*100)/100);if(a.length>60)a.shift();}}
+function boCatch(){const B=BO(),cur=Math.floor(gm/60);if(B.h==null)B.h=cur;if(cur<=B.h)return;for(let hi=Math.max(B.h+1,cur-170);hi<=cur;hi++){const day=Math.floor(hi/24),hr=hi%24;if(day%7<5&&hr>=10&&hr<=16)boStep();}B.h=cur;}
+function boDiv(){const B=BO(),dn=dayN();if(dayOf()!==0||hourOf()<9||(LIFE.boDiv??-1)>=dn)return;LIFE.boDiv=dn;let tot=0;for(const k in B.pos){const s=SBY[k];if(s&&s[7])tot+=B.pos[k].q*boLast(k)*s[7];}tot=Math.round(tot);if(tot>=1){B.div+=tot;addMoney(tot,'Dividendes de la Bourse');}}
+function boTrade(sym,side,q){const B=BO(),px=boLast(sym),fee=boFee(),P=B.pos[sym]||{q:0,avg:0};
+  if(!boOpen()){toast('🔴 La Bourse est fermée (lundi au vendredi, 9 h 30 à 16 h)',false);return;}
+  if(side==='b'){if(q==='max')q=Math.floor((money-fee)/px);q=Math.floor(q);if(q<1||money<q*px+fee){toast('Pas assez d\'argent',false);return;}
+    const cost=Math.round(q*px+fee);addMoney(-cost,'Achat '+q+' '+sym);
+    B.pos[sym]={q:P.q+q,avg:(P.q*P.avg+q*px)/(P.q+q)};B.fees+=fee;B.bf=(B.bf||0)+fee;toast('📈 Acheté : '+q+' × '+sym+' à '+px.toFixed(2)+' $',true);}
+  else{if(q==='max')q=P.q;q=Math.floor(q);if(q<1||q>P.q){toast('Tu n\'as pas assez d\'actions',false);return;}
+    const proceeds=Math.round(q*px-fee);addMoney(proceeds,'Vente '+q+' '+sym);
+    B.rl+=q*(px-P.avg)-fee;B.fees+=fee;if(P.q-q<=0)delete B.pos[sym];else B.pos[sym]={q:P.q-q,avg:P.avg};toast('📉 Vendu : '+q+' × '+sym+' à '+px.toFixed(2)+' $',true);}
+  cnt('bo_trade');}
+function frTick(){if(!LIFE.frInit){LIFE.frInit=1;msgAdd('maman','e',"Bonjour mon grand! N'oublie pas : souper dimanche. ❤️",true);msgAdd('kevin','e',"Salut Marcel! C'est Kevin, du Café Lune. Passe prendre un café un de ces jours!",true);}
+  boCatch();frHourly();boDiv();}
+{const _u=ui;ui=()=>{_u();try{frTick();}catch(e){console.error(e);}};}
+/* --- Livraison : menus --- */
+const MENUS={'Pizzeria du Coin':[['Pizza toute garnie',28,'🍕'],['Pizza pepperoni',22,'🍕'],['Pointes de pizza et salade',15,'🥗']],'Sushi Kaizen':[['Plateau de sushis',42,'🍣'],['Rouleaux californiens',24,'🍙'],['Soupe miso et edamame',14,'🍵']],
+ 'Poulet Rôti Chez Ben':[['Quart de poulet et frites',22,'🍗'],['Club sandwich au poulet',17,'🥪'],['Salade de chou et patates',11,'🥗']],'Thaï Basilic':[['Pad thaï au poulet',24,'🍜'],['Cari vert',26,'🍛'],['Rouleaux impériaux',13,'🥟']],
+ 'Chez Ti-Guy':[['Poutine et hot-dogs',19,'🍟'],['Poutine galvaude',17,'🍟'],['Hot-dogs steamés (3)',12,'🌭']],'Burger Bros':[['Burger double et frites',21,'🍔'],['Burger de poulet croustillant',17,'🍔'],['Frites et rondelles d\'oignon',10,'🍟']],
+ 'Shish Taouk Express':[['Assiette shish taouk',20,'🥙'],['Falafels et hummus',16,'🧆'],['Poutine shish taouk',18,'🥙']],'Pho Saïgon':[['Soupe tonkinoise',18,'🍲'],['Vermicelles et porc grillé',17,'🍜'],['Rouleaux de printemps',11,'🥬']]};
+const livOpen=()=>hourOf()>=9&&hourOf()<20.75;
+function livOrder(ri,di){const r=RESTOS[ri],mn=(MENUS[r[0]]||[])[di];if(!mn)return;
+  if(delivery){toast('Une livraison est déjà en route',false);return;}if(!livOpen()){toast('Les restos livrent de 9 h à 20 h 45',false);return;}
+  const price=Math.round(mn[1]*(1-frDisc('resto'))),fee=Math.round(mn[1]*.15*(1-frDisc('liv'))),tot=price+fee;if(money<tot){toast('Pas assez d\'argent',false);return;}
+  addMoney(-tot,r[0]+' (livraison)');delivery={item:{id:'repas',nom:mn[0],prix:price,emo:mn[2],resto:r[0]},at:gm+rnd(25,45)};cnt('liv_order');CELL.lr=null;say(Mc,'Commandé! '+mn[2],2.5);}
+function livGroc(){const L=CELL.lg||(CELL.lg=shopList());if(delivery){toast('Une livraison est déjà en route',false);return;}
+  const cost=Math.round(L.reduce((t,k)=>t+GROC[k][2],0)+Math.round(7*(1-frDisc('liv'))));if(money<cost){toast('Pas assez d\'argent',false);return;}
+  addMoney(-cost,'Épicerie en ligne');delivery={item:{id:'epicerie',nom:'Épicerie en ligne ('+L.length+' articles)',prix:cost,emo:'🛒',groc:L},at:gm+rnd(60,120)};flags.needGroc=false;flags.shop=true;CELL.lg=null;cnt('liv_order');}
+function livShop(id){const it=SHOP.find(x=>x.id===id);if(!it||OWN[id])return;if(delivery){toast('Une livraison est déjà en route',false);return;}if(money<it.prix){toast('Pas assez d\'argent',false);return;}
+  addMoney(-it.prix,it.nom);delivery={item:it,at:gm+rnd(40,110)};LIFE.lastBuy=it;cnt('liv_order');say(Mc,'Commandé! '+it.emo,2.5);}
+/* --- Trophées --- */
+{const lv=(n,L)=>CONTACTS.filter(c=>frInfo(c.id).l>=L).length>=n;
+ TROPHIES.push(['amis1','🤝','Premier vrai ami','Atteindre le niveau 10 d\'amitié avec un contact',()=>lv(1,10)],['amis5','🎉','Sociable','Atteindre le niveau 10 d\'amitié avec 5 contacts',()=>lv(5,10)],
+  ['amis15','🏘️','Tout le quartier','Atteindre le niveau 5 d\'amitié avec 15 contacts',()=>lv(15,5)],['bff30','💞','Bon ami pour la vie','Atteindre le niveau 30 d\'amitié avec un contact',()=>lv(1,30)],
+  ['msg20','💬','Accro aux textos','Écrire 20 messages à ses contacts',()=>C_('fr_text')>=20],['livr1','🛵','Livré à domicile','Passer une première commande dans l\'appli Livraison',()=>C_('liv_order')>=1],
+  ['bourse1','📈','Premier placement','Faire une première transaction à la Bourse',()=>C_('bo_trade')>=1],['bourse3','🐂','Loup de Wall Street','Réaliser 200 $ de gains à la Bourse',()=>!!(LIFE.bo&&LIFE.bo.rl>=200)]);}
+/* --- Assurances et Hydro : rabais d'amis --- */
+{const a=FIXED.find(x=>x.n.startsWith('Assurances')),b=FIXED.find(x=>x.n.startsWith('Hydro'));const _a=a.v,_b=b.v;a.v=()=>_a()*(1-frDisc('assur'));b.v=()=>_b()*(1-frDisc('hydro'));}
+/* --- Interface --- */
+{const st=document.createElement('style');st.textContent=`.cav{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:1.2rem;flex:none;color:#fff;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.cfr{gap:10px}.cfr b{font-weight:800}.cfr small{display:block}.cfr>span:nth-child(2){flex:1;min-width:0}
+.cdot{display:inline-block;margin-left:6px;min-width:17px;height:17px;border-radius:99px;background:#e2503c;color:#fff;font:800 .6rem/17px var(--f-body);text-align:center;text-decoration:none;padding:0 4px;vertical-align:middle}
+.cbar.mini{height:5px;margin:4px 0 0}
+.cchat{display:flex;flex-direction:column;margin:8px 0}.cbub{max-width:84%;padding:7px 10px;border-radius:14px;font-size:.76rem;line-height:1.35;margin:0 0 5px;overflow-wrap:anywhere}
+.cbub.them{background:#fff;border-bottom-left-radius:4px;align-self:flex-start}.cbub.me{background:#3d8bfd;color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.cact{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.cact button{font:700 .72rem var(--f-body);border:1.5px solid #3d8bfd;background:#fff;color:#2563c9;border-radius:99px;padding:6px 11px;cursor:pointer}.cact button.pri{background:#3d8bfd;color:#fff}.cact button.no{opacity:.45}
+.cprof{display:flex;gap:10px;align-items:center}.cprof .cav{width:52px;height:52px;font-size:1.7rem}
+.cback{font:700 .74rem var(--f-body);background:none;border:0;color:#2563c9;padding:2px 0 6px;cursor:pointer}
+.cup{color:#1f8a4c}.cdn{color:#c0392b}svg.spark{display:block}.cbig{width:100%;height:auto;display:block;background:#fff;border-radius:10px}
+.cperk{font-size:.7rem;margin-top:6px;padding:5px 8px;border-radius:8px;background:#f3efe2}.cperk.on{background:#e3f4e8;color:#17653a}`;document.head.appendChild(st);}
+CAPPS.push(['messages','💬','Messages','linear-gradient(135deg,#34c759,#1c9a44)'],['livraison','🛵','Livraison','linear-gradient(135deg,#ff9f45,#e0551f)'],['bourse','📈','Bourse','linear-gradient(135deg,#5a6bd8,#2c3a9a)']);
+const px2=v=>(Math.round(v*100)/100).toFixed(2).replace('.',',');
+const spark=(a,w,h,c)=>{const mn=Math.min(...a),mx=Math.max(...a),r=mx-mn||1;const pts=a.map((v,i)=>(i/(a.length-1)*w).toFixed(1)+','+(h-2-(v-mn)/r*(h-4)).toFixed(1)).join(' ');return`<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline points="${pts}" fill="none" stroke="${c}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;};
+const bubs=c=>MS(c.id).log.slice(-7).map(([w,t])=>`<div class="cbub ${w==='m'?'me':'them'}">${t}</div>`).join('');
+function convHTML(c){const m=MS(c.id),i=frInfo(c.id),pct=Math.floor(i.x/i.need*100),s=frS(c),nm=c.n.split(' ')[0],h=hourOf();m.un=0;if(m.pend&&gm>m.pend.exp)m.pend=null;
+  let o=`<button type="button" class="cback" data-a="fback">‹ Contacts</button><div class="cinfo"><div class="cprof"><span class="cav" style="background:${c.bg}">${c.e}</span><span><b style="font-size:.95rem">${c.n}</b><br><span class="cmut">${c.role}<br>Aime : ${c.hobby}</span></span></div>
+   <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:.74rem"><b>🤝 ${i.title}</b><span>niveau ${i.l}</span></div><div class="cbar"><i style="width:${pct}%;background:#ff6b8b"></i></div><div class="cmut">${i.x} / ${i.need} pts · prochain niveau dans ${i.need-i.x} pts</div>
+   <div class="cperk ${s?'on':''}">${s?'🔓':'🔒'} ${PK[c.perk](s||1)}${s?'':' · débloqué au niveau 10'}${s===1?' · double au niveau 30':''}</div></div>`;
+  o+=`<div class="cchat">${bubs(c)||'<div class="cmut" style="text-align:center">Aucun message pour l\'instant. Écris le premier!</div>'}</div>`;
+  const p=m.pend;
+  if(p&&p.t==='chat')o+=`<div class="cact">`+p.opts.map((t,k)=>`<button type="button" data-a="frp:${c.id}|${k}">${t}</button>`).join('')+`</div>`;
+  if(p&&p.t==='inv')o+=`<div class="cact"><button type="button" class="pri" data-a="fra:${c.id}|1">✅ J'y vais</button><button type="button" data-a="fra:${c.id}|0">❌ Pas aujourd'hui</button></div>`;
+  if(INVITE&&INVITE.id===c.id)o+=`<div class="cban"><span>✉️ Rendez-vous : <b>${KINDS[INVITE.k].e} ${KINDS[INVITE.k].n}</b><br><span class="cmut">Marcel y va dès qu'il a fini ce qu'il fait.</span></span><button type="button" data-a="fcancel">Annuler</button></div>`;
+  o+=`<div class="cact"><button type="button" class="pri${gm<(m.cd||0)?' no':''}" data-a="frj:${c.id}">💬 Jaser (+4)</button><button type="button" class="${m.gd===dayN()?'no':''}" data-a="frg:${c.id}">🎁 Cadeau 15 $ (+14)</button></div>
+   <div class="cmut" style="margin-top:6px">Inviter ${nm} :</div><div class="cact">`+c.kinds.map(k=>`<button type="button" class="${KINDS[k].ok(h)===true?'':'no'}" data-a="fri:${c.id}|${k}">${KINDS[k].e} ${KINDS[k].n} (+${k==='souper'?70:k==='parc'?45:k==='maman'?65:k==='game'?60:50})</button>`).join('')+`</div>`;return o;}
+function msgHTML(){const id=CELL.cid;if(id&&CBY[id])return convHTML(CBY[id]);const f=CELL.ff||'tous';let L=CONTACTS.slice();
+  if(f==='nonlus')L=L.filter(c=>MS(c.id).un>0);else if(f==='amis')L=L.filter(c=>frInfo(c.id).l>=10);
+  L.sort((a,b)=>(MS(b.id).un>0)-(MS(a.id).un>0)||frInfo(b.id).l-frInfo(a.id).l||a.n.localeCompare(b.n,'fr'));
+  const n10=CONTACTS.filter(c=>frInfo(c.id).l>=10).length;
+  let h=`<div class="cinfo" style="display:flex;justify-content:space-between;gap:8px"><span><b>${CONTACTS.length} contacts</b><br><span class="cmut">${n10} ami${n10>1?'s':''} (niv. 10+)</span></span><span class="cmut" style="text-align:right">Écris, invite et offre<br>des cadeaux pour monter<br>en amitié.</span></div>
+   <div class="cchips"><button type="button" data-a="fl:tous" class="${f==='tous'?'on':''}">Tous</button><button type="button" data-a="fl:nonlus" class="${f==='nonlus'?'on':''}">Non lus (${frUnread()})</button><button type="button" data-a="fl:amis" class="${f==='amis'?'on':''}">Amis</button></div>`;
+  if(INVITE)h+=`<div class="cban"><span>✉️ Rendez-vous avec <b>${CBY[INVITE.id].n}</b> : ${KINDS[INVITE.k].e} ${KINDS[INVITE.k].n}</span><button type="button" data-a="fcancel">Annuler</button></div>`;
+  h+=L.map(c=>{const i=frInfo(c.id),un=MS(c.id).un,m=MS(c.id),last=m.log[m.log.length-1];return`<button type="button" class="crow cfr" data-a="fc:${c.id}"><span class="cav" style="background:${c.bg}">${c.e}</span><span><b>${c.n}</b>${un?'<u class="cdot">'+un+'</u>':''}<small>${i.title} · niv. ${i.l}${last?' · '+last[1].slice(0,28)+(last[1].length>28?'…':''):''}</small><span class="cbar mini"><i style="width:${Math.floor(i.x/i.need*100)}%;background:#ff6b8b"></i></span></span><em>›</em></button>`;}).join('')||'<div class="cmut">Aucun contact dans cette liste.</div>';return h;}
+function livHTML(){const t=CELL.lt||'resto';let h='';
+  if(delivery)h+=`<div class="cban"><span>📦 En route : <b>${delivery.item.emo||''} ${delivery.item.nom}</b><br><span class="cmut">Arrivée vers ${fmt(delivery.at)}</span></span></div>`;
+  h+=`<div class="cchips"><button type="button" data-a="lt:resto" class="${t==='resto'?'on':''}">🍽️ Restos</button><button type="button" data-a="lt:epicerie" class="${t==='epicerie'?'on':''}">🛒 Épicerie</button><button type="button" data-a="lt:boutique" class="${t==='boutique'?'on':''}">🛍️ Boutique</button></div>`;
+  const dl=frDisc('liv'),dr=frDisc('resto');if((dl||dr)&&t!=='boutique')h+=`<div class="cperk on">🤝 Rabais d'amis : ${dr&&t==='resto'?'repas −'+Math.round(dr*100)+' % · ':''}frais de livraison −${Math.round(dl*100)} %</div>`;
+  if(t==='resto'){if(!livOpen())h+=`<div class="cinfo">🌙 Les restos livrent de 9 h à 20 h 45.</div>`;
+    if(CELL.lr!=null&&RESTOS[CELL.lr]){const r=RESTOS[CELL.lr];h+=`<button type="button" class="cback" data-a="lback">‹ Restos</button><div class="ch2">${r[3]} ${r[0]}</div>`+(MENUS[r[0]]||[]).map((mn,di)=>{const price=Math.round(mn[1]*(1-dr)),fee=Math.round(mn[1]*.15*(1-dl));return`<button type="button" class="crow${delivery||!livOpen()?' no':''}" data-a="lo:${CELL.lr}|${di}"><span>${mn[2]} ${mn[0]}<small>${price} $ + ${fee} $ de livraison</small></span><em>${price+fee} $</em></button>`;}).join('');}
+    else h+=RESTOS.map((r,i)=>`<button type="button" class="crow" data-a="lr:${i}"><span>${r[3]} ${r[0]}<small>Livraison en 25 à 45 min</small></span><em>›</em></button>`).join('');}
+  else if(t==='epicerie'){const L=CELL.lg||(CELL.lg=shopList()),fee=Math.round(7*(1-dl)),cost=Math.round(L.reduce((s2,k)=>s2+GROC[k][2],0)+fee);
+    h+=`<div class="cinfo"><b>🛒 Épicerie du quartier</b><br><span class="cmut">Marcel commande ce qui manque dans son frigo et son garde-manger.</span><br>`+L.map(k=>GROC[k][0]).join(', ')+`</div><button type="button" class="crow${delivery?' no':''}" data-a="lg"><span>Commander ${L.length} articles<small>Livraison ${fee} $ · arrivée dans 1 à 2 h</small></span><em>${cost} $</em></button>`;}
+  else{const L=SHOP.filter(x=>!OWN[x.id]).sort((a,b)=>a.prix-b.prix).slice(0,14);h+=`<div class="cmut" style="margin-bottom:6px">Achats pour la maison, livrés à la porte.</div>`+(L.map(it=>`<button type="button" class="crow${delivery||money<it.prix?' no':''}" data-a="lb:${it.id}"><span>${it.emo} ${it.nom}<small>Livraison en 1 à 2 h</small></span><em>${cNum(it.prix)} $</em></button>`).join('')||'<div class="cmut">Rien de nouveau à acheter.</div>');}
+  return h;}
+function bouHTML(){const B=BO(),t=CELL.bt||'marche',tot=boVal(),pl=tot-boCost()+B.rl-(B.bf||0),open=boOpen();
+  let h=`<div class="cinfo" style="text-align:center"><span class="cmut">Valeur du portefeuille</span><div class="cgros" style="margin:2px 0 0">${px2(tot)} $</div><span class="${pl>=0?'cup':'cdn'}" style="font-weight:800;font-size:.76rem">${pl>=0?'+':''}${px2(pl)} $ au total</span><div class="cmut" style="margin-top:4px">${open?'🟢 Marché ouvert jusqu\'à 16 h':'🔴 Marché fermé · lundi au vendredi, 9 h 30 à 16 h'}<br>Frais par transaction : ${px2(boFee())} $</div></div>`;
+  if(CELL.bs&&SBY[CELL.bs]){const s=SBY[CELL.bs],a=B.px[s[0]],p=a[a.length-1],p0=a[Math.max(0,a.length-8)],ch=(p/p0-1)*100,P=B.pos[s[0]],tp=B.tips[s[0]],up=ch>=0,col=up?'#1f8a4c':'#c0392b';
+    const mn=Math.min(...a),mx=Math.max(...a),rg=mx-mn||1,pts=a.map((v,i)=>(8+i/(a.length-1)*284).toFixed(1)+','+(100-(v-mn)/rg*86).toFixed(1)).join(' ');
+    h+=`<button type="button" class="cback" data-a="bback">‹ Marché</button><div class="ch2">${s[2]} ${s[1]} <span class="cmut">${s[0]}</span></div><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font:800 1.4rem var(--f-display)">${px2(p)} $</b><b class="${up?'cup':'cdn'}">${up?'▲':'▼'} ${Math.abs(ch).toFixed(1).replace('.',',')} % (1 jour)</b></div>
+     <svg class="cbig" viewBox="0 0 300 112" role="img" aria-label="Cours de ${s[1]}"><polyline points="${pts}" fill="none" stroke="${col}" stroke-width="2.2" stroke-linejoin="round"/></svg><div class="cmut" style="display:flex;justify-content:space-between"><span>Bas ${px2(mn)} $</span><span>Haut ${px2(mx)} $</span></div>`;
+    if(tp&&gm<tp.until)h+=`<div class="cperk on">💡 Tuyau de ${CBY[tp.by].n.split(' ')[0]} : ${tp.dir>0?'devrait monter 🚀':'devrait baisser 📉'} (jusqu'à ${fmt(tp.until)})</div>`;
+    h+=`<div class="cinfo" style="margin-top:8px">${P?`<b>Tu possèdes ${P.q} action${P.q>1?'s':''}</b> · valeur ${px2(P.q*p)} $<br><span class="cmut">Coût moyen ${px2(P.avg)} $ · </span><b class="${p>=P.avg?'cup':'cdn'}">${p>=P.avg?'+':''}${px2(P.q*(p-P.avg))} $</b>`:'<span class="cmut">Tu ne possèdes aucune action.</span>'}${s[7]?`<br><span class="cmut">Dividende : ${(s[7]*100).toFixed(1).replace('.',',')} % par semaine</span>`:''}</div>
+     <div class="cmut">Acheter</div><div class="cact">`+[1,5,10,'max'].map(q=>`<button type="button" class="pri${open?'':' no'}" data-a="bb:${s[0]}|${q}">${q==='max'?'Max':'×'+q}</button>`).join('')+`</div><div class="cmut">Vendre</div><div class="cact">`+[1,5,10,'max'].map(q=>`<button type="button" class="${open&&P?'':'no'}" data-a="bl:${s[0]}|${q}">${q==='max'?'Tout':'×'+q}</button>`).join('')+`</div>`;return h;}
+  h+=`<div class="cchips"><button type="button" data-a="bt:marche" class="${t==='marche'?'on':''}">Marché</button><button type="button" data-a="bt:port" class="${t==='port'?'on':''}">Portefeuille</button><button type="button" data-a="bt:news" class="${t==='news'?'on':''}">Nouvelles</button></div>`;
+  const row=s=>{const a=B.px[s[0]],p=a[a.length-1],p0=a[Math.max(0,a.length-8)],ch=(p/p0-1)*100,up=ch>=0,P=B.pos[s[0]];return`<button type="button" class="crow" data-a="bs:${s[0]}"><span>${s[2]} <b>${s[0]}</b><small>${s[1]}${P?' · '+P.q+' act.':''}</small></span><span style="display:flex;align-items:center;gap:8px">${spark(a.slice(-30),54,22,up?'#1f8a4c':'#c0392b')}<span style="text-align:right;min-width:58px"><b>${px2(p)} $</b><br><small class="${up?'cup':'cdn'}" style="font-weight:700">${up?'+':''}${ch.toFixed(1).replace('.',',')} %</small></span></span></button>`;};
+  if(t==='marche')h+=STK.map(row).join('');
+  else if(t==='port'){const L=STK.filter(s=>B.pos[s[0]]);h+=L.length?L.map(row).join('')+`<div class="cinfo"><div style="display:flex;justify-content:space-between"><span>Gains réalisés</span><b class="${B.rl>=0?'cup':'cdn'}">${B.rl>=0?'+':''}${px2(B.rl)} $</b></div><div style="display:flex;justify-content:space-between"><span>Dividendes reçus</span><b>${px2(B.div)} $</b></div><div style="display:flex;justify-content:space-between"><span>Frais payés</span><b>${px2(B.fees)} $</b></div></div>`:'<div class="cmut">Ton portefeuille est vide. Choisis une action dans l\'onglet Marché.</div>';}
+  else h+=(B.news.length?B.news.map(n=>`<div class="cinfo"><b class="${n.d>0?'cup':'cdn'}">${n.d>0?'▲':'▼'} ${n.s}</b> · ${n.tx}<br><span class="cmut">${fmt(n.t)}</span></div>`).join(''):'<div class="cmut">Aucune nouvelle importante pour l\'instant. Les amis qui s\'y connaissent t\'enverront des tuyaux par message.</div>');
+  return h;}
+{const _cr=cellRender;cellRender=function(){const app=CELL.app;if(app!=='messages'&&app!=='livraison'&&app!=='bourse')return _cr();
+  const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent=(CAPPS.find(a=>a[0]===app)||[0,0,''])[2];
+  let h='';try{h=app==='messages'?msgHTML():app==='livraison'?livHTML():bouHTML();}catch(e){console.error(e);h='<div class="cmut">Erreur d\'affichage.</div>';}
+  const key=app+'|'+(CELL.cid||'')+(CELL.lr==null?'':CELL.lr)+(CELL.bs||'')+(CELL.lt||'')+(CELL.bt||'')+(CELL.ff||''),keep=B.scrollTop,same=CELL._sv===key;B.innerHTML=h;CELL._sv=key;B.scrollTop=CELL._bot?B.scrollHeight:(same?keep:0);CELL._bot=0;};}
+$('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,i=a.indexOf(':'),k=i<0?a:a.slice(0,i),v=i<0?'':a.slice(i+1),[v1,v2]=v.split('|');let r=true;
+  if(k==='app'){CELL.cid=null;CELL.lr=null;CELL.bs=null;CELL.lg=null;}
+  else if(k==='fc'){CELL.cid=v;CELL._bot=1;}else if(k==='fback')CELL.cid=null;else if(k==='fl')CELL.ff=v;
+  else if(k==='frj')frJaser(v1);else if(k==='frg')frGift(v1);else if(k==='fri')frInvite(v1,v2);else if(k==='frp')frReply(v1,+v2);else if(k==='fra')frAnswer(v1,v2==='1');
+  else if(k==='fcancel'){INVITE=null;toast('Rendez-vous annulé',false);}
+  else if(k==='lt'){CELL.lt=v;CELL.lr=null;}else if(k==='lr')CELL.lr=+v;else if(k==='lback')CELL.lr=null;else if(k==='lo')livOrder(+v1,+v2);else if(k==='lg')livGroc();else if(k==='lb')livShop(v);
+  else if(k==='bt'){CELL.bt=v;CELL.bs=null;}else if(k==='bs')CELL.bs=v;else if(k==='bback')CELL.bs=null;else if(k==='bb')boTrade(v1,'b',v2==='max'?'max':+v2);else if(k==='bl')boTrade(v1,'s',v2==='max'?'max':+v2);
+  else r=false;if(r)cellRender();});
 
 resize();const LOADED=loadGame();chooseShot();shot={type:'piece',t:0,dur:9,seed:.6,cut:true,ctx:shotCtx()};if(LOADED)setTimeout(()=>toast('Partie reprise : '+fmtDay(),true),600);else setTimeout(()=>toast('Nouvelle partie : lundi 1er juin',true),600);
 enhanceWorld();$('chargement').hidden=true;requestAnimationFrame(tick);initCloud();
