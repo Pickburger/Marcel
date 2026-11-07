@@ -1077,7 +1077,7 @@ let HOMEB=null;
  const pt=grp(TR,38.6,0,72);cy(pt,M('#2e3a36',{m:.5}),.08,.08,4,0,0,0,6);const ps=new THREE.Mesh(new THREE.BoxGeometry(.2,1.4,1.6),signMat('POUTINE','#c8202a','#ffe9a8',256,128,'800 54px "Bricolage Grotesque", sans-serif'));ps.position.set(0,4.2,0);pt.add(ps);}
 // station-service
 {const lot=M('#ffffff',{map:TX.asphalt,r:.9});ns(bx(TR,lot,15,.05,16,-44.5,0,70,0,5));const can=grp(TR,-43,0,70);const wm=M('#f2f0ea',{r:.5}),rd=M('#c8202a',{r:.4});
- for(const[x,z]of[[-4,-3],[4,-3],[-4,3],[4,3]])cy(can,wm,.18,.18,4.6,x,0,z,10);bx(can,wm,10,.6,8,0,4.6,0);bx(can,rd,10.1,.35,8.1,0,4.85,0);
+ for(const[x,z]of[[-4,-3],[4,-3],[-4,3],[4,3]])cy(can,wm,.18,.18,4.6,x,0,z,10);bx(can,wm,10,.6,8,0,4.6,0);bx(can,rd,10.1,.42,8.1,0,4.82,0);
  for(const pz of[-1.2,1.2]){bx(can,M('#d8d4cc',{r:.4}),.8,.25,1.6,-1,0,pz);bx(can,M('#e8e4dc',{r:.4}),.55,1.6,.5,-1,.25,pz);bx(can,M('#1a1a1a'),.4,.3,.03,-1,1.25,pz+.26);bx(can,rd,.56,.3,.51,-1,1.5,pz);}
  const kb=placeB('kiosk',-48.5,62,'E',5,4,3.2);bx(kb.g,M('#f2f0ea',{r:.5}),5,3.2,4,0,0,0);bx(kb.g,rd,5.2,.4,4.2,0,3.2,0);bx(kb.g,winMat,3.5,1.6,.05,0,.9,2.02);
  const ss=grp(TR,-37.6,0,64);cy(ss,M('#2e3a36',{m:.5}),.08,.08,4.5,0,0,0,6);const sp4=new THREE.Mesh(new THREE.BoxGeometry(.2,1.6,1.8),signMat('ESSENCE · 1,59 $','#1a1a1a','#ffd23a',512,128,'800 52px "Bricolage Grotesque", sans-serif'));sp4.position.set(0,4.4,0);ss.add(sp4);
@@ -3523,7 +3523,7 @@ function jobShift(J,hrs){const pay=Math.round(jobRate(J)*hrs);const JT2=JTASKS[J
   const jobF=F(()=>{Mc.job={t:nm,id:J.id,pay,start:gm,end:gm+hrs*60,done:[],cur:'Arrive au travail',hrs};Mc.apron=JT2.ap||'#2f6a4a';});
   const endF=()=>F(()=>{const tip=J.tips?Math.round(rnd(8,25)*tipMult()):0;GASCAR.visible=false;LIFE.jobKinds=LIFE.jobKinds||[];if(!LIFE.jobKinds.includes(J.id))LIFE.jobKinds.push(J.id);Mc.job=null;Mc.apron=null;Mc.carry=null;addMoney(pay+tip,'Quart de '+hrs+' h : '+nm+(tip?' + pourboires':''));say(Mc,'Fin du quart! Bonne journée de travail!');LIFE.jobs=(LIFE.jobs||0)+1;});
   const loop=()=>F(()=>{const JJ=Mc.job;if(!JJ){return;}if(gm>=JJ.end-4){Mc.q.unshift(endF(),...(J.drive?[{t:'drive',to:'home',label:'Rentre du travail'}]:[]));return;}
-    const t=mkTask(false);if(st.i===2&&typeof MGJOB!=='undefined'&&MGJOB[J.id]){const m=MGJOB[J.id];const d=t.find(x=>x&&x.t==='do');t.splice(t.indexOf(d),0,...mgSteps(m[0],{a:d.a,pose:d.pose,seatH:d.seatH,yaw:d.yaw,job:J.id,q:'Un coup de rush au travail!',label:'Gère un coup de rush',...(m[1]||{})}));}
+    const t=mkTask(false);if(st.nm==null)st.nm=JJ.start+rnd(18,35);if(gm>=st.nm&&gm<JJ.end-25&&typeof MGJOB!=='undefined'&&MGJOB[J.id]&&mgBlock(MGJOB[J.id][0],{})<2){st.nm=gm+rnd(55,95);const m=MGJOB[J.id];const d=t.find(x=>x&&x.t==='do');t.splice(t.indexOf(d),0,...mgSteps(m[0],{a:d.a,pose:d.pose,seatH:d.seatH,yaw:d.yaw,job:J.id,q:'Un coup de rush au travail!',label:'Gère un coup de rush',...(m[1]||{})}));}
     Mc.q.unshift(...t,loop());});
   s.push(...mkTask(true),loop());return s;}
 function updateJobHud(){const J=Mc.job;const el=$('jobhud');if(!J){if(!el.hidden)el.hidden=true;return;}el.hidden=false;const p=clamp((gm-J.start)/(J.end-J.start),0,1);const left=Math.max(0,J.end-gm);
@@ -4389,7 +4389,7 @@ function animate(ch,dt){if(ch.act==='tread'||ch.act==='swim'||ch.act==='paddle')
     case'mow':T.shLx=T.shRx=-.8;T.elL=T.elR=-.25;T.spX=.08;break;
     case'tread':T.shLx=Math.sin(ph)*.8;T.shRx=-Math.sin(ph)*.8;T.elL=T.elR=-1.3;break;
     case'kite':T.shRx=-2.3;T.elR=-.3;T.shLx=-1.8;T.elL=-.4;T.hdX=-.4;break;
-    case'fuel':T.shRx=-.9;T.elR=-.3;T.hdX=.2;break;
+    case'fuel':{const q=(t*.5)%1;const sq=q>.25&&q<.8;T.shRx=-1.0;T.elR=-.25-(sq?.12*Math.sin(t*14):0);T.shLx=-.45;T.elL=-1.3;T.spX=.18;T.hdX=.28;T.hdY=q<.25?.5:sq?0:-.4;break;}
     case'paint':{const s4=Math.sin(t*2.4);T.shRx=-2+s4*.6;T.elR=-.4;T.shLx=-.3;T.hdX=-.2;break;}
     case'vr':{const q=Math.sin(t*2.3);T.shLx=-1.6+q*.6;T.shRx=-1.2-q*.7;T.elL=-.6;T.elR=-.9+q*.3;T.hdY=Math.sin(t*1.1)*.6;T.hdX=Math.sin(t*.8)*.2;T.thL=q*.15;T.thR=-q*.15;break;}
     case'bowl':{const q=(t%5)/5;let sw=0;if(q<.18)sw=-q/.18;else if(q<.27)sw=-1+(q-.18)/.09*2.2;else if(q<.4)sw=1.2;else sw=1.2-(q-.4)/.6*1.2;T.shRx=-.1-sw*1.1;T.elR=-.15;T.shLx=-.5;T.shLz=-.6;T.elL=-.3;T.spX=q>.15&&q<.45?.45:.1;T.knL=q>.15&&q<.45?.9:.15;T.thL=q>.15&&q<.45?-.6:0;T.thR=q>.15&&q<.45?.4:0;T.hipY=q>.15&&q<.45?.82:.95;break;}
@@ -4424,10 +4424,13 @@ function animate(ch,dt){if(ch.act==='tread'||ch.act==='swim'||ch.act==='paddle')
     case'vacuum':{const s2=Math.sin(t*3);T.shLx=T.shRx=-.55+s2*.25;T.elL=T.elR=-.35;T.spX=.12;break;}
     case'pet':T.spX=.55;T.thL=T.thR=-.5;T.knL=T.knR=.9;T.hipY=.8;T.shRx=-.9+Math.sin(t*5)*.15;T.elR=-.2;T.hdX=.3;break;
     case'photo':T.shRx=-1.5;T.elR=-.5;T.shLx=-1.4;T.elL=-.6;T.shLz=-.25;T.shRz=.25;T.hdX=-.05;break;
-    case'give':T.shRx=-1.25;T.elR=-.25;T.hdX=.2;break;
+    case'give':{const q=(t*.55)%1;const ex=q<.4?q/.4:q<.65?1:1-(q-.65)/.35;T.shLx=T.shRx=-.35-ex*.95;T.elL=T.elR=-1.1+ex*.85;T.hdX=.12;T.hdY=q<.4?0:Math.sin(t*2)*.2;break;}
     case'scratch':T.shLx=T.shRx=-.45;T.elL=-1.5;T.elR=-1.4+jit;T.shLz=-.3;T.shRz=.3;T.hdX=.42;break;
     case'game':T.shLx=T.shRx=-.4;T.elL=T.elR=-1.45+jit*.6;T.shLz=-.3;T.shRz=.3;T.spX=Math.sin(t*1.7)*.08-.05;break;
-    case'cook':case'dishes':case'fridge':case'pantry':case'browse':case'pay':case'order':case'work':T.shLx=T.shRx=-.6;T.elL=-.7+Math.sin(t*3)*.25;T.elR=-.7-Math.sin(t*3)*.25;T.hdX=.25;break;
+    case'cook':{const q=Math.sin(t*4.5),fl=(t%4)<.6;T.shRx=-.8+q*.18;T.elR=-.7;T.shLx=fl?-1.15:-.5;T.elL=fl?-.4:-1.1;T.spX=.2;T.hdX=.38;break;}
+    case'dishes':{const q=Math.sin(t*5.5);T.shLx=-.85+q*.15;T.shRx=-.85-q*.15;T.elL=-1.0+q*.35;T.elR=-1.0-q*.35;T.spX=.32;T.hdX=.5;break;}
+    case'fridge':case'pantry':{const q=(t*.7)%2;const hi=q<1;T.shLx=T.shRx=hi?-1.5:-.6;T.elL=T.elR=hi?-.4:-.9;T.spX=hi?0:.2;T.hdX=.15;break;}
+    case'browse':case'pay':case'order':case'work':T.shLx=T.shRx=-.6;T.elL=-.7+Math.sin(t*3)*.25;T.elR=-.7-Math.sin(t*3)*.25;T.hdX=.25;break;
     case'eat':{const up=Math.sin(t*1.8)>.5;T.shRx=up?-.9:-.5;T.elR=up?-2.1:-.9;T.shLx=-.4;T.elL=-.7;T.hdX=.12;break;}
     case'read':T.shLx=T.shRx=-.45;T.elL=T.elR=-1.6;T.shLz=-.3;T.shRz=.3;T.hdX=.42;break;
     case'guitar':T.shLx=-.7;T.elL=-1.3;T.shLz=-.5;T.shRx=-.3;T.elR=-1+Math.sin(t*12)*.2;break;
@@ -5247,16 +5250,20 @@ function mgRoundEnd(G){const md=(a,b)=>Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1]);c
 
 /* ---------- Moteur ---------- */
 function mgAuto(id,o){const d=MGD[id];const l=o&&o.job?jobInfo(o.job).l:(d.sk?skLv(d.sk):10);return clamp(.25+l/100+Math.random()*.35,.05,.95);}
-function mgSkip(){return MG.off||MG.on||(typeof document!=='undefined'&&document.hidden)||skOpen||(CHOICE&&!CHOICE.done)||tReal-MG.lastOffer<25;}
-function mgSteps(id,o={}){return[F(()=>{MG.res=null;MG.offer=false;if(!MGD[id])return;if(mgSkip()){MG.res={s:mgAuto(id,o),auto:1};return;}mgOffer(id,o);}),
-  W(()=>MG.res!=null||(!MG.offer&&!MG.on),{a:o.a||'idle',pose:o.pose,seatH:o.seatH,yaw:o.yaw,label:o.label||MGD[id].lab,max:2000,warp:.03}),
+function mgSkip(){return MG.off||MG.on||(typeof document!=='undefined'&&document.hidden)||skOpen||(CHOICE&&!CHOICE.done);}
+/* 2 = refus net (auto), 1 = on attend un peu (panneau ouvert, autre dialogue, délai entre deux offres), 0 = libre */
+function mgBlock(id,o){if(MG.off||MG.on||(typeof document!=='undefined'&&document.hidden)||(LIFE.mgDis&&LIFE.mgDis[id]))return 2;if(skOpen||(CHOICE&&!CHOICE.done)||(!(o&&o.chain)&&tReal-(MG.lastEnd||-99)<10))return 1;return 0;}
+function mgSteps(id,o={}){const st={w:0,t0:0};
+  return[F(()=>{MG.res=null;MG.offer=false;st.w=0;if(!MGD[id])return;const b=mgBlock(id,o);if(b===2){MG.res={s:mgAuto(id,o),auto:1,sk:1};return;}if(b===1){st.w=1;st.t0=tReal;return;}mgOffer(id,o);}),
+  W(()=>{if(st.w){if(!mgBlock(id,o)){st.w=0;mgOffer(id,o);}else if(tReal-st.t0>25){st.w=0;MG.res={s:mgAuto(id,o),auto:1,sk:1};}}return MG.res!=null||(!MG.offer&&!MG.on&&!st.w);},{a:o.a||'idle',pose:o.pose,seatH:o.seatH,yaw:o.yaw,label:o.label||(MGD[id]&&MGD[id].lab),max:2000,warp:.03,mgid:id}),
   F(()=>mgApply(id,o))];}
 function mgOffer(id,o){const d=MGD[id];MG.offer=true;MG.id=id;MG.o=o;MG.lastOffer=tReal;CHOICE={opts:[],done:false,pick:null,t0:tReal,dur:14,mg:1};
   $('choixQ').textContent=d.oq||(d.e+' Mini-jeu : '+d.n);$('choixS').textContent=(o.q?(typeof o.q==='function'?o.q():o.q)+' · ':'')+'Sans réponse, Marcel s\'en occupe seul.';const B=$('choixB');B.innerHTML='';
   const mk=(t,sub,cls,fn)=>{const b=document.createElement('button');b.type='button';if(cls)b.className=cls;b.innerHTML='<span>'+t+'</span>'+(sub?'<small>'+sub+'</small>':'');b.onclick=fn;B.appendChild(b);};
   mk(d.ob||'🎮 Aider Marcel',d.os||'Jouer au mini-jeu (prime si tu réussis)','',()=>{if(!CHOICE||!CHOICE.mg)return;CHOICE=null;$('choix').classList.toggle('on',false);MG.offer=false;mgSnd('tap');mgStart(id,o);});
   mk(d.ol||'🤖 Laisser Marcel faire','','non',()=>{if(CHOICE&&CHOICE.mg)CHOICE.done=true;});
-  mk('🚫 Ne plus proposer de mini-jeux','Réactivable dans 🏆 Trophées','non',()=>{mgSet(true);if(CHOICE&&CHOICE.mg)CHOICE.done=true;});
+  mk('🚫 Ne plus proposer « '+d.n+' »','Seulement ce mini-jeu · réactivable dans 🏆 Trophées','non',()=>{LIFE.mgDis=LIFE.mgDis||{};LIFE.mgDis[id]=1;toast('🚫 « '+d.n+' » ne sera plus proposé',false);if(CHOICE&&CHOICE.mg)CHOICE.done=true;});
+  mk('🚫 Ne plus proposer aucun mini-jeu','Réactivable dans 🏆 Trophées','non',()=>{mgSet(true);if(CHOICE&&CHOICE.mg)CHOICE.done=true;});
   $('choix').classList.toggle('on',true);}
 function mgSet(off){MG.off=off;try{localStorage.setItem('marcel_mg_off',off?'1':'0');}catch(e){}toast(off?'Mini-jeux désactivés':'🎮 Mini-jeux activés!',!off);if(skOpen==='__tro')skDetail();}
 function mgTick(){if(!MG.offer||MG.on)return;if(!CHOICE||!CHOICE.mg||CHOICE.done){if(CHOICE&&CHOICE.mg){CHOICE=null;$('choix').classList.toggle('on',false);}MG.offer=false;MG.res={s:mgAuto(MG.id,MG.o),auto:1};}}
@@ -5278,7 +5285,7 @@ function mgFrame(dt){const G=MG.G;if(!MG.on||!G)return;mgSize(G);const d=G.d,c=$
    if(G.k>.6){mgR(g,G.w/2-100,G.h*.68,200,50,25,'#f28c28');mgT(g,'Continuer',G.w/2,G.h*.68+25,18,'#1a0f05');}}
   $('mgS').textContent=G.ph==='play'&&d.hud?d.hud(G):'';$('mgB').style.width=(G.ph==='play'&&d.dur?Math.max(0,100-G.t/d.dur*100):G.ph==='fin'?0:100)+'%';}
 function mgPreview(G){const d=G.d;let t=[];if(d.m&&G.s>.05)t.push('+'+Math.round(d.m*G.s)+' $');if(d.sk){const S=SKILLS.find(x=>x.k===d.sk);if(S)t.push(S.e+' +'+Math.round(8+25*G.s)+' XP '+S.n);}if(G.o&&G.o.job)t.push('💼 +XP de métier');return t.join(' · ');}
-function mgApply(id,o){const d=MGD[id];if(!d)return;let r=MG.res;MG.res=null;MG.offer=false;if(!r)r={s:mgAuto(id,o),auto:1};const s=r.s;if(d.noRec){try{d.ap&&d.ap(s,r,o);}catch(e){console.error(e);}return;}
+function mgApply(id,o){const d=MGD[id];if(!d)return;let r=MG.res;MG.res=null;MG.offer=false;if(!r)r={s:mgAuto(id,o),auto:1};if(!r.sk)MG.lastEnd=tReal;const s=r.s;if(d.noRec){try{d.ap&&d.ap(s,r,o);}catch(e){console.error(e);}return;}
   LIFE.mg=LIFE.mg||{};const best=LIFE.mg[id]||0;if(!r.auto){cnt('mg');if(s>=.999)cnt('mgperf');if(s>best)LIFE.mg[id]=+s.toFixed(3);}
   if(d.m&&s>.05){const v=Math.round(d.m*s*(r.auto?.5:1));if(v>0)addMoney(v,d.ml);}
   if(d.sk)addXP(d.sk,(r.auto?4:8)+(r.auto?10:25)*s);if(o.job)addJobXP(o.job,(r.auto?3:6)+(r.auto?8:20)*s);need.fun=clamp(need.fun+(r.auto?2:6)*s,0,100);
@@ -5321,9 +5328,11 @@ const MGJOB={cafe:['commandes',{items:['☕','🍩','🥐','🧋']}],microj:['co
 TROPHIES.push(['mg1','🎮','Coup de main','Jouer un premier mini-jeu avec Marcel',()=>C_('mg')>=1],['mg25','🕹️','Partenaire de jeu','Jouer 25 mini-jeux avec Marcel',()=>C_('mg')>=25],['mgperf','💯','Sans faute','Réussir un mini-jeu à 100 %',()=>C_('mgperf')>=1],
  ['mgstrike','🎳','Abat parfait','Faire un abat au mini-jeu de quilles',()=>C_('mg_strike')>=1],['mggoal','🚨','Tireur d\'élite','Marquer 5 buts sur 5 en tirs de pénalité',()=>C_('mg_5buts')>=1],['mgpel','🧸','Roi de la pince','Gagner 5 peluches à la machine à pince',()=>C_('peluche')>=5],
  ['mggacha','🥚','Collection complète','Réunir les 8 figurines de gashapon à Tokyo',()=>(LIFE.gacha||[]).length>=8]);
-{const _f=trophyHTML;trophyHTML=()=>{const B=LIFE.mg||{};const L=Object.keys(MGD).filter(k=>B[k]).map(k=>'<span style="display:inline-block;margin:2px 8px 2px 0">'+MGD[k].e+' '+MGD[k].n+' : <b>'+Math.round(B[k]*100)+' %</b></span>').join('');
+{const _f=trophyHTML;trophyHTML=()=>{const B=LIFE.mg||{};const D2=Object.keys(LIFE.mgDis||{}).filter(k=>LIFE.mgDis[k]&&MGD[k]);const dis=D2.length?'<div class="mut" style="margin-top:8px;font-size:.85rem">Mini-jeux que tu as désactivés :</div><div style="margin-top:4px">'+D2.map(k=>'<button type="button" data-act="mgen:'+k+'" style="margin:2px 6px 2px 0;font:inherit;font-size:.8rem;padding:4px 10px;border-radius:99px;border:1px solid var(--trait);background:#26324a;color:inherit;cursor:pointer">'+MGD[k].e+' '+MGD[k].n+' · Réactiver</button>').join('')+'</div>':'';const L=Object.keys(MGD).filter(k=>B[k]).map(k=>'<span style="display:inline-block;margin:2px 8px 2px 0">'+MGD[k].e+' '+MGD[k].n+' : <b>'+Math.round(B[k]*100)+' %</b></span>').join('');
   const h='<div style="border:1px solid var(--trait);border-radius:12px;padding:10px 12px;margin:0 0 12px"><b>🎮 Mini-jeux</b> · '+(MG.off?'désactivés':'activés')+' <button type="button" data-act="'+(MG.off?'mgon':'mgoff')+'" style="margin-left:6px;font:inherit;font-size:.8rem;padding:4px 10px;border-radius:99px;border:1px solid var(--trait);background:#26324a;color:inherit;cursor:pointer">'+(MG.off?'Réactiver':'Désactiver')+'</button>'+
-   '<div class="mut" style="margin-top:6px;font-size:.85rem">'+(L||'Aucun record encore. Touche « Aider Marcel » quand un mini-jeu est proposé!')+'</div></div>';const t=_f();const i=t.indexOf('</div>',t.indexOf('class="mut"'));return i>0?t.slice(0,i+6)+h+t.slice(i+6):h+t;};}
+   dis+'<div class="mut" style="margin-top:6px;font-size:.85rem">'+(L||'Aucun record encore. Touche « Aider Marcel » quand un mini-jeu est proposé!')+'</div></div>';const t=_f();const i=t.indexOf('</div>',t.indexOf('class="mut"'));return i>0?t.slice(0,i+6)+h+t.slice(i+6):h+t;};}
+
+$('skDetC').addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;if(a&&a.indexOf('mgen:')===0){const k=a.slice(5);if(LIFE.mgDis)delete LIFE.mgDis[k];if(MGD[k])toast('🎮 « '+MGD[k].n+' » est de nouveau proposé',true);if(skOpen==='__tro')skDetail();}});
 
 /* ================= Potager, poulailler, kiosque, 2e étage et roulette du chef ================= */
 const VEG=[['laitue','Laitues','🥬',3,'#8fd16a','leaf',3,'laitue',0],['radis','Radis','🌱',2,'#d8304a','root',2,null,0],['carotte','Carottes','🥕',4,'#f08a2a','root',2.5,'carottes',0],
@@ -5650,7 +5659,7 @@ MGD.paquet={n:'Paquet de cartes',e:'🃏',bg:'#13203a',lab:'Ouvre son paquet de 
  ap(s,r,o){const L=o.cards||[];const nw=L.filter(x=>x.nw).length,sp=L.filter(x=>CARDS[x.id-1].sp);if(r.auto)say(Mc,sp.length?'Wow! Une carte spéciale : '+CARDS[sp[0].id-1].n+'!':nw?nw+' nouvelles cartes pour mon album!':'Rien que des doubles… ouin.');
   toast('🃏 Paquet : '+nw+' nouvelle'+(nw>1?'s':'')+(sp.length?' · '+sp.length+' spéciale'+(sp.length>1?'s':''):'')+' · album '+cardCount()+'/200',nw>0);}};
 function cartesOuting(){const n=money>120?pick([1,2,2,3]):1;const pk=[];const s=[...at('dep.caisse','pay',2,{label:'Achète '+n+' paquet'+(n>1?'s':'')+' de cartes de hockey au dépanneur',say:pick(['Des cartes de hockey, svp Raj!','Il me manque juste quelques cartes…','Allez, une spéciale cette fois!'])}),payF(5*n,'Cartes de hockey ('+n+' paquet'+(n>1?'s':'')+')')];
- for(let i=0;i<n;i++){const o={a:'read',label:'Ouvre un paquet de cartes de hockey',cards:null};s.push(F(()=>{o.cards=openPack();}),...mgSteps('paquet',o),D('read',2,{label:i?undefined:'Regarde ses nouvelles cartes',say:i?undefined:pick(['Celle-là, je l\'avais pas!','Encore un double…','Mon album se remplit!'])}));}
+ for(let i=0;i<n;i++){const o={a:'read',label:'Ouvre un paquet de cartes de hockey',cards:null,chain:i>0};s.push(F(()=>{o.cards=openPack();}),...mgSteps('paquet',o),D('read',2,{label:i?undefined:'Regarde ses nouvelles cartes',say:i?undefined:pick(['Celle-là, je l\'avais pas!','Encore un double…','Mon album se remplit!'])}));}
  s.push(F(()=>{LIFE.cardD=today();LIFE.lastOuting={kind:'acheter des cartes de hockey'};}));return s;}
 A.push({id:'cartes',out:1,w:h=>h>=8&&h<21&&money>25&&today()-(LIFE.cardD??-9)>=2&&cardCount()<200?.9:0,f:()=>cartesOuting()},
  {id:'album',w:h=>cardCount()>=8&&h>=9&&h<22?.35:0,f:()=>at('home.sofaL','read',rnd(10,18),{label:'Feuillette son album de cartes de hockey ('+cardCount()+'/200)',warp:2,fx:{fun:.5},say:pick(['Il me manque encore la #'+(1+Math.floor(Math.random()*150))+'…','Ma plus belle carte, c\'est celle-là!'])})});
