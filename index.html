@@ -6130,9 +6130,9 @@ function frXP(id,v){const c=CBY[id];if(!c||!(v>0))return;LIFE.fr=LIFE.fr||{};LIF
 /* --- genres de sorties --- */
 const KINDS={cafe:{e:'☕',n:'Café',ok:h=>(h>=8.5&&h<17.5)?true:'Le café ferme bientôt (de 8 h 30 à 17 h 30)',txt:["On prend un café au Café Lune?","Un café, ça te tente?"]},
  parc:{e:'🌳',n:'Parc',ok:h=>RAIN()?'Il pleut dehors':(h>=9&&h<17)?true:'Trop tard pour le parc',txt:["Une marche au parc, ça te dit?","Tu viens prendre l'air au parc?"]},
- souper:{e:'🍝',n:'Souper',ok:h=>(h>=15.5&&h<19)?true:'Pas l\'heure du souper (15 h 30 à 19 h)',txt:["Je viendrais souper chez toi? 😄","Souper ensemble ce soir?"]},
- game:{e:'🎮',n:'Soirée jeux',ok:h=>(h>=13&&h<20)?true:'De 13 h à 20 h seulement',txt:["Une game chez toi tantôt?","NHL ou hockey à la télé ce soir?"]},
- maman:{e:'🍲',n:'Souper chez Maman',ok:h=>flags.maman?'Déjà soupé chez Maman aujourd\'hui':(h>=15.5&&h<18.5)?true:'Souper entre 15 h 30 et 18 h 30',txt:["Viens souper, j'ai fait du pâté chinois!","Tu viens manger chez moi, mon grand?"]}};
+ souper:{e:'🍝',n:'Souper',ok:h=>(h>=15.5&&h<19)?true:'Pas l\'heure du souper (15 h 30 à 19 h)',txt:["Je viendrais souper chez toi? 😄","Souper ensemble ce soir?"],mtxt:["Tu viens souper chez moi ce soir?","Je prépare une lasagne, tu viens?"]},
+ game:{e:'🎮',n:'Soirée jeux',ok:h=>(h>=13&&h<20)?true:'De 13 h à 20 h seulement',txt:["Une game chez toi tantôt?","NHL ou hockey à la télé ce soir?"],mtxt:["Une game chez moi tantôt?","Tu viens écouter le hockey à la maison?"]},
+ maman:{e:'🍲',n:'Souper chez Maman',ok:h=>flags.maman?'Déjà soupé chez Maman aujourd\'hui':(h>=15.5&&h<18.5)?true:'Souper entre 15 h 30 et 18 h 30',txt:["Viens souper, j'ai fait du pâté chinois!","Tu viens manger chez moi, mon grand?"],mtxt:["Maman, je peux venir souper chez toi?","Est-ce que tu fais à souper ce soir?"]}};
 function chOf(c){if(c.ch)return c.ch;const ch=new Ch(c.n.split(' ')[0],c.look,{npc:1});setArea(ch,'none');ch.m.root.visible=false;c.ch=ch;return ch;}
 const frTalk=c=>[['p',fill(c.d[0])],['m',fill(c.d[1])],...genTalk(c.id,2)];
 function meetGen(c,k){const ch=chOf(c),nm=c.n.split(' ')[0];FRCH=ch;flags.social++;const home=tr('town.b_'+c.bk);
@@ -6163,6 +6163,103 @@ function meetContact(c,k){if(c.kinds===CKIND)return meetGen(c,k);
      if(r===true){try{const st=meetContact(c,iv.k);if(st&&st.length){say(Mc,pick(['Allons voir '+c.n.split(' ')[0]+'!','Rendez-vous avec '+c.n.split(' ')[0]+', c\'est parti!']),2.8);return st;}}catch(e){console.error(e);}}
      else toast('✉️ '+c.n+' : '+r,false);}}
   return _p2();};}
+/* --- Conversations : chaque message a ses réponses et la suite logique --- */
+const CT={};{const T_=(op,r1,a1,r2,a2)=>[op,[[r1,a1],[r2,a2]]];
+CT.rejean={t:[T_("Ton char fait-tu encore un bruit bizarre?","Oui, un grincement en freinant","Amène-le-moi, je regarde ça jeudi.","Non, il roule comme un charme","Parfait! Touche du bois, ça s'use vite, un char."),
+ T_("J'ai du temps jeudi si tu veux un changement d'huile.","Oui, jeudi ça marche!","Parfait, je te réserve une place.","Pas cette semaine, merci","Pas de trouble, tiens-moi au courant."),
+ T_("Les pneus d'hiver, c'est pas pour décorer, Marcel!","Haha, je vais les faire poser","Bonne décision! Passe au garage, je m'en occupe.","Il en reste encore, non?","Fie-toi pas à ça, la première neige arrive vite.")],
+ j:[["Salut Réjean, tu penses que mon char va passer l'hiver?","Oui, avec des bons pneus et de l'huile fraîche, aucun problème."],["Pis la pêche blanche, t'y vas cette année?","Certain! J'ai déjà ma cabane de réservée sur le lac."]]};
+CT.nadia={t:[T_("N'oublie pas de boire de l'eau aujourd'hui 💧","Merci, j'en bois un verre là!","Bravo! Ton corps te remerciera.","Je bois surtout du café…","Haha, un verre d'eau pour chaque café, deal?"),
+ T_("Nouvel arrivage de crème solaire, si t'en as besoin!","Parfait, je passe en chercher","Je t'en garde une, FPS 50!","J'ai déjà la mienne","Super! Mets-en souvent sur ton nez."),
+ T_("Je fais du yoga au parc samedi, tu viens?","Oui, ça me tente!","Super! Apporte ton tapis, on commence à 9 h.","Pas cette fois, trop de choses à faire","Une prochaine fois, alors. Le yoga ne s'enfuit pas!")],
+ j:[["Salut Nadia, un conseil pour mieux dormir?","Éteins l'écran une heure avant le coucher, pis étire-toi un peu."],["Pis le yoga, ça avance?","Oui! Je commence à toucher mes orteils, finalement."]]};
+CT.gilles={t:[T_("Les croissants sortent du four 🥐 Viens vite!","J'arrive dans dix minutes!","Je t'en garde deux, encore chauds!","J'ai déjà déjeuné, désolé","Dommage! Je t'en garde pour demain."),
+ T_("Il me reste une baguette avec ton nom dessus.","Haha, garde-la-moi!","Elle t'attend au comptoir.","C'est gentil, merci!","Elle est dorée comme tu l'aimes."),
+ T_("Pétanque dimanche au parc, t'es de la partie?","Oui, j'apporte mes boules!","Parfait! On joue vers 14 h.","Je suis nul à ça…","Ben non, tu vas t'amuser. Viens quand même!")],
+ j:[["Salut Gilles, ton secret pour un pain croustillant?","De la vapeur dans le four, pis beaucoup de patience."],["Pis la pétanque, t'as des chances de gagner?","Contre toi, oui! Contre Raymond, jamais."]]};
+CT.francine={t:[T_("J'ai un polar qui va te garder réveillé toute la nuit 📖","Dis-m'en plus!","Un meurtre dans un petit village du Lac-Saint-Jean. Tu vas l'adorer.","J'ai pas le temps de lire, ces temps-ci","Dix pages par soir, c'est déjà bien. Je te le mets de côté."),
+ T_("Nouvelle table de best-sellers à la librairie!","J'irai voir ça cette semaine","Super! Passe quand tu veux.","Y a des livres de cuisine?","Oui, un nouveau sur la cuisine québécoise, justement!"),
+ T_("Je te garde le dernier tome de ta série.","Merci Francine, t'es fine!","C'est normal, t'es mon meilleur client!","Quelle série déjà?","Celle avec le détective et son chien, voyons!")],
+ j:[["Salut Francine, un bon livre à me suggérer?","Un roman policier québécois, pas trop long, parfait pour ce soir."],["Pis toi, tu lis quoi en ce moment?","Un polar, évidemment. Je suis au chapitre 12 et je soupçonne le jardinier."]]};
+CT.kevin={t:[T_("Nouveau latte à l'érable au Café Lune 🍁","J'ai hâte de goûter!","Passe à l'heure du dîner, je t'en prépare un.","Trop sucré pour moi…","Je peux en faire un moins sucré, juste pour toi."),
+ T_("J'ai pratiqué un kickflip toute la matinée 🛹","Pis, ça a marché?","Presque! Je suis tombé sept fois, mais la huitième était parfaite.","Tu vas te blesser!","Haha, j'ai des genouillères. Presque."),
+ T_("Ton allongé habituel t'attend!","J'arrive!","Je le fais tout de suite!","Pas aujourd'hui, un autre jour","Pas de souci, il sera là demain.")],
+ j:[["Salut Kevin, quoi de neuf au Café Lune?","Beaucoup de monde ce matin! Le latte à l'érable est le plus populaire."],["Pis le skate, ça avance?","Oui! J'ai enfin réussi mon ollie sans tomber."]]};
+CT.sophie={t:[T_("Quart de nuit terminé, je m'écroule 😴","Va dormir, tu l'as bien mérité!","Merci Marcel, bonne journée!","Courage, c'est presque la fin de semaine","T'as raison, je vais m'étendre un peu."),
+ T_("Je prépare mon premier demi-marathon 🏃‍♀️","Wow, bravo! Combien de km?","21 km! J'en suis à 15 à l'entraînement.","Tu vas être épuisée!","Haha, c'est pour ça que je mange des pâtes."),
+ T_("Mange des légumes, ordre de l'infirmière!","Oui madame!","Bon patient! Continue comme ça.","J'ai mangé une salade ce midi","Bravo! Une seule? Va pour la deuxième demain.")],
+ j:[["Salut Sophie, un truc pour avoir plus d'énergie?","Marche dix minutes dehors le matin. Ça fait des miracles."],["Pis ton entraînement de course, ça va?","Bien! Ma jambe gauche commence à se plaindre, mais ça passe."]]};
+CT.ahmed={t:[T_("Les fraises du Québec viennent d'arriver 🍓","Garde-m'en une caisse!","Je t'en mets de côté, elles sont sucrées!","C'est la saison, hein?","Oui, les meilleures de l'année. Passe vite."),
+ T_("Je te garde du bon fromage en grains.","Parfait, pour une poutine!","Ça couine comme il faut, fraîchement arrivé!","Merci, mais je surveille mon poids","Un petit morceau, ça ne fait pas de tort!"),
+ T_("Match de soccer samedi, il nous manque un joueur!","Je suis là!","Super! On joue à 10 h derrière l'école.","Pas cette fois, j'ai du travail","Dommage, on va se débrouiller.")],
+ j:[["Salut Ahmed, qu'est-ce qui est en rabais cette semaine?","Les pommes et le pain. Passe avant jeudi, c'est la fin du rabais."],["Pis ton équipe de soccer, ça va?","On perd, mais on rit beaucoup. C'est l'important."]]};
+CT.jonathan={t:[T_("Jambes aujourd'hui. Pas d'excuses! 🏋️","T'es dur, mais t'as raison","Allez, un squat de plus!","Moi, je fais un jour de repos","Le repos, c'est important aussi. Bien dit."),
+ T_("Une séance d'essai gratuite pour toi, mon Marcel.","Wow, j'accepte!","Super! Passe quand tu veux au gym.","Peut-être plus tard","Pas de pression, l'offre reste valide."),
+ T_("T'as bu ta protéine? 😄","Oui, avec du lait!","Parfait, les muscles te remercient!","Ben non, j'ai oublié","Va t'en préparer une tout de suite!")],
+ j:[["Salut Jonathan, un bon exercice pour les épaules?","Le développé militaire, pas trop lourd. Pis la posture d'abord!"],["Pis ton entraînement, ça roule?","Record personnel ce matin! Je suis content."]]};
+CT.melanie={t:[T_("Soirée de ligue jeudi, on a besoin de toi 🎳","Compte sur moi!","Parfait! Rendez-vous à 19 h.","Je suis poche, tu le sais","Ben non, on s'amuse avant tout!"),
+ T_("J'ai fait un abat hier! Enfin!","Bravo! Raconte!","Le dernier lancer, la boule a tout rasé!","Ça arrive aux meilleurs","Haha, tu sais pas à quel point ça fait du bien."),
+ T_("Les souliers de location sentent le désinfectant, t'inquiète pas.","Haha, merci de la précision","Mieux vaut prévenir!","J'apporte les miens","Bonne idée, c'est plus confortable.")],
+ j:[["Salut Mélanie, c'est occupé aux quilles ce soir?","Pas mal! La ligue des retraités joue en même temps."],["Un truc pour mieux lancer?","Garde ton bras droit, regarde les quilles, pas la boule."]]};
+CT.patrick={t:[T_("Dur match hier, on m'a traité de tous les noms 🏒","Les gens sont durs!","Ça fait partie de la job, mais ça fait mal.","T'as dû faire une mauvaise punition…","Haha, c'était hors-jeu, j'en suis certain."),
+ T_("Ça te tente un match de ligue du midi?","Oui, quand?","Mercredi midi à l'aréna, apporte tes patins.","Je suis pas assez bon","Ben voyons, c'est pour le plaisir!"),
+ T_("Je siffle ce soir à 18 h 30, viens voir!","J'y serai!","Super, je te garde une place.","Pas ce soir, désolé","Pas de souci, une prochaine fois.")],
+ j:[["Salut Patrick, qui va gagner le match ce soir?","Ça dépend de la gardienne. Si elle est bonne, les locaux."],["Pis le métier d'arbitre, c'est dur?","Un peu. Faut avoir la peau dure et bien voir la ligne bleue."]]};
+CT.chantal={t:[T_("Ton colis est arrivé au bureau de poste! 📦","Parfait, je passe le chercher","Je suis ouverte jusqu'à 17 h.","Si tu pouvais me le livrer…","Haha, c'est pas dans mon itinéraire, mais je vais voir."),
+ T_("Je tricote des tuques pour tout le quartier 🧶","Wow! J'en voudrais une","Je t'en fais une bleue, comme tes yeux.","T'es incroyable","Merci! C'est pour réchauffer les têtes de tout le monde."),
+ T_("Beau temps pour une marche, non?","Oui, allons-y bientôt","On se voit au parc un de ces jours.","Je suis pris aujourd'hui","Pas de souci, le beau temps va durer.")],
+ j:[["Salut Chantal, le courrier arrive à quelle heure?","Vers 13 h, comme d'habitude. Ça dépend de la neige!"],["Pis ton tricot, tu fais quoi ces temps-ci?","Un foulard de huit pieds de long. Pas sûre de le finir."]]};
+CT.yves={t:[T_("Rabais sur les perceuses cette semaine 🔨","J'en ai justement besoin","Passe vite, il en reste cinq!","J'ai déjà la mienne","Parfait, mais pense à une scie sauteuse alors."),
+ T_("Si t'as un projet de bricolage, passe me voir!","Oui, une étagère à faire","Je te prépare les planches et les vis.","Rien pour l'instant","Pas de souci, quand l'idée viendra."),
+ T_("J'ai gardé ta vis spéciale, celle qu'on trouve nulle part.","T'es un champion!","C'est mon métier de tout garder!","Laquelle déjà?","Celle pour l'étagère, voyons!")],
+ j:[["Salut Yves, quels outils acheter pour commencer?","Un marteau, un tournevis, un niveau. Le reste, tu l'ajouteras au fil des projets."],["Pis ta menuiserie, tu fais quoi?","Une table de cuisine en érable. Elle va durer cent ans."]]};
+CT.amelie={t:[T_("Pense à mettre de l'argent de côté cette semaine 💰","Bon rappel, je vais le faire","Même 20 $, ça compte à la longue.","J'ai des dépenses fixes, c'est serré","Je comprends, commence par 5 $, c'est déjà bien."),
+ T_("Tu devrais regarder les placements, Marcel!","Oui, je regarde la Bourse","Diversifie : ne mets pas tous tes œufs dans le même panier.","J'ai peur de perdre mon argent","C'est normal! Commence petit et apprends."),
+ T_("Les taux d'intérêt montent, vérifie ton épargne.","Merci du conseil","Pour ça, je suis là!","Je n'en ai pas beaucoup","Ça viendra, une semaine à la fois.")],
+ j:[["Salut Amélie, c'est quoi le meilleur conseil financier?","Paie-toi d'abord : mets de l'argent de côté dès que tu es payé."],["Pis la Bourse, c'est risqué?","Oui. N'investis que ce que tu peux te permettre de perdre."]]};
+CT.camille={t:[T_("J'ai soigné un petit renard aujourd'hui 🦊","Wow! Il va bien?","Oui, une petite patte blessée. Il sera relâché la semaine prochaine.","Un vrai renard?","Oui! Il était trop mignon et pas du tout content."),
+ T_("Les chiots sont en adoption, viens voir!","J'irais bien les voir","Passe à la clinique, y en a six!","Pas pour moi, mais merci","Pas de souci, je vais trouver des familles."),
+ T_("Comment va ton animal préféré?","Super, il est en forme","Parfait! Un animal heureux, c'est un bon maître.","Il est un peu paresseux","Haha, c'est normal, ils dorment beaucoup.")],
+ j:[["Salut Camille, ton conseil pour garder mon animal en santé?","De l'exercice, de l'eau fraîche et des visites régulières chez le vétérinaire."],["Pis la randonnée, tu y vas bientôt?","Samedi! Y a un sentier magnifique autour du lac."]]};
+CT.marcandre={t:[T_("La maison gagne toujours, mais pas ce soir 😏","Ah oui? Raconte!","Un client a gagné le gros lot de 800 $!","Je ne joue presque jamais","Tu fais bien, c'est dangereux."),
+ T_("Soirée poker entre amis samedi?","Je suis partant!","Super! On mise des bonbons, pas d'argent.","Je suis nul au poker","Moi aussi, c'est ce qui rend ça drôle."),
+ T_("Un conseil : ne mise jamais le loyer.","Bon conseil, merci!","C'est la règle d'or des joueurs.","Je mise toujours petit","Parfait, c'est la bonne approche.")],
+ j:[["Salut Marc-André, une astuce pour le poker?","Observe les autres plus que tes cartes."],["Pis ton travail au casino, c'est comment?","Long, mais amusant. Les gens sont drôles à 2 h du matin."]]};
+CT.isabelle={t:[T_("Je cherche un modèle pour mon projet photo 📸","Moi, ça me tente!","Super! Samedi matin, lumière naturelle.","Je suis pas photogénique","Ben voyons, tout le monde l'est!"),
+ T_("Expo de fin de session jeudi, viens!","J'y serai!","Merci! Ça commence à 17 h.","Je ne peux pas jeudi","Pas de souci, je t'envoie des photos."),
+ T_("Tu connais un bon endroit pour des photos d'automne?","Le parc près de l'étang","Parfait, la lumière est belle là-bas!","Pas vraiment…","Je vais explorer, merci quand même.")],
+ j:[["Salut Isabelle, un conseil pour prendre de belles photos?","Cherche la lumière du matin ou du soir, c'est magique."],["Pis tes études en design?","Beaucoup de travaux, mais j'adore ça."]]};
+CT.olivier={t:[T_("Je code un jeu de société, tu veux tester? 🎲","Oui, avec plaisir!","Parfait! Je te l'envoie ce soir.","Je suis nul aux jeux","Tant mieux, c'est pour voir si c'est assez simple!"),
+ T_("Ton wifi tient le coup? Je peux regarder ça.","Ce serait gentil","Passe me voir, je réinitialise le routeur.","Ça va, merci","Super, à ton service si ça change."),
+ T_("Soirée LAN chez moi vendredi!","Je suis là!","Super! Apporte ta manette.","Pas vendredi, désolé","Pas de souci, une autre fois!")],
+ j:[["Salut Olivier, un jeu à me recommander?","Un jeu d'exploration tranquille. Parfait pour décompresser."],["Pis ton boulot de développeur?","Un bug à régler depuis trois jours. Je suis presque sûr que c'est une virgule."]]};
+CT.josee={t:[T_("J'ai fini ma toile du lac, viens la voir! 🎨","J'arrive!","Elle est encore humide, fais attention!","Je suis occupé aujourd'hui","Pas de souci, elle ne va nulle part."),
+ T_("Vernissage samedi dans mon atelier.","Avec plaisir!","Parfait, 17 h. Il y aura du vin et du fromage.","Je ne suis pas très art","Moi non plus, je suis là pour le fromage!"),
+ T_("Le ciel est magnifique ce soir, regarde dehors!","Wow, tu as raison!","Rose et orange, je vais le peindre demain.","Je suis trop occupé","Regarde dans cinq minutes, ça change vite.")],
+ j:[["Salut Josée, tu peins quoi en ce moment?","Un grand paysage d'automne, avec beaucoup d'orange."],["Un conseil pour débuter en peinture?","Commence avec trois couleurs. Le reste, tu les mélanges."]]};
+CT.raymond={t:[T_("Une partie de cribbage, ça te tente? 🃏","Avec plaisir!","Apporte du café, j'ai les cartes.","Je ne connais pas les règles","Je vais te les montrer, c'est facile!"),
+ T_("Dans mon temps, l'hiver durait six mois.","Haha, ça n'a pas changé!","Oui, mais on avait des vrais bancs de neige.","Tu exagères!","Même pas! On allait à l'école dedans."),
+ T_("Les outardes passent, ça sent l'automne.","Je les ai entendues ce matin","Elles volent en V, comme toujours.","Déjà? Je ne les ai pas vues","Regarde en haut vers le soir.")],
+ j:[["Salut Raymond, un conseil de vieux sage?","Dors huit heures et mange du bon pain. Le reste est secondaire."],["Pis le cribbage, tu gagnes encore?","Toujours! C'est pas de la chance, c'est de l'expérience."]]};
+CT.mathilde={t:[T_("Corrections jusqu'à minuit… 📝","Courage!","Merci, un café fort m'aide.","Pauvre toi!","Ça fait partie du métier, mais je les aime, mes élèves."),
+ T_("Mes élèves ont fait un bonhomme de neige géant!","Wow, quelle taille?","Presque 2 mètres. Un record pour l'école!","C'est mignon!","Ils étaient fiers comme des paons."),
+ T_("Viens parler de ton métier à ma classe un de ces jours!","Avec plaisir!","Super! Ils vont poser plein de questions.","Je ne sais pas quoi dire","Raconte ta journée, ils adorent ça.")],
+ j:[["Salut Mathilde, un bon livre à lire?","Un roman court, quelque chose de lumineux."],["Pis l'école, ça va?","Très occupée, mais j'adore mes élèves."]]};
+CT.julie={t:[T_("Terrasse ce soir? Il fait trop beau!","Oui! Le Café Lune a ouvert la sienne","Parfait, on se retrouve vers 17 h!","Pas ce soir, trop de choses","Pas de souci, on se reprend vite."),
+ T_("J'ai attrapé un coup de soleil à la plage 🥵","Oups, t'avais pas de crème?","Pas assez, évidemment. Je suis rouge tomate.","Ça fait mal?","Un peu! Je dors sur le ventre."),
+ T_("Tu fais quoi de ta fin de semaine?","Rien de prévu, une marche?","Parfait! Au parc, samedi après-midi?","Je travaille, malheureusement","Dommage, on se reprend dimanche alors.")],
+ j:[["Salut Julie, ça va?","Oui! Je suis au travail mais j'ai hâte à la fin de semaine."],["Un bon film à me suggérer?","Une comédie romantique, sans hésiter!"]]};
+CT.steve={t:[T_("As-tu vu la game hier? 🏒","Oui, c'était malade!","Le but en prolongation, wow!","Non, je l'ai manquée","Je te raconte au prochain match, c'était fou."),
+ T_("BBQ samedi 🍔 T'es des nôtres?","Je suis là!","Super, j'apporte la bière.","Pas cette fois","Pas de souci, je t'en garde une."),
+ T_("Mon char refait le bruit 😩","Va voir Réjean","Bonne idée, j'y vais lundi.","Ça m'inquiète!","Moi aussi, mais Réjean va régler ça.")],
+ j:[["Salut Steve, game de hockey ce soir?","Oui! On la regarde chez moi? J'apporte les chips."],["Pis, quoi de neuf?","Pas grand-chose, je répare ma clôture."]]};
+CT.maman={t:[T_("As-tu mangé, mon grand?","Oui maman, un bon dîner","Bon garçon! Continue à bien manger.","Pas encore, j'ai pas eu le temps","Mon grand! Viens manger chez moi."),
+ T_("Souper dimanche, je fais du pâté chinois.","J'y serai!","Parfait, je mets un couvert de plus. ❤️","Je vais voir si je suis libre","Fais de ton mieux, j'en fais en masse."),
+ T_("Mets ta tuque! 🧣","Oui maman","Bon garçon.","Il fait doux, maman!","Même quand il fait doux, on ne sait jamais.")],
+ j:[["Allo maman, ça va?","Oui mon grand, je tricote une tuque pour toi."],["Tu fais quoi de bon?","Je prépare du ragoût de boulettes. Tu viens?"]]};}
+const CTSEED={maman:["Bonjour mon grand! N'oublie pas : souper dimanche. ❤️",[["Oui maman, j'y serai!","Parfait! Je t'aime, mon grand."],["Je vais essayer d'y être","Fais ton possible, je t'attends."]]],
+ kevin:["Salut Marcel! C'est Kevin, du Café Lune. Passe prendre un café un de ces jours!",[["Avec plaisir, j'y passe bientôt!","Parfait! Le premier est sur la maison."],["Je suis pas mal occupé, mais merci","Pas de souci, la porte est toujours ouverte."]]]};
+const pendOf=pair=>({t:'chat',opts:pair.map(x=>x[0]),ans:pair.map(x=>x[1]),exp:gm+600});
 /* --- Messages : conversations, invitations, cadeaux --- */
 const RPL=["Hahaha, t'es drôle!","Exactement!","Je pensais pareil 😄","On se reparle bientôt!","Ça me fait plaisir de te lire.","Haha, c'est vrai!","T'es un bon, Marcel.","Bonne journée à toi!"];
 const MYQ=["Pis, quoi de neuf?","Comment va ta journée?","Tu fais quoi de bon?","Ça fait longtemps! Ça va?","J'ai pensé à toi. Ça va bien?"];
@@ -6170,15 +6267,15 @@ const MYR=["😄 Haha!","👍 Bonne idée","🙌 Merci!","Pis toi, ça va?","�
 function frInvite(id,k){const c=CBY[id],m=MS(id),K=KINDS[k],l=frInfo(id).l,h=hourOf();
   if(INVITE){toast('Marcel a déjà un rendez-vous de prévu',false);return;}if(gm<(m.icd||0)){toast(c.n.split(' ')[0]+' n\'est pas disponible pour l\'instant',false);return;}
   const r=K.ok(h);if(r!==true){toast(K.e+' '+r,false);return;}
-  msgAdd(id,'m',pick(K.txt));
+  msgAdd(id,'m',pick(K.mtxt||K.txt));
   if(Math.random()<.55+Math.min(.4,l*.01)){msgAdd(id,'e',pick(["Avec plaisir! J'arrive!","Parfait, on se voit là-bas!","Oui! Donne-moi quelques minutes."]));INVITE={id,k,at:gm};m.pend=null;toast('✉️ '+c.n.split(' ')[0]+' a accepté! Marcel y va dès qu\'il est libre.',true);}
   else{msgAdd(id,'e',pick(["Désolé, je suis pris aujourd'hui.","Pas aujourd'hui, mais bientôt!","Je travaille, malheureusement."]));m.icd=gm+120;toast('✉️ '+c.n.split(' ')[0]+' est occupé(e) pour l\'instant',false);}
   CELL._bot=1;}
 function frJaser(id){const c=CBY[id],m=MS(id);if(gm<(m.cd||0)){toast('Laisse un peu de temps avant de réécrire à '+c.n.split(' ')[0],false);return;}
-  m.cd=gm+120;msgAdd(id,'m',pick(MYQ));const o=cOpen(c);msgAdd(id,'e',fill(pick(o.length?o:RPL)));need.social=Math.min(100,need.social+2.5);frXP(id,4);cnt('fr_text');toast('💬 +4 pts d\'amitié avec '+c.n.split(' ')[0],true);CELL._bot=1;}
+  const J=(CT[id]&&CT[id].j)||[["Pis, quoi de neuf?","Pas grand-chose, et toi?"]];const k=(m.ji||0)%J.length;m.ji=k+1;m.cd=gm+120;msgAdd(id,'m',J[k][0]);msgAdd(id,'e',J[k][1]);need.social=Math.min(100,need.social+2.5);frXP(id,4);cnt('fr_text');toast('💬 +4 pts d\'amitié avec '+c.n.split(' ')[0],true);CELL._bot=1;}
 function frGift(id){const c=CBY[id],m=MS(id),dn=dayN();if(m.gd===dn){toast('Tu as déjà offert un cadeau à '+c.n.split(' ')[0]+' aujourd\'hui',false);return;}if(money<15){toast('Pas assez d\'argent',false);return;}
   m.gd=dn;addMoney(-15,'Cadeau pour '+c.n.split(' ')[0]);msgAdd(id,'e',pick(["Oh wow, merci Marcel!","Pour moi? T'es trop gentil! 🥰","Tu n'aurais pas dû! Merci!"]));frXP(id,14);cnt('fr_gift');CELL._bot=1;}
-function frReply(id,i){const m=MS(id),p=m.pend;if(!p)return;const txt=p.opts?p.opts[i]:null;if(txt){msgAdd(id,'m',txt);msgAdd(id,'e',pick(RPL));frXP(id,5);need.social=Math.min(100,need.social+2);cnt('fr_text');}m.pend=null;CELL._bot=1;}
+function frReply(id,i){const m=MS(id),p=m.pend;if(!p||p.t!=='chat')return;if(p.opts&&p.opts[i]){msgAdd(id,'m',p.opts[i]);msgAdd(id,'e',p.ans[i]);frXP(id,5);need.social=Math.min(100,need.social+2);cnt('fr_text');}m.pend=null;CELL._bot=1;}
 function frAnswer(id,yes){const c=CBY[id],m=MS(id),p=m.pend;if(!p||p.t!=='inv')return;m.pend=null;
   if(yes&&!INVITE){msgAdd(id,'m',"Avec plaisir! J'arrive!");INVITE={id,k:p.k,at:gm};toast('✉️ Rendez-vous accepté : Marcel y va dès qu\'il est libre',true);}
   else if(yes){msgAdd(id,'m',"Je suis déjà pris, désolé!");msgAdd(id,'e','Pas de souci, une autre fois!');}
@@ -6193,7 +6290,7 @@ function frHourly(){const hi=Math.floor(gm/60);if(LIFE.frH==null){LIFE.frH=hi;re
   if(c.perk==='tuyau'&&s>0&&r<.5){const B=BO(),free=STK.filter(x=>!(B.tips[x[0]]&&gm<B.tips[x[0]].until));if(free.length){const sk=pick(free),dir=Math.random()<.5?1:-1,good=Math.random()<Math.min(.9,.55+.15*frPerk('tuyau'));B.tips[sk[0]]={dir,until:gm+2*1440,good,by:c.id};
     msgAdd(c.id,'e',"Tuyau pour la Bourse 📈 : "+sk[1]+" ("+sk[0]+") devrait "+(dir>0?"monter 🚀":"baisser 📉")+" d'ici deux jours.",true);return;}}
   if(!INVITE&&!MAPD&&r<Math.min(.4,.1+l*.012)){const ks=c.kinds.filter(k=>KINDS[k].ok(h)===true);if(ks.length){const k=pick(ks);msgAdd(c.id,'e',pick(KINDS[k].txt),true);m.pend={t:'inv',k,exp:gm+240};toast('✉️ '+nm+' t\'invite : '+KINDS[k].e+' '+KINDS[k].n,true);try{SFX.ping();}catch(e){}return;}}
-  const o=cOpen(c);msgAdd(c.id,'e',fill(pick(o.length?o:RPL)),true);m.pend={t:'chat',opts:[...MYR].sort(()=>Math.random()-.5).slice(0,3),exp:gm+600};toast('💬 '+nm+' t\'a écrit',true);try{SFX.ping();}catch(e){}}
+  const TH=(CT[c.id]&&CT[c.id].t)||[];if(!TH.length)return;let ti=Math.floor(Math.random()*TH.length);if(TH.length>1&&ti===m.ti)ti=(ti+1)%TH.length;m.ti=ti;msgAdd(c.id,'e',TH[ti][0],true);m.pend=pendOf(TH[ti][1]);toast('💬 '+nm+' t\'a écrit',true);try{SFX.ping();}catch(e){}}
 /* ---------- Bourse ---------- */
 const STK=[['HYDQ','Hydro-Nord','💡',62,.007,.25,.0001,.004],['SIRP',"Sirop d'érable Cie",'🍁',38,.012,.7,.0001,0],['POUT','Poutine Express','🍟',24,.016,.9,.0001,0],['CARI','Caribou Tech','🦌',112,.028,1.4,.0001,0],
  ['NEIG','Neige Transport','🚌',47,.014,.8,.0001,.003],['FEUI',"Mines Feuille d'Or",'⛏️',18,.035,1.1,0,0],['LACS','Immobilier des Lacs','🏘️',55,.009,.5,.0001,.005],['PUCK','Équipement Puck','🏒',31,.02,1,.0001,0]];
@@ -6222,7 +6319,7 @@ function boTrade(sym,side,q){const B=BO(),px=boLast(sym),fee=boFee(),P=B.pos[sym
     const proceeds=Math.round(q*px-fee);addMoney(proceeds,'Vente '+q+' '+sym);
     B.rl+=q*(px-P.avg)-fee;B.fees+=fee;if(P.q-q<=0)delete B.pos[sym];else B.pos[sym]={q:P.q-q,avg:P.avg};toast('📉 Vendu : '+q+' × '+sym+' à '+px.toFixed(2)+' $',true);}
   cnt('bo_trade');}
-function frTick(){if(!LIFE.frInit){LIFE.frInit=1;msgAdd('maman','e',"Bonjour mon grand! N'oublie pas : souper dimanche. ❤️",true);msgAdd('kevin','e',"Salut Marcel! C'est Kevin, du Café Lune. Passe prendre un café un de ces jours!",true);}
+function frTick(){if(LIFE.msg)for(const id in LIFE.msg){const p=LIFE.msg[id].pend;if(p&&p.t==='chat'&&!p.ans)LIFE.msg[id].pend=null;}if(!LIFE.frInit){LIFE.frInit=1;for(const id in CTSEED){msgAdd(id,'e',CTSEED[id][0],true);MS(id).pend=pendOf(CTSEED[id][1]);}}
   boCatch();frHourly();boDiv();}
 {const _u=ui;ui=()=>{_u();try{frTick();}catch(e){console.error(e);}};}
 /* --- Livraison : menus --- */
