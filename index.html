@@ -129,7 +129,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #son{position:absolute;top:8px;right:10px;z-index:7;font:700 .72rem var(--f-body);color:var(--craie);background:rgba(18,22,30,.82);border:1px solid var(--trait);border-radius:999px;padding:6px 11px;cursor:pointer;backdrop-filter:blur(6px)}
 #son[aria-pressed="true"]{background:rgba(115,192,143,.25);border-color:var(--sapin)}
 #son:focus-visible{outline:2px solid var(--citrouille);outline-offset:2px}
-#toast{position:absolute;left:50%;top:46px;z-index:6;transform:translate(-50%,-10px);opacity:0;background:rgba(18,22,30,.9);border:1px solid var(--trait);border-radius:12px;padding:7px 14px;font-weight:700;font-size:.85rem;transition:opacity .35s,transform .35s;pointer-events:none;white-space:nowrap}
+#toast{position:absolute;left:50%;top:46px;z-index:14;transform:translate(-50%,-10px);opacity:0;background:rgba(18,22,30,.9);border:1px solid var(--trait);border-radius:12px;padding:7px 14px;font-weight:700;font-size:.85rem;transition:opacity .35s,transform .35s;pointer-events:none;white-space:nowrap}
 #toast.on{opacity:1;transform:translate(-50%,0)}#toast.bon{color:var(--sapin);border-color:var(--sapin)}
 #contrat{margin:8px 0 0;font-size:.74rem;color:var(--gris);line-height:1.3}#contrat b{color:var(--craie)}
 .ap{display:flex;flex-direction:column;gap:5px;font-size:.66rem;line-height:1.25;height:100%}
@@ -157,6 +157,36 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .sauve button.warn{border-color:var(--brique);color:var(--brique)}
 #saveInfo{font-size:.68rem;color:var(--gris)}
 @media (prefers-reduced-motion:reduce){.lb,#tel,#appel{transition:none}}
+/* ---- Cellulaire interactif ---- */
+#cellB{position:absolute;top:50px;left:8px;z-index:7;width:36px;height:36px;border-radius:10px;border:1px solid var(--trait);background:rgba(18,22,30,.82);backdrop-filter:blur(6px);color:var(--craie);font-size:1rem;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+#cellB:hover{background:rgba(40,48,64,.9)}#cellB.on{background:var(--citrouille);border-color:var(--citrouille)}#cellB:focus-visible,#cellX:focus-visible,#cell button:focus-visible{outline:2px solid var(--citrouille);outline-offset:2px}
+#cellB.alert:after{content:"";position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;background:var(--brique);border:2px solid var(--nuit)}
+#cell{position:absolute;inset:0;z-index:11;background:rgba(5,8,14,.76);backdrop-filter:blur(3px);display:grid;place-items:center;padding:8px}
+#cell[hidden]{display:none!important}
+.cphone{position:relative;width:min(340px,100%);height:100%;max-height:660px;border-radius:34px;background:#0d0f13;padding:9px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.cscr{position:relative;height:100%;border-radius:26px;background:#f4f2ee;color:#1d1d1f;overflow:hidden;display:flex;flex-direction:column;font-family:var(--f-body)}
+.cscr.home{background:radial-gradient(120% 90% at 20% 0%,#4a4f86 0%,#262b52 52%,#141829 100%);color:#fff}
+.cstat{display:flex;justify-content:space-between;align-items:center;padding:10px 18px 6px;font-size:.72rem;font-weight:700;gap:8px}.cstat #cTitle{flex:1;text-align:center;font-weight:700;opacity:.85}
+.cbody{flex:1;min-height:0;overflow-y:auto;padding:6px 12px 14px;-webkit-overflow-scrolling:touch}
+.chome{flex:none;align-self:center;width:96px;height:5px;border-radius:99px;background:rgba(120,120,130,.55);border:0;margin:4px 0 8px;cursor:pointer;padding:0}
+.cscr.home .chome{background:rgba(255,255,255,.55)}
+#cellX{position:absolute;top:-6px;right:-6px;width:34px;height:34px;border-radius:50%;border:1px solid var(--trait);background:#232b3a;color:var(--craie);cursor:pointer;font-size:.9rem;z-index:2}
+.chorl{text-align:center;margin:4px 0 2px}.chorl b{display:block;font:800 2rem var(--f-display);letter-spacing:-.02em}.chorl span{font-size:.78rem;opacity:.8}
+.cicons{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px;padding:8px 6px}
+.cic{display:flex;flex-direction:column;align-items:center;gap:5px;background:transparent;border:0;color:inherit;font:600 .7rem var(--f-body);cursor:pointer;position:relative;padding:0}
+.cic i{font-style:normal;width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;box-shadow:0 4px 10px rgba(0,0,0,.35)}
+.cic u{position:absolute;top:-4px;right:calc(50% - 36px);min-width:18px;height:18px;border-radius:99px;background:#e2503c;color:#fff;font:800 .62rem/18px var(--f-body);text-align:center;text-decoration:none;padding:0 4px}
+.ch2{font:800 1.15rem var(--f-display);margin:6px 0 2px}.cmut{color:#7a7a82;font-size:.72rem;line-height:1.35}
+.cchips{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}.cchips button{font:700 .7rem var(--f-body);border:1px solid #cfcab9;background:#fff;color:#333;border-radius:99px;padding:4px 10px;cursor:pointer}.cchips button.on{background:#3d8bfd;border-color:#3d8bfd;color:#fff}
+.crow{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;text-align:left;background:#fff;border:1.5px solid transparent;border-radius:12px;padding:8px 10px;margin:0 0 6px;font:600 .78rem var(--f-body);color:#1d1d1f;cursor:pointer}
+.crow.sel{border-color:#3d8bfd;background:#eaf2ff}.crow.no{opacity:.55}.crow small{display:block;font-weight:400;color:#7a7a82;font-size:.66rem}.crow em{font-style:normal;font-weight:800;font-size:.72rem;color:#1f8a4c;white-space:nowrap}.crow em.neg{color:#c0392b}
+.cinfo{background:#fff;border-radius:12px;padding:8px 10px;margin:0 0 8px;font-size:.76rem;line-height:1.4}.cinfo b{font-weight:800}
+.cban{background:#eaf2ff;border:1.5px solid #3d8bfd;border-radius:12px;padding:8px 10px;margin:6px 0;font-size:.76rem;display:flex;gap:8px;align-items:center;justify-content:space-between}.cban button{font:700 .7rem var(--f-body);border:0;border-radius:99px;background:#3d8bfd;color:#fff;padding:5px 10px;cursor:pointer}
+.cmap{border-radius:12px;overflow:hidden;background:#e8eadf;margin:6px 0 4px;border:1px solid #d6d2c4}.cmap svg{display:block;width:100%;height:auto}.cmap .pin{cursor:pointer}
+.cbar{height:8px;border-radius:99px;background:#dcd8cc;overflow:hidden;margin:3px 0 7px}.cbar i{display:block;height:100%;border-radius:99px}
+.cgros{font:800 1.8rem var(--f-display);text-align:center;margin:6px 0}
+@media (max-width:640px){#cell{padding:4px}.cphone{border-radius:28px}.cscr{border-radius:21px}}
+
 #mg{position:absolute;inset:0;z-index:12;background:#0e1320;display:flex;flex-direction:column;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 #mg .mgh{display:flex;align-items:center;gap:10px;padding:8px 10px 6px;color:var(--craie);font:700 .9rem var(--f-body)}#mgT{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#mgS{font-variant-numeric:tabular-nums;color:var(--citrouille);white-space:nowrap}
 #mgX{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--trait);background:rgba(255,255,255,.08);color:inherit;font-size:1rem;cursor:pointer}#mg .mgbar{height:4px;background:#283143;margin:0 10px 6px;border-radius:99px;overflow:hidden}#mgB{display:block;height:100%;width:100%;background:var(--citrouille)}
@@ -187,6 +217,8 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
     <button id="son" type="button" aria-pressed="false">🔇 Activer le son</button><button id="pauseB" type="button" aria-label="Mettre en pause" title="Pause">⏸</button><div id="pauseTag" hidden>⏸ PAUSE</div><button id="plein" type="button" aria-label="Plein écran" title="Plein écran">⛶</button><div id="toast"></div>
     <div id="choix" role="dialog" aria-live="polite"><p id="choixQ"></p><div id="choixB"></div><div class="chrono"><i id="choixT"></i></div><small id="choixS"></small></div>
     <div id="mg" hidden><div class="mgh"><b id="mgT"></b><span id="mgS"></span><button id="mgX" type="button" aria-label="Quitter le mini-jeu">✕</button></div><div class="mgbar"><i id="mgB"></i></div><canvas id="mgC"></canvas></div>
+    <button id="cellB" type="button" aria-label="Ouvrir le cellulaire de Marcel" title="Cellulaire (met le jeu en pause)">📱</button>
+    <div id="cell" hidden role="dialog" aria-modal="true" aria-label="Cellulaire de Marcel"><div class="cphone"><div class="cscr"><div class="cstat"><b id="cTime">08:00</b><span id="cTitle"></span><span>📶 🔋</span></div><div class="cbody" id="cBody"></div><button class="chome" id="cHome" type="button" aria-label="Retour à l'accueil"></button></div><button id="cellX" type="button" aria-label="Fermer le cellulaire">✕</button></div></div>
     <div id="fondu"></div>
     <div id="chargement">Construction du quartier…</div>
   </div>
@@ -5785,9 +5817,9 @@ casinoOuting=function(){return[...at('casino.slot','slot',3,{label:'S\'installe 
 TROPHIES.push(['derby3','🏇','Roi de l\'hippodrome','Gagner les 3 courses d\'une soirée au Royal Derby',()=>C_('derby3')>=1]);
 
 /* ---------- Pause ---------- */
-const PAUSE={user:false,jour:false};
-const isPaused=()=>PAUSE.user||PAUSE.jour||!!(CHOICE&&!CHOICE.done);
-function pauseFrame(dt){tReal+=dt;if(PAUSE.user&&CHOICE&&!CHOICE.done)CHOICE.t0+=dt;if(PAUSE.jour&&skOpen!=='__jour')PAUSE.jour=false;updateChoice();mgTick();try{updateCamera(dt);}catch(e){}pauseUI();}
+const PAUSE={user:false,jour:false,phone:false};
+const isPaused=()=>PAUSE.user||PAUSE.jour||PAUSE.phone||!!(CHOICE&&!CHOICE.done);
+function pauseFrame(dt){tReal+=dt;if((PAUSE.user||PAUSE.phone)&&CHOICE&&!CHOICE.done)CHOICE.t0+=dt;if(PAUSE.jour&&skOpen!=='__jour')PAUSE.jour=false;updateChoice();mgTick();try{updateCamera(dt);}catch(e){}pauseUI();}
 let pauseLast=null;function pauseUI(){const p=isPaused();const k=(PAUSE.user?'u':'')+(p?'p':'');if(k===pauseLast)return;pauseLast=k;const b=$('pauseB');b.classList.toggle('on',PAUSE.user);b.textContent=PAUSE.user?'▶':'⏸';if(b.setAttribute)b.setAttribute('aria-label',PAUSE.user?'Reprendre':'Mettre en pause');b.title=PAUSE.user?'Reprendre':'Pause';
  $('pauseTag').hidden=!PAUSE.user;}
 $('pauseB').addEventListener('click',()=>{PAUSE.user=!PAUSE.user;pauseUI();});
@@ -5802,6 +5834,249 @@ if(document.addEventListener)document.addEventListener('keydown',e=>{if((e.key==
    try{if(on){const r=de.requestFullscreen||de.webkitRequestFullscreen;if(r){const pr=r.call(de);if(pr&&pr.catch)pr.catch(()=>{});}}else if(fsEl()){const x=document.exitFullscreen||document.webkitExitFullscreen;if(x){const pr=x.call(document);if(pr&&pr.catch)pr.catch(()=>{});}}}catch(e){}});
  const onFs=()=>{if(!fsEl()&&document.body.classList.contains('plein')&&btn.dataset.fs==='1')setOn(false);btn.dataset.fs=fsEl()?'1':'0';setTimeout(resize,60);};
  if(document.addEventListener){document.addEventListener('fullscreenchange',onFs);document.addEventListener('webkitfullscreenchange',onFs);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('plein')&&!fsEl()&&!MG.on)setOn(false);});}}
+
+/* ===== Ajouts : dépenses fixes, nouveaux mini-jeux, cellulaire ===== */
+/* ================= Dépenses fixes aux 7 jours ================= */
+/* Modifie les montants ici : le total est prélevé chaque lundi à 8 h (aux 7 jours). */
+const FIXED=[
+ {e:'🏠',n:'Hypothèque et taxes',v:()=>90},
+ {e:'💡',n:'Hydro-Québec',v:()=>20+(OWN.spa?8:0)+(winterM()?10:0)},
+ {e:'📶',n:'Internet et cellulaire',v:()=>28},
+ {e:'🛡️',n:'Assurances (auto et maison)',v:()=>30}];
+const fixTotal=()=>FIXED.reduce((s2,x)=>s2+Math.round(x.v()),0);
+function chargeFixed(){const L=FIXED.map(x=>[x.e+' '+x.n,Math.round(x.v())]);const tot=L.reduce((s2,x)=>s2+x[1],0);
+  money-=tot;if(DS){DS.spend+=tot;L.forEach(([l,v])=>DS.buys.push([l,v]));}
+  MLOG.unshift([fmt(gm),'Dépenses fixes de la semaine',-tot]);if(MLOG.length>12)MLOG.pop();
+  LIFE.fixLog=[{day:dayN(),date:fmtDay(),tot,L,neg:money<0},...(LIFE.fixLog||[])].slice(0,6);cnt('fixes');
+  toast('🧾 Dépenses fixes de la semaine : −'+tot+' $',false);try{SFX.ping();}catch(e){}
+  say(Mc,pick(['Ah, les factures de la semaine…','Et voilà, les dépenses fixes!','Le compte en banque a pleuré un peu.']),3.5);
+  if(money<0)setTask('⚠️ Solde négatif après les dépenses fixes : il faut travailler!');}
+function fixedTick(){const dn=dayN();if(LIFE.fixNext==null){LIFE.fixNext=(Math.floor(dn/7)+1)*7;return;}
+  if(dn<LIFE.fixNext||hourOf()<8)return;let n=0;while(dn>=LIFE.fixNext&&n++<4){chargeFixed();LIFE.fixNext+=7;}if(dn>=LIFE.fixNext)LIFE.fixNext=(Math.floor(dn/7)+1)*7;}
+{const _d=dayTick;dayTick=()=>{_d();try{fixedTick();}catch(e){console.error(e);}};}
+TROPHIES.push(['fixes4','🧾','Bon payeur','Payer 4 semaines de dépenses fixes',()=>C_('fixes')>=4]);
+
+/* ================= Nouveaux mini-jeux liés aux tâches et aux emplois ================= */
+/* 🧽 Frotter les taches (concierge, préposé, quilles, arcade, vaisselle, aspirateur) */
+function mgStain(G){const w=G.w||300,h=G.h||400;for(let k=0;k<12;k++){const nx=rnd(.13,.87),ny=rnd(.18,.72);if(G.F.some(f=>Math.hypot((f.nx-nx)*w,(f.ny-ny)*h)<Math.min(w,h)*.2))continue;G.S.push({nx,ny,r:rnd(.07,.11),hp:1,ph:rnd(0,6)});return;}}
+MGD.frotter={n:'Frotter les taches',e:'🧽',sk:'menage',dur:32,m:14,ml:'Prime du patron (mini-jeu)',bg:'#15222b',lab:'Prend son chiffon',
+ h:'Des taches salissent la surface. Garde le doigt appuyé et frotte avec des allers-retours jusqu\'à ce qu\'elles disparaissent. Attention aux objets fragiles 🏺 : ne frotte pas dessus!',
+ init(G){G.S=[];G.clean=0;G.dmg=0;G.br=0;G.lx=null;G.ly=null;G.nx=0;G.bub=[];G.F=[{nx:.22,ny:.3},{nx:.78,ny:.62}];for(let i=0;i<4;i++)mgStain(G);},
+ up(G,dt){const w=G.w,h=G.h,m=Math.min(w,h);G.nx-=dt;if(G.nx<=0&&G.S.length<5){mgStain(G);G.nx=rnd(1.2,2.2);}
+  if(G.held&&G.lx!=null){const d=Math.hypot(G.px-G.lx,G.py-G.ly);if(d>0){
+    for(const s2 of G.S){const x=s2.nx*w,y=s2.ny*h,r=s2.r*m;if(Math.hypot(G.px-x,G.py-y)<r+12){s2.hp-=d/(r*6);if(Math.random()<.5)G.bub.push({x:G.px+rnd(-10,10),y:G.py+rnd(-10,10),l:1});}}
+    for(const f of G.F){if(Math.hypot(G.px-f.nx*w,G.py-f.ny*h)<m*.08){G.br+=d/240;if(G.br>=1){G.br=0;G.dmg++;mgMsg(G,'Oups, un objet fragile est tombé!','#ff8a7a');mgSnd('tap');}}}}
+   G.lx=G.px;G.ly=G.py;}else{G.lx=G.held?G.px:null;G.ly=G.held?G.py:null;}
+  for(let i=G.S.length-1;i>=0;i--){const s2=G.S[i];if(s2.hp<=0){G.clean++;mgPop(G,'Propre! ✨',s2.nx*w,s2.ny*h,'#9ef0a0');mgSnd('ping');G.S.splice(i,1);}}
+  G.bub.forEach(b=>{b.l-=dt*1.5;b.y-=dt*22;});G.bub=G.bub.filter(b=>b.l>0);},
+ dr(G,g){const w=G.w,h=G.h,m=Math.min(w,h);g.fillStyle='#d9d4c4';g.fillRect(12,52,w-24,h-110);g.strokeStyle='rgba(0,0,0,.08)';g.lineWidth=1;for(let x=12;x<w-12;x+=44){g.beginPath();g.moveTo(x,52);g.lineTo(x,h-58);g.stroke();}for(let y=52;y<h-58;y+=44){g.beginPath();g.moveTo(12,y);g.lineTo(w-12,y);g.stroke();}
+  for(const s2 of G.S){const x=s2.nx*w,y=s2.ny*h,r=s2.r*m;g.globalAlpha=.25+.7*clamp(s2.hp,0,1);const gr=g.createRadialGradient(x,y,r*.1,x,y,r*1.15);gr.addColorStop(0,'#5a3a22');gr.addColorStop(1,'rgba(90,58,34,0)');g.fillStyle=gr;g.beginPath();g.arc(x,y,r*1.15,0,PI*2);g.fill();g.globalAlpha=Math.min(1,s2.hp)*.8;mgE(g,(G.o&&G.o.em)||'🟤',x,y,r*.9);g.globalAlpha=1;}
+  for(const f of G.F)mgE(g,'🏺',f.nx*w,f.ny*h,m*.12);
+  for(const b of G.bub){g.globalAlpha=Math.max(0,b.l)*.8;mgC(g,b.x,b.y,5,'#bfe9ff');g.globalAlpha=1;}
+  if(G.held)mgE(g,'🧽',G.px,G.py,44);
+  mgR(g,12,h-46,w-24,10,5,'#23324a');mgR(g,12,h-46,(w-24)*clamp(G.clean/9,0,1),10,5,'#7fd1a0');mgT(g,'Taches nettoyées : '+G.clean+(G.dmg?' · '+G.dmg+' objet'+(G.dmg>1?'s':'')+' cassé'+(G.dmg>1?'s':''):''),w/2,h-22,14,'#e8ecf4');},
+ hud:G=>'🧽 '+G.clean,
+ fin(G){G.msg=G.clean+' tache'+(G.clean>1?'s':'')+' disparue'+(G.clean>1?'s':'')+(G.dmg?' · '+G.dmg+' objet'+(G.dmg>1?'s':'')+' cassé'+(G.dmg>1?'s':''):' · rien de cassé!');return clamp(G.clean/9-G.dmg*.12,0,1);},
+ ap(s,r){if(!r.auto&&s>=.999)cnt('mg_frotter');}};
+
+/* 🌱 Tondre la pelouse / ❄️ Déneiger l'entrée (même moteur, deux habillages) */
+function mkField(id,K){MGD[id]={n:K.n,e:K.e,sk:'menage',dur:36,m:K.m,ml:K.ml,bg:K.bg,lab:K.lab,h:K.h,
+ init(G){G.cols=13;G.rows=17;G.cut=new Uint8Array(G.cols*G.rows);G.nc=0;G.hit=0;G.stun=0;G.R=[];G.mx=-1;G.my=-1;
+  while(G.R.length<5){const c=Math.floor(rnd(1,G.cols-1)),r=Math.floor(rnd(1,G.rows-3));if(!G.R.some(o=>Math.abs(o.c-c)<3&&Math.abs(o.r-r)<3))G.R.push({c,r,e:G.R.length%2?K.o2:K.o1});}},
+ lay(G){G.cs=Math.max(8,Math.min((G.w-24)/G.cols,(G.h-96)/G.rows));G.ox=(G.w-G.cs*G.cols)/2;G.oy=48;if(G.mx<0){G.mx=G.ox+G.cs*.8;G.my=G.oy+G.cs*(G.rows-.8);}},
+ up(G,dt){if(G.stun>0){G.stun-=dt;return;}const cs=G.cs;
+  if(G.held){const dx=G.px-G.mx,dy=G.py-G.my,d=Math.hypot(dx,dy);if(d>1){const k=Math.min(1,cs*9*dt/d),nx=G.mx+dx*k,ny=G.my+dy*k;
+    const hitR=G.R.find(o=>Math.hypot(nx-(G.ox+(o.c+.5)*cs),ny-(G.oy+(o.r+.5)*cs))<cs*.95);
+    if(hitR){G.hit++;G.stun=.9;mgMsg(G,K.hitMsg,'#ff8a7a');mgSnd('tap');G.mx-=dx/d*cs*1.4;G.my-=dy/d*cs*1.4;}else{G.mx=nx;G.my=ny;}}}
+  G.mx=clamp(G.mx,G.ox+cs*.4,G.ox+cs*(G.cols-.4));G.my=clamp(G.my,G.oy+cs*.4,G.oy+cs*(G.rows-.4));
+  const rr=cs*1.05,c0=Math.max(0,Math.floor((G.mx-rr-G.ox)/cs)),c1=Math.min(G.cols-1,Math.floor((G.mx+rr-G.ox)/cs)),r0=Math.max(0,Math.floor((G.my-rr-G.oy)/cs)),r1=Math.min(G.rows-1,Math.floor((G.my+rr-G.oy)/cs));
+  for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){const i=r*G.cols+c;if(G.cut[i]||G.R.some(o=>o.c===c&&o.r===r))continue;if(Math.hypot(G.ox+(c+.5)*cs-G.mx,G.oy+(r+.5)*cs-G.my)<rr){G.cut[i]=1;G.nc++;}}},
+ dr(G,g){const cs=G.cs;for(let r=0;r<G.rows;r++)for(let c=0;c<G.cols;c++){g.fillStyle=G.cut[r*G.cols+c]?(r%2?K.c1:K.c1b):(r%2?K.c0:K.c0b);g.fillRect(G.ox+c*cs,G.oy+r*cs,cs+.5,cs+.5);}
+  for(const o of G.R)mgE(g,o.e,G.ox+(o.c+.5)*cs,G.oy+(o.r+.5)*cs,cs*.95);
+  const sh=G.stun>0?Math.sin(G.t*60)*3:0;g.globalAlpha=.25;mgC(g,G.mx,G.my,cs*1.05,'#fff');g.globalAlpha=1;mgE(g,'🚜',G.mx+sh,G.my,cs*1.5);
+  const p=G.nc/(G.cols*G.rows-G.R.length);mgR(g,12,G.h-40,G.w-24,10,5,'#23324a');mgR(g,12,G.h-40,(G.w-24)*p,10,5,K.bar);mgT(g,K.lbl+' : '+Math.round(p*100)+' %'+(G.hit?' · '+G.hit+' accroc'+(G.hit>1?'s':''):''),G.w/2,G.h-18,14,'#e8ecf4');
+  if(G.t<3)mgT(g,'Glisse ton doigt pour guider le tracteur',G.w/2,26,15,'#fff');},
+ hud:G=>K.e+' '+Math.round(G.nc/(G.cols*G.rows-G.R.length)*100)+' %',
+ fin(G){const p=G.nc/(G.cols*G.rows-G.R.length);G.msg=Math.round(p*100)+' % '+K.done+(G.hit?' · '+G.hit+' accroc'+(G.hit>1?'s':''):' · aucun accroc!');return clamp(p/.9-G.hit*.07,0,1);},
+ ap(s,r){if(!r.auto&&s>=.999)cnt('mg_'+id);}};}
+mkField('tondre',{n:'Tondre la pelouse',e:'🌱',m:15,ml:'Pourboire du voisin (mini-jeu)',bg:'#10200f',lab:'Démarre la tondeuse',h:'Garde le doigt appuyé et glisse-le pour guider le tracteur : il coupe l\'herbe sur son passage. Évite les roches 🪨 et les plates-bandes 🌷, et tondre le plus de pelouse possible avant la fin!',
+ c0:'#2c6a29',c0b:'#2f7330',c1:'#9bdc57',c1b:'#8ccf4a',o1:'🪨',o2:'🌷',bar:'#9bdc57',lbl:'Pelouse tondue',done:'de la pelouse tondue',hitMsg:'Ouch! Une roche… la lame a sauté.'});
+mkField('deneiger',{n:'Déneiger l\'entrée',e:'❄️',m:16,ml:'Pourboire du voisin (mini-jeu)',bg:'#0f1a26',lab:'Prend sa pelle et sa souffleuse',h:'Garde le doigt appuyé et glisse-le pour guider le tracteur à neige : il dégage l\'entrée sur son passage. Évite les autos 🚗 et les bornes 🧱, et dégage le plus possible avant la fin!',
+ c0:'#dfe8f2',c0b:'#e8f0f8',c1:'#59616b',c1b:'#4c545e',o1:'🚗',o2:'🧱',bar:'#8fc7ff',lbl:'Entrée dégagée',done:'de l\'entrée dégagée',hitMsg:'Clong! Une bosse sous la neige…'});
+
+/* 🏭 Contrôle qualité (usine, cour à bois) */
+MGD.convoyeur={n:'Contrôle qualité',e:'🏭',sk:'menage',dur:34,m:18,ml:'Prime de production (mini-jeu)',bg:'#1c1f26',lab:'Surveille le convoyeur',
+ h:'Des pièces défilent sur le convoyeur. Touche celles qui sont défectueuses (fissure rouge) avant qu\'elles quittent la chaîne. Ne touche pas les bonnes pièces!',
+ init(G){G.L=[];G.nx=.4;G.rej=0;G.wr=0;G.ms=0;G.em=G.o&&G.o.skin==='bois'?'🪵':'⚙️';},
+ up(G,dt){const v=G.w*.2+G.t*3.6;G.nx-=dt;if(G.nx<=0){G.L.push({x:G.w+30,bad:Math.random()<.35,s:0,a:1});G.nx=rnd(.55,.95)-Math.min(.2,G.t/150);}
+  for(const o of G.L){o.x-=v*dt;if(o.s)o.a-=dt*2.2;}
+  for(let i=G.L.length-1;i>=0;i--){const o=G.L[i];if(o.a<=0){G.L.splice(i,1);continue;}if(o.x<-30){if(o.bad&&!o.s){G.ms++;mgMsg(G,'Une pièce défectueuse est passée!','#ff8a7a');}G.L.splice(i,1);}}},
+ dn(G,x,y){const zy=G.h*.42;let best=null,bd=48;for(const o of G.L){if(o.s)continue;const d=Math.hypot(o.x-x,zy-y);if(d<bd){bd=d;best=o;}}if(!best)return;best.s=1;
+  if(best.bad){G.rej++;mgPop(G,'Rejetée ✓',best.x,zy-40);mgSnd('tap');}else{G.wr++;mgMsg(G,'Cette pièce était bonne!','#ff8a7a');}},
+ dr(G,g){const w=G.w,h=G.h,zy=h*.42;g.fillStyle='#2b2f36';g.fillRect(0,zy-38,w,76);g.fillStyle='#3a404a';for(let x=-((G.t*(G.w*.2+G.t*3.6))%30);x<w;x+=30)g.fillRect(x,zy-38,3,76);g.fillStyle='#ffb300';g.fillRect(0,zy-42,w,4);g.fillRect(0,zy+38,w,4);
+  for(const o of G.L){g.globalAlpha=Math.max(0,o.a);const yy=zy-(o.s?(1-o.a)*50:0);mgE(g,G.em,o.x,yy,42);if(o.bad){g.strokeStyle='#ff3b3b';g.lineWidth=3;g.beginPath();g.moveTo(o.x-14,yy-16);g.lineTo(o.x-2,yy-2);g.lineTo(o.x-10,yy+4);g.lineTo(o.x+8,yy+18);g.stroke();mgC(g,o.x+14,yy-18,7,'#ff3b3b');mgT(g,'!',o.x+14,yy-18,11,'#fff');}g.globalAlpha=1;}
+  mgR(g,w*.1,h*.64,w*.8,h*.2,14,'#1b2a3c');mgT(g,'Défauts rejetés : '+G.rej+'   ·   Erreurs : '+(G.wr+G.ms),w/2,h*.74,17,'#9ef0a0');},
+ hud:G=>'✅ '+G.rej+'   ❌ '+(G.wr+G.ms),
+ fin(G){G.msg=G.rej+' pièce'+(G.rej>1?'s':'')+' défectueuse'+(G.rej>1?'s':'')+' rejetée'+(G.rej>1?'s':'');return clamp(G.rej/Math.max(8,G.rej+G.ms)-G.wr*.07,0,1);}};
+
+/* 🧘 Cours d'entraînement (moniteur de gym, séance à la maison) */
+function mgSimonNext(G,first){if(!first&&!G.redo)G.seq.push(Math.floor(rnd(0,4)));G.redo=0;G.mode='show';G.k=-.5;G.pi=0;G.fl=-1;}
+MGD.simon={n:'Cours d\'entraînement',e:'🧘',sk:'muscu',dur:80,m:16,ml:'Pourboire des membres (mini-jeu)',bg:'#1d1426',lab:'Prépare sa séance',
+ h:'Regarde la séquence de mouvements, puis répète-la en touchant les mêmes boutons dans le même ordre. Chaque réussite ajoute un mouvement. Trois erreurs et la séance est terminée!',
+ init(G){G.mv=['🙆','🤸','🏃','🧘'];G.col=['#c2417a','#2f8f6a','#d98a2b','#3d6fd1'];G.seq=[Math.floor(rnd(0,4)),Math.floor(rnd(0,4))];G.round=0;G.lives=3;G.redo=0;G.press=-1;G.pk=0;mgSimonNext(G,1);},
+ lay(G){const gap=12,bw=(G.w-36-gap)/2,bh=Math.min(110,G.h*.17);G.btns=G.mv.map((e,i)=>({x:18+(i%2)*(bw+gap),y:G.h-24-(2-Math.floor(i/2))*(bh+gap),w:bw,h:bh,e,i}));},
+ up(G,dt){G.k+=dt;if(G.pk>0)G.pk-=dt;
+  if(G.mode==='show'){const n=Math.floor(G.k/.7);G.fl=(G.k>=0&&G.k%.7<.5&&n<G.seq.length)?G.seq[n]:-1;if(G.k>=0&&n>=G.seq.length+1){G.mode='in';G.k=0;G.fl=-1;}}
+  else if(G.mode==='res'&&G.k>1.1){if(G.lives<=0||G.round>=7){G.end=1;return;}mgSimonNext(G);}},
+ dn(G,x,y){if(G.mode!=='in')return;const b=G.btns.find(b=>mgHit(b,x,y));if(!b)return;G.press=b.i;G.pk=.2;mgSnd('tap');
+  if(b.i===G.seq[G.pi]){G.pi++;if(G.pi>=G.seq.length){G.round++;mgMsg(G,'Série réussie! ✓','#9ef0a0');G.mode='res';G.k=0;mgSnd('ping');}}
+  else{G.lives--;G.redo=1;mgMsg(G,'Raté! On la remontre…','#ff8a7a');G.mode='res';G.k=0;}},
+ dr(G,g){const w=G.w,h=G.h;mgE(g,'🧑‍🏫',w/2,h*.1,48);mgT(g,G.mode==='show'?'Regarde bien!':G.mode==='in'?'À toi! ('+G.pi+'/'+G.seq.length+')':'…',w/2,h*.2,17,'#ffd9f0');
+  const by=G.btns[0].y,top=h*.27,cy=(top+by-26)/2,R=clamp((by-26-top)/2-4,22,58);const fi=G.mode==='show'&&G.fl>=0?G.fl:-1;mgC(g,w/2,cy,R,fi>=0?G.col[fi]:'rgba(255,255,255,.06)');if(fi>=0)mgE(g,G.mv[fi],w/2,cy,R*1.1);
+  mgT(g,'Série de '+G.seq.length+' mouvements',w/2,by-14,14,'#cdb8e4');
+  G.btns.forEach(b=>{const on=G.pk>0&&G.press===b.i;mgR(g,b.x,b.y,b.w,b.h,16,on?'#fff':G.col[b.i]);mgE(g,b.e,b.x+b.w/2,b.y+b.h/2,Math.min(52,b.h*.5));});},
+ hud:G=>'❤️'.repeat(Math.max(0,G.lives))+' · série '+Math.min(7,G.round+1),
+ fin(G){G.msg=G.round+' série'+(G.round>1?'s':'')+' réussie'+(G.round>1?'s':'')+(G.lives>0?' sans perdre la face!':' · séance interrompue');return clamp(G.round/7,0,1);},
+ ap(s,r){if(!r.auto&&s>=.999)cnt('mg_simon');}};
+
+/* ⛵ Lancer l'amarre (marina) */
+function mgBoat(G){G.bx=-70;G.sp=G.w*rnd(.3,.5)*(1+G.i*.07);G.st='go';G.k=0;G.be=pick(['⛵','🛥️','🚤','⛵']);}
+MGD.amarre={n:'Lancer l\'amarre',e:'⛵',sk:'sports',dur:60,m:16,ml:'Pourboire des plaisanciers (mini-jeu)',bg:'#0b2236',lab:'Se poste au bout du quai',
+ h:'Des bateaux arrivent au quai. Touche l\'écran au bon moment pour lancer l\'amarre quand le bateau passe devant le piquet doré. Plus c\'est précis, mieux c\'est! Six bateaux.',
+ init(G){G.i=0;G.sc=[];G.hitx=null;mgBoat(G);},
+ up(G,dt){G.k+=dt;if(G.st==='go'){G.bx+=G.sp*dt;if(G.bx>G.w+60){G.sc.push(0);G.st='res';G.k=0;mgMsg(G,'Le bateau est passé…','#ff8a7a');}}else if(G.k>1.3){G.i++;if(G.i>=6){G.end=1;return;}mgBoat(G);}},
+ dn(G){if(G.st!=='go')return;const d=Math.abs(G.bx-G.w*.5)/G.w;const v=d<.03?1:d<.08?.6:d<.14?.25:0;G.sc.push(v);G.st='res';G.k=0;G.hitx=G.bx;mgSnd(v?'ping':'tap');mgMsg(G,v===1?'Parfait! Amarré! ⚓':v>=.6?'Bien lancé!':v?'Juste…':'À l\'eau!',v===1?'#ffd54f':v?'#9ef0a0':'#ff8a7a');},
+ dr(G,g){const w=G.w,h=G.h,wy=h*.38;let gr=g.createLinearGradient(0,0,0,wy);gr.addColorStop(0,'#f6b26b');gr.addColorStop(1,'#ffd9a0');g.fillStyle=gr;g.fillRect(0,0,w,wy);gr=g.createLinearGradient(0,wy,0,h);gr.addColorStop(0,'#2d6a8a');gr.addColorStop(1,'#0c2a40');g.fillStyle=gr;g.fillRect(0,wy,w,h-wy);
+  g.strokeStyle='rgba(255,255,255,.16)';g.lineWidth=1;for(let i=0;i<6;i++){const y=wy+18+i*(h-wy)/7,x=((G.t*18+i*70)%w);g.beginPath();g.moveTo(x-30,y);g.lineTo(x+20,y);g.stroke();}
+  g.fillStyle='#6b4a2a';g.fillRect(0,h*.74,w,h*.26);g.fillStyle='#8a6238';g.fillRect(0,h*.74,w,10);
+  g.fillStyle='#ffd54f';g.fillRect(w*.5-6,h*.58,12,h*.2);mgC(g,w*.5,h*.58,9,'#ffd54f');
+  const by=h*.5+Math.sin(G.t*2.4+G.i)*4;const bxx=G.st==='res'&&G.hitx!=null?G.hitx:G.bx;mgE(g,G.be,bxx,by,54);
+  if(G.st==='res'&&G.hitx!=null&&G.sc[G.sc.length-1]>0){g.strokeStyle='#f2e6c8';g.lineWidth=3;g.beginPath();g.moveTo(w*.5,h*.78);g.quadraticCurveTo((w*.5+G.hitx)/2,h*.62,G.hitx,by+10);g.stroke();}
+  mgE(g,'🧍',w*.5,h*.8,36);mgWrap(g,'Bateau '+Math.min(6,G.i+1)+'/6 · touche quand il passe devant le piquet doré',w/2,h*.92,w-30,17,13,'#d8e6f0');},
+ hud:G=>'⚓ '+G.sc.filter(v=>v>=.6).length+' / 6',
+ fin(G){const s=G.sc.reduce((a,b)=>a+b,0)/6;G.msg=G.sc.filter(v=>v>=.6).length+' bateau'+(G.sc.filter(v=>v>=.6).length>1?'x':'')+' bien amarré'+(G.sc.filter(v=>v>=.6).length>1?'s':'');return s;},
+ ap(s,r){if(!r.auto&&s>=.999)cnt('mg_amarre');}};
+
+/* 🥕 Cueillette express (récolte au potager) */
+MGD.recolte={n:'Cueillette express',e:'🥕',sk:'jardin',dur:34,m:12,ml:'Récolte abondante (mini-jeu)',bg:'#16260f',lab:'Se penche sur ses bacs',
+ h:'Des légumes arrivent à maturité dans les bacs : touche-les avant qu\'ils pourrissent! Laisse les jeunes pousses 🌱 tranquilles, elles ont besoin de temps.',
+ init(G){G.cells=Array.from({length:12},()=>({st:'e',t:0,e:''}));G.ok=0;G.wr=0;G.ms=0;G.nx=.3;},
+ lay(G){const cols=3,gap=10,cw=(G.w-24-gap*2)/cols,ch=Math.min(cw,(G.h-110-gap*3)/4);G.btns=G.cells.map((c,i)=>({x:12+(i%cols)*(cw+gap),y:56+Math.floor(i/cols)*(ch+gap),w:cw,h:ch,i}));},
+ up(G,dt){G.nx-=dt;if(G.nx<=0){const free=G.cells.filter(c=>c.st==='e');if(free.length){const c=pick(free);if(Math.random()<.68){c.st='r';c.e=pick(['🥕','🍅','🥬','🥒','🫑','🧅','🥔','🌽']);c.t=Math.max(1.5,2.5-G.t/40);c.t0=c.t;}else{c.st='y';c.e='🌱';c.t=1.6;c.t0=1.6;}}G.nx=Math.max(.35,rnd(.55,.9)-G.t/90);}
+  for(const c of G.cells){if(c.st==='r'||c.st==='y'){c.t-=dt;if(c.t<=0){if(c.st==='r'){G.ms++;c.st='x';c.e='🥀';c.t=.6;}else c.st='e';}}else if(c.st==='x'||c.st==='h'){c.t-=dt;if(c.t<=0)c.st='e';}}},
+ dn(G,x,y){const b=G.btns.find(b=>mgHit(b,x,y));if(!b)return;const c=G.cells[b.i];if(c.st==='r'){G.ok++;c.st='h';c.t=.35;mgPop(G,'+1',b.x+b.w/2,b.y+b.h*.3);mgSnd('tap');}else if(c.st==='y'){G.wr++;c.st='e';mgMsg(G,'Trop tôt! Il fallait attendre.','#ff8a7a');}},
+ dr(G,g){const w=G.w;mgT(g,'Touche les légumes mûrs avant qu\'ils pourrissent',w/2,28,14,'#d8f0c8');
+  for(const b of G.btns){const c=G.cells[b.i];mgR(g,b.x,b.y,b.w,b.h,12,'#4a3220');mgR(g,b.x+4,b.y+4,b.w-8,b.h-8,9,'#5c3d26');
+   if(c.st==='r'){mgR(g,b.x+3,b.y+3,b.w-6,b.h-6,10,'rgba(120,220,90,.25)');mgE(g,c.e,b.x+b.w/2,b.y+b.h/2,Math.min(b.h*.6,50));mgR(g,b.x+10,b.y+b.h-12,(b.w-20)*clamp(c.t/c.t0,0,1),5,3,'#ffd27a');}
+   else if(c.st==='y'||c.st==='x'||c.st==='h'){g.globalAlpha=c.st==='h'?.5:1;mgE(g,c.e,b.x+b.w/2,b.y+b.h/2,Math.min(b.h*.5,42));g.globalAlpha=1;}}
+  const y=G.btns[11].y+G.btns[11].h+14;mgT(g,'Récoltés : '+G.ok+'   ·   Perdus : '+(G.ms+G.wr),w/2,y+8,16,'#9ef0a0');},
+ hud:G=>'🥕 '+G.ok,
+ fin(G){G.msg=G.ok+' légume'+(G.ok>1?'s':'')+' cueilli'+(G.ok>1?'s':'')+(G.ms?' · '+G.ms+' pourri'+(G.ms>1?'s':''):'');return clamp((G.ok-G.wr)/Math.max(12,G.ok+G.ms),0,1);}};
+
+/* ♻️ Tri des déchets (sortir les poubelles) */
+const TRIB=[['🌱','Compost','c'],['♻️','Recyclage','r'],['🗑️','Ordures','o']];
+const TRII=[['🍎','c'],['🍌','c'],['🥬','c'],['🥚','c'],['🍞','c'],['☕','c'],['🥫','r'],['🍾','r'],['📰','r'],['📦','r'],['🧴','r'],['🥛','r'],['🧻','o'],['🪥','o'],['🧦','o'],['🥡','o'],['🍬','o'],['🪒','o']];
+function mgTri(G){const it=pick(TRII);G.cur=it;G.y=0;G.v=Math.min(.8,.32+G.t/80);}
+MGD.tri={n:'Tri des déchets',e:'♻️',sk:'menage',dur:30,m:10,ml:'Ristourne de la ville (mini-jeu)',bg:'#14231c',lab:'Trie ses déchets',
+ h:'Un déchet descend : touche le bon bac avant qu\'il touche le sol. 🌱 Compost = restes de table · ♻️ Recyclage = verre, métal, carton, papier · 🗑️ Ordures = tout le reste.',
+ init(G){G.ok=0;G.wr=0;G.ms=0;mgTri(G);},
+ lay(G){const gap=10,bw=(G.w-24-gap*2)/3,bh=Math.min(96,G.h*.16);G.btns=TRIB.map((b,i)=>({x:12+i*(bw+gap),y:G.h-bh-16,w:bw,h:bh,e:b[0],t:b[1],k:b[2]}));},
+ up(G,dt){G.y+=dt*G.v;G.v+=dt*.05;if(G.y>=1){G.ms++;mgMsg(G,'Tombé par terre! Il faut ramasser…','#ff8a7a');mgTri(G);}},
+ dn(G,x,y){const b=G.btns.find(b=>mgHit(b,x,y));if(!b)return;if(b.k===G.cur[1]){G.ok++;mgPop(G,'+1 ✓',b.x+b.w/2,b.y-10);mgSnd('tap');}else{G.wr++;mgMsg(G,'Pas dans ce bac!','#ff8a7a');}mgTri(G);},
+ dr(G,g){const w=G.w,top=G.h*.06,bot=G.h*.5;g.fillStyle='#2a3a30';for(let i=0;i<4;i++)g.fillRect(0,top+i*(bot-top)/3,w,4);mgE(g,G.cur[0],w/2,top+(bot-top)*G.y,58);G.btns.forEach(b=>mgBtn(g,b));},
+ hud:G=>'✅ '+G.ok+'   ❌ '+(G.wr+G.ms),
+ fin(G){G.msg=G.ok+' déchet'+(G.ok>1?'s':'')+' bien trié'+(G.ok>1?'s':'');return Math.min(1,G.ok/12)*(G.ok/Math.max(1,G.ok+G.wr+G.ms));},
+ ap(s,r){if(!r.auto&&s>=.999)cnt('mg_tri');}};
+
+/* ---------- Branchements : emplois ---------- */
+Object.assign(MGJOB,{concierge:['frotter',{em:'🫧'}],prepose:['frotter',{em:'🧴'}],quillesj:['frotter',{em:'🎳'}],arcpj:['frotter',{em:'👾'}],
+ tonte:['tondre'],deneige:['deneiger'],usinej:['convoyeur',{skin:'usine'}],boisj:['convoyeur',{skin:'bois'}],gymj:['simon'],marinaj:['amarre'],guide:['peche']});
+/* ---------- Branchements : tâches de la maison et du quartier ---------- */
+{const hook=(id,fn)=>{const T=A.find(a=>a.id===id);if(T){const _f=T.f;T.f=()=>fn(_f());}};
+ hook('trash',s=>mgInj(s,'tri',byA('trash'),{a:'trash',label:'Trie ses déchets',q:'Jour de collecte : il faut bien trier!'}));
+ hook('dishes',s=>mgInj(s,'frotter',(x,i,ar)=>byA('dishes')(x)&&byL(/Fait la vaisselle/)(x,i,ar),{a:'dishes',label:'Frotte la vaisselle',q:'Une pile de vaisselle sale!',em:'🍽️'}));
+ hook('vacuum',s=>mgInj(s,'frotter',byA('vacuum'),{a:'look',label:'Chasse les miettes',q:'Des miettes partout sur le plancher!',em:'🍞'}));
+ hook('mow',s=>mgInj(s,'tondre',x=>x&&x.t==='path'&&x.act==='mow',{a:'look',label:'Se prépare à tondre',q:'La pelouse est haute!'}));
+ hook('pelle',s=>mgInj(s,'deneiger',byA('shovel'),{a:'shovel',label:'Prend sa pelle',q:'La bordée a laissé de la neige dans l\'entrée!'}));
+ hook('muscmaison',s=>mgInj(s,'simon',x=>x&&x.t==='do'&&['press','lift','pedal'].includes(x.a),{a:'look',label:'Suit une séance guidée',q:'Une vidéo d\'entraînement!'}));}
+{const _f=recolteOuting;recolteOuting=()=>mgInj(_f(),'recolte',byA('stock'),{a:'stock',label:'Se penche sur ses bacs',q:'Les légumes sont mûrs!'});}
+TROPHIES.push(['mgtri','♻️','Éco-citoyen','Réussir le tri des déchets à 100 %',()=>C_('mg_tri')>=1],['mgfrot','🧽','Propre comme un sou neuf','Réussir « Frotter les taches » à 100 %',()=>C_('mg_frotter')>=1],
+ ['mgcoach','🧘','Coach de l\'année','Réussir le cours d\'entraînement à 100 %',()=>C_('mg_simon')>=1],['mgmarin','⚓','Loup de mer','Amarrer six bateaux parfaitement',()=>C_('mg_amarre')>=1],
+ ['mggazon','🌱','Pelouse de golf','Tondre la pelouse à la perfection',()=>C_('mg_tondre')>=1]);
+
+/* ================= Cellulaire interactif (pause + Carte) ================= */
+const CELL={on:false,app:null,tab:'lieux',cat:'tous'};let MAPD=null;
+const MAPCAT={commerces:['dep','boul','pharma','quinc','casse','shop','rprinc','mall','electroO','animal','garage','cafe','micro','kiosk','puces'],
+ nature:['walk','bench','ducks','photo','jog','quai','peche','velo','parcnat','ski','cabane','patin','trains','kayak','golf'],
+ maison:['semer','arroser','recolte','poules','oeufs','kiosque','chantier','nourrir','coopb','kiob','trash','rake','mow','pelle']};
+const MAPCATS=[['tous','🗺️ Tous'],['commerces','🛍️ Commerces'],['loisirs','🎡 Loisirs'],['nature','🌳 Nature'],['maison','🏡 Maison']];
+const mapCatOf=id=>Object.keys(MAPCAT).find(k=>MAPCAT[k].includes(id))||'loisirs';
+function mapDests(){const L=[];const H=()=>hourOf();
+  const sp=[['cine','🍿','Cinéma Le Paradis',()=>H()>=13&&H()<21?(money>40||'Pas assez d\'argent'):'Ouvert de 13 h à 21 h',()=>{flags.outing=true;return cinemaOuting();}],
+   ['golf','⛳','Club de golf',()=>H()>=9&&H()<16.5?(weather==='pluie'||weather==='orage'?'Il pleut':(money>80||'Pas assez d\'argent')):'De 9 h à 16 h 30',()=>{flags.outing=true;return golfOuting();}],
+   ['casino','🎰','Casino',()=>H()>=15&&H()<22?(money>250||'Pas assez d\'argent (250 $ min.)'):'Ouvert de 15 h à 22 h',()=>{flags.outing=true;return casinoOuting();}],
+   ['hockey','🏒','Aréna : match de hockey',()=>HSEASON()?(H()>=18.2&&H()<19.8?(money>150||'Pas assez d\'argent'):'Match à 18 h 30'):'Hors saison',()=>{flags.outing=true;return hockeyOuting();}],
+   ['fair','🎡','La Petite Foire',()=>(MON()>=4&&MON()<=9)?((H()>=11&&H()<20.5)?(RAIN()?'Il pleut':(money>60||'Pas assez d\'argent')):'De 11 h à 20 h 30'):'Fermée l\'hiver',()=>{flags.outing=true;return fairOuting();}]];
+  for(const[id,e,n,ok,go]of sp)L.push({id,e,n,ok,go});
+  for(const a of A){if(!a.out||!CHN[a.id]||L.some(x=>x.id===a.id))continue;const lab=CHN[a.id],i=lab.indexOf(' ');
+    L.push({id:a.id,e:lab.slice(0,i),n:lab.slice(i+1),ok:()=>{const hh=H();if(weather==='tempete')return'Tempête de neige dehors';if(!(hh>=8&&hh<20.7))return'Seulement de 8 h à 20 h 40';if(!(powerOn()||!POW.has(a.id)))return'Panne de courant';return a.w(hh)>0?true:'Pas disponible pour l\'instant';},go:()=>{HIST.push(a.id);if(HIST.length>20)HIST.shift();return a.f();}});}
+  return L;}
+function mapJobs(){const h=hourOf();return[...JOBS,...JOBS2].map(J=>{const need=J.need&&skLv(J.need[0])<J.need[1]?'Niveau '+J.need[1]+' requis en '+(SKILLS.find(S=>S.k===J.need[0])||{n:J.need[0]}).n:null;
+    const ok=()=>{const hh=hourOf();if(need)return need;if(J.cond&&!J.cond(hh))return'Pas d\'embauche en ce moment';if(hh<6||hh>17.5)return'Trop tard pour un quart';return true;};
+    return{id:'job_'+J.id,e:J.t.split(' ')[0],n:J.t.slice(J.t.indexOf(' ')+1),J,ok,go:()=>{flags.jobOff=true;LIFE.jobAskD=dayN();const hh=hourOf();return jobShift(J,Math.max(2,Math.min(4,Math.floor(20-hh))));}};});}
+const mapOk=d=>{try{return typeof d.ok==='function'?d.ok():true;}catch(e){return'Indisponible';}};
+{const _p=planMarcel;planMarcel=()=>{if(MAPD){const d=MAPD;MAPD=null;const h=hourOf();
+   if(!LIFE.tokyo&&!Mc.inCar&&!Mc.job&&!Mc.carry&&!flags.morning&&Mc.area!=='route'&&h>=5&&h<22.6){const r=mapOk(d);
+    if(r===true){try{const st=d.go();if(st&&st.length){say(Mc,pick(['Bonne idée, j\'y vais!','OK, direction : '+d.n.toLowerCase()+'!','Allons-y!']),2.8);return st;}}catch(e){console.error(e);}}
+    else toast('📍 '+d.n+' : '+r,false);}}
+  return _p();};}
+function cellOpen(){if(MG.on||CELL.on)return;CELL.on=true;PAUSE.phone=true;CELL.app=null;$('cell').hidden=false;$('cellB').classList.add('on');cellRender();pauseUI();try{SFX.tap&&SFX.tap();}catch(e){}}
+function cellClose(){if(!CELL.on)return;CELL.on=false;PAUSE.phone=false;$('cell').hidden=true;$('cellB').classList.remove('on');pauseUI();}
+const cNum=v=>Math.round(v).toLocaleString('fr-CA');
+const CAPPS=[['carte','🗺️','Carte','linear-gradient(135deg,#6bc17a,#3d8bfd)'],['banque','🏦','Banque','linear-gradient(135deg,#2f9d62,#1c6b4a)'],['agenda','📅','Agenda','linear-gradient(135deg,#ff8a5c,#e2503c)'],
+ ['emplois','💼','Emplois','linear-gradient(135deg,#f0a23b,#c46f1a)'],['marcel','❤️','Marcel','linear-gradient(135deg,#ff6b8b,#c2306a)'],['meteo','🌤️','Météo','linear-gradient(135deg,#4aa8e8,#2a68c8)']];
+const nextBillTxt=()=>{const d=(LIFE.fixNext??((Math.floor(dayN()/7)+1)*7))-dayN();return d<=0?'aujourd\'hui à 8 h':d===1?'demain à 8 h':DAYS[(LIFE.fixNext??0)%7].toLowerCase()+' à 8 h (dans '+d+' jours)';};
+function cellMapSVG(list){const W=300,Hh=150;const cols=5,rows=3;const pins=list.slice(0,cols*rows).map((d,i)=>{const c=i%cols,r=Math.floor(i/cols);const x=26+c*((W-52)/(cols-1))+((i*37)%11-5),y=24+r*((Hh-48)/(rows-1))+((i*53)%9-4);return{d,x,y};});
+  const ok=d=>mapOk(d)===true;
+  return`<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Carte du quartier"><rect width="${W}" height="${Hh}" fill="#e8eadf"/><rect x="8" y="10" width="86" height="42" rx="8" fill="#a9d79a"/><ellipse cx="236" cy="108" rx="52" ry="22" fill="#9bcbe8"/><path d="M0 70 H300 M0 126 H210 M110 0 V150 M200 0 V92" stroke="#fff" stroke-width="9" fill="none"/><path d="M0 70 H300 M110 0 V150" stroke="#f3e9b8" stroke-width="2" fill="none" stroke-dasharray="6 6"/>`+
+   pins.map(({d,x,y})=>`<g class="pin" data-a="dest:${d.id}" role="button" aria-label="${d.n}"><circle cx="${x}" cy="${y}" r="${MAPD&&MAPD.id===d.id?11:8}" fill="${MAPD&&MAPD.id===d.id?'#3d8bfd':ok(d)?'#fff':'#c9c5b6'}" stroke="${MAPD&&MAPD.id===d.id?'#fff':'#8a8678'}" stroke-width="1.5"/><text x="${x}" y="${y+4}" font-size="${MAPD&&MAPD.id===d.id?12:10}" text-anchor="middle">${d.e}</text></g>`).join('')+
+   `<g><circle cx="150" cy="70" r="7" fill="#3d8bfd" stroke="#fff" stroke-width="2.5"/></g></svg>`;}
+function cellRender(){const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);const app=CELL.app;scr.classList.toggle('home',!app);$('cTitle').textContent=app?(CAPPS.find(a=>a[0]===app)||[0,0,''])[2]:'';let h='';
+  if(!app){const due=LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1;h=`<div class="chorl"><b>${fmt(gm)}</b><span>${DAYS[dayOf()]} · ${cNum(money)} $</span></div><div class="cicons">`+CAPPS.map(([k,e,n,bg])=>`<button type="button" class="cic" data-a="app:${k}"><i style="background:${bg}">${e}</i>${n}${k==='banque'&&due?'<u>1</u>':''}</button>`).join('')+`</div><div class="cmut" style="color:#c9cdea;text-align:center;font-size:.7rem">Le jeu est en pause tant que le cellulaire est ouvert.</div>`;}
+  else if(app==='carte'){const list=(CELL.tab==='lieux'?mapDests():mapJobs()).filter(d=>CELL.tab==='travail'||CELL.cat==='tous'||mapCatOf(d.id)===CELL.cat);
+    list.sort((a,b)=>(mapOk(b)===true)-(mapOk(a)===true)||a.n.localeCompare(b.n,'fr'));
+    h=`<div class="cchips" role="tablist"><button type="button" data-a="tab:lieux" class="${CELL.tab==='lieux'?'on':''}">📍 Lieux</button><button type="button" data-a="tab:travail" class="${CELL.tab==='travail'?'on':''}">💼 Travail</button></div>`;
+    if(CELL.tab==='lieux')h+=`<div class="cchips">`+MAPCATS.map(([k,n])=>`<button type="button" data-a="cat:${k}" class="${CELL.cat===k?'on':''}">${n}</button>`).join('')+`</div>`;
+    h+=`<div class="cmap">${cellMapSVG(list)}</div>`;
+    h+=MAPD?`<div class="cban"><span>📍 Prochaine destination : <b>${MAPD.e||''} ${MAPD.n}</b><br><span class="cmut">Marcel y va dès qu'il a fini ce qu'il fait.</span></span><button type="button" data-a="cancel">Annuler</button></div>`:`<div class="cmut" style="margin:4px 0 8px">Touche un lieu pour envoyer Marcel là-bas. Il s'y rend dès qu'il a fini son activité en cours (<b>${(($('now').textContent)||'').slice(0,60)}</b>).</div>`;
+    h+=list.map(d=>{const ok=mapOk(d);const sel=MAPD&&MAPD.id===d.id;const sub=d.J?cNum(Math.round(d.J.r*(1+.02*jobInfo(d.J.id).l)))+' $/h · niveau '+jobInfo(d.J.id).l:'';return`<button type="button" class="crow${sel?' sel':''}${ok===true?'':' no'}" data-a="dest:${d.id}"><span>${d.e} ${d.n}${ok===true?(sub?'<small>'+sub+' · quart de 2 à 4 h</small>':''):'<small>'+ok+'</small>'}</span><em>${sel?'✓ Choisi':ok===true?'Y aller ›':''}</em></button>`;}).join('')||'<div class="cmut">Aucun lieu dans cette catégorie.</div>';}
+  else if(app==='banque'){const tot=fixTotal();h=`<div class="cmut" style="text-align:center">Solde du compte chèques</div><div class="cgros" style="color:${money<0?'#c0392b':'#1f8a4c'}">${cNum(money)} $</div>
+    <div class="ch2">🧾 Dépenses fixes</div><div class="cmut" style="margin-bottom:6px">Prélevées aux 7 jours. Prochain prélèvement : <b>${nextBillTxt()}</b>.</div><div class="cinfo">`+FIXED.map(x=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0"><span>${x.e} ${x.n}</span><b>−${Math.round(x.v())} $</b></div>`).join('')+`<div style="display:flex;justify-content:space-between;border-top:1px solid #e3dfd2;margin-top:4px;padding-top:5px"><b>Total par semaine</b><b style="color:#c0392b">−${tot} $</b></div></div>`;
+    const FL=LIFE.fixLog||[];if(FL.length)h+=`<div class="ch2">Derniers prélèvements</div>`+FL.slice(0,4).map(f=>`<div class="crow" style="cursor:default"><span>${f.date.split(' · ')[0]}<small>${f.neg?'Solde négatif après le prélèvement':'Payé'}</small></span><em class="neg">−${f.tot} $</em></div>`).join('');
+    h+=`<div class="ch2">Transactions récentes</div>`+(MLOG.length?MLOG.slice(0,8).map(m=>`<div class="crow" style="cursor:default"><span>${m[1]}<small>${m[0]}</small></span><em class="${m[2]<0?'neg':''}">${m[2]>0?'+':''}${cNum(m[2])} $</em></div>`).join(''):'<div class="cmut">Aucune transaction récente</div>');}
+  else if(app==='agenda'){const dn=dayN(),ev={3:'Bingo de la paroisse · 18 h',6:'Souper chez Maman · 17 h'};h=`<div class="cmut" style="margin-bottom:6px">Les 7 prochains jours</div>`;
+    for(let i=0;i<7;i++){const d=dn+i,wd=d%7;const bill=LIFE.fixNext!=null&&d===LIFE.fixNext;const lines=[];if(bill)lines.push('🧾 Dépenses fixes : −'+fixTotal()+' $ (8 h)');if(ev[wd])lines.push('📌 '+ev[wd]);if(wd===5||wd===6)lines.push('🌤️ Sortie possible : fin de semaine');
+      h+=`<div class="cinfo"><b>${i===0?'Aujourd\'hui':i===1?'Demain':DAYS[wd]}</b>${i<2?' · '+DAYS[wd]:''}<br>${lines.length?lines.join('<br>'):'<span class="cmut">Rien de prévu</span>'}</div>`;}}
+  else if(app==='emplois'){const J=Mc.job;h=J?`<div class="cinfo"><b>💼 Au travail : ${J.t}</b><br>${J.cur}<br><span class="cmut">Fin du quart à ${fmt(J.end)} · ${J.pay} $</span></div>`:`<div class="cinfo"><b>Marcel n'est pas au travail.</b><br><span class="cmut">Envoie-le travailler dans Carte › Travail.</span></div>`;
+    const L2=[...JOBS,...JOBS2].map(j=>({j,i:jobInfo(j.id),x:(LIFE.jx&&LIFE.jx[j.id])||0})).filter(o=>o.x>0).sort((a,b)=>b.x-a.x).slice(0,8);h+=`<div class="ch2">Mes emplois</div>`+(L2.length?L2.map(({j,i})=>`<div class="crow" style="cursor:default"><span>${j.t}<small>Niveau ${i.l} · ${i.title}</small></span><em>${cNum(Math.round(jobRate(j)))} $/h</em></div>`).join(''):'<div class="cmut">Aucun emploi essayé pour l\'instant.</div>');
+    h+=`<button type="button" class="crow" data-a="jobsall"><span>📋 Voir tous les emplois</span><em>›</em></button><button type="button" class="crow" data-a="gocarte"><span>🗺️ Envoyer Marcel travailler</span><em>›</em></button>`;}
+  else if(app==='marcel'){const bar=(n,k)=>{const v=Math.round(need[k]);return`<div style="display:flex;justify-content:space-between;font-size:.74rem"><span>${n}</span><b>${v} %</b></div><div class="cbar"><i style="width:${v}%;background:${v<25?'#e2503c':v<50?'#f0a23b':'#3fae6c'}"></i></div>`;};
+    h=`<div class="cinfo"><b>${($('now').textContent||'').slice(0,90)}</b><br><span class="cmut">${$('lieu').textContent}</span></div>`+bar('🍽️ Faim','food')+bar('⚡ Énergie','energy')+bar('🎮 Amusement','fun')+bar('💬 Vie sociale','social')+bar('🚿 Hygiène','hyg');
+    const top=SKILLS.map(S=>({S,i:skInfo(S.k)})).sort((a,b)=>b.i.l-a.i.l||b.i.x-a.i.x).slice(0,4);h+=`<div class="ch2">Compétences</div>`+top.map(({S,i})=>`<div class="crow" style="cursor:default"><span>${S.e} ${S.n}</span><em>niv. ${i.l}</em></div>`).join('');}
+  else if(app==='meteo'){const ic=SNOWING()?'🌨️':RAIN()?'🌧️':weather==='nuages'?'⛅':(night>.5?'🌙':'☀️');h=`<div class="cgros">${ic} ${tempNow()} °C</div><div class="cmut" style="text-align:center">${weather==='tempete'?'Tempête de neige':weather==='neige'?'Neige':weather==='orage'?'Orage':RAIN()?'Pluie':weather==='nuages'?'Nuageux':night>.5?'Dégagé':'Ensoleillé'} · ${DAYS[dayOf()]}</div><div class="cinfo" style="margin-top:10px">${SDAY().e} ${SDAY().n}, jour ${SDAY().k}<br><span class="cmut">Il est ${fmt(gm)}.</span></div>`;}
+  B.innerHTML=h;if(!app)B.scrollTop=0;}
+$('cellB').addEventListener('click',()=>CELL.on?cellClose():cellOpen());
+$('cellX').addEventListener('click',cellClose);$('cHome').addEventListener('click',()=>{CELL.app=null;cellRender();});
+$('cell').addEventListener('click',e=>{if(e.target===$('cell'))cellClose();});
+$('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,i=a.indexOf(':'),k=i<0?a:a.slice(0,i),v=i<0?'':a.slice(i+1);
+  if(k==='app'){CELL.app=v;if(v==='carte'){CELL.tab='lieux';}cellRender();}
+  else if(k==='tab'){CELL.tab=v;cellRender();}else if(k==='cat'){CELL.cat=v;cellRender();}
+  else if(k==='cancel'){MAPD=null;toast('Destination annulée',false);cellRender();}
+  else if(k==='gocarte'){CELL.app='carte';CELL.tab='travail';cellRender();}
+  else if(k==='jobsall'){$('bJob').click();}
+  else if(k==='dest'){const d=[...mapDests(),...mapJobs()].find(x=>x.id===v);if(!d)return;const r=mapOk(d);if(r!==true){toast('📍 '+d.n+' : '+r,false);return;}MAPD=d;try{SFX.ping();}catch(er){}toast('📍 Marcel ira : '+d.n,true);cellRender();}});
+if(document.addEventListener)document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CELL.on&&!(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName)))cellClose();});
+{const _u=ui;ui=()=>{_u();try{const due=LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1;$('cellB').classList.toggle('alert',due&&!CELL.on);}catch(e){}};}
 
 resize();const LOADED=loadGame();chooseShot();shot={type:'piece',t:0,dur:9,seed:.6,cut:true,ctx:shotCtx()};if(LOADED)setTimeout(()=>toast('Partie reprise : '+fmtDay(),true),600);else setTimeout(()=>toast('Nouvelle partie : lundi 1er juin',true),600);
 enhanceWorld();$('chargement').hidden=true;requestAnimationFrame(tick);initCloud();
