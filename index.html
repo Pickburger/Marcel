@@ -197,6 +197,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #mgX{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--trait);background:rgba(255,255,255,.08);color:inherit;font-size:1rem;cursor:pointer}#mg .mgbar{height:4px;background:#283143;margin:0 10px 6px;border-radius:99px;overflow:hidden}#mgB{display:block;height:100%;width:100%;background:var(--citrouille)}
 #mgC{flex:1;width:100%;min-height:0;display:block;touch-action:none}
 #plein{position:absolute;right:10px;bottom:10px;z-index:7;width:40px;height:40px;border-radius:10px;border:1px solid var(--trait);background:rgba(18,22,30,.82);backdrop-filter:blur(6px);color:var(--craie);font-size:1.15rem;line-height:1;cursor:pointer;display:grid;place-items:center}
+#spd{position:absolute;right:10px;bottom:56px;z-index:7;display:flex;flex-direction:column;gap:4px}#spd button{width:40px;height:30px;border-radius:9px;border:1px solid var(--trait);background:rgba(18,22,30,.82);backdrop-filter:blur(6px);color:var(--craie);font:700 .72rem var(--f-body);cursor:pointer;padding:0}#spd button[aria-pressed="true"]{background:var(--craie);color:var(--nuit);border-color:var(--craie)}body.plein #spd{bottom:calc(max(10px,env(safe-area-inset-bottom)) + 46px);right:max(10px,env(safe-area-inset-right))}
 #plein:hover{background:rgba(40,48,64,.9)}
 body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;width:100vw;height:100vh;height:100dvh;min-height:0;max-height:none;border-radius:0;border:0;margin:0}body.plein #plein{bottom:max(10px,env(safe-area-inset-bottom));right:max(10px,env(safe-area-inset-right))}
 #pauseB{position:absolute;top:8px;left:8px;z-index:7;width:36px;height:36px;border-radius:10px;border:1px solid var(--trait);background:rgba(18,22,30,.82);backdrop-filter:blur(6px);color:var(--craie);font-size:1rem;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
@@ -219,7 +220,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
     <div id="appel"><div class="l1"><i></i><span id="appelQui" style="color:var(--craie);margin:0">Maman</span><span id="appelT">00:00</span></div><div id="appelTxt"></div></div>
     <div id="tel"><div class="ecran"><div class="tete" id="telTete">Julie</div><div id="fil"></div></div></div>
     <div class="chip"><small id="lieu">Maison</small><span id="now"><b>Marcel</b> dort</span></div>
-    <button id="son" type="button" aria-pressed="false">🔇 Activer le son</button><button id="pauseB" type="button" aria-label="Mettre en pause" title="Pause">⏸</button><div id="pauseTag" hidden>⏸ PAUSE</div><button id="plein" type="button" aria-label="Plein écran" title="Plein écran">⛶</button><div id="toast"></div>
+    <button id="son" type="button" aria-pressed="false">🔇 Activer le son</button><button id="pauseB" type="button" aria-label="Mettre en pause" title="Pause">⏸</button><div id="pauseTag" hidden>⏸ PAUSE</div><div id="spd" role="group" aria-label="Vitesse du jeu"><button type="button" data-sp="0.5" aria-pressed="false">×0,5</button><button type="button" data-sp="1" aria-pressed="true">×1</button><button type="button" data-sp="2" aria-pressed="false">×2</button><button type="button" data-sp="5" aria-pressed="false">×5</button></div><button id="plein" type="button" aria-label="Plein écran" title="Plein écran">⛶</button><div id="toast"></div>
     <div id="choix" role="dialog" aria-live="polite"><p id="choixQ"></p><div id="choixB"></div><div class="chrono"><i id="choixT"></i></div><small id="choixS"></small></div>
     <div id="mg" hidden><div class="mgh"><b id="mgT"></b><span id="mgS"></span><button id="mgX" type="button" aria-label="Quitter le mini-jeu">✕</button></div><div class="mgbar"><i id="mgB"></i></div><canvas id="mgC"></canvas></div>
     <button id="cellB" type="button" aria-label="Ouvrir le cellulaire de Marcel" title="Cellulaire (met le jeu en pause)">📱</button>
@@ -230,7 +231,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
   <div class="infos">
     <div class="carte">
       <p class="titre">Compétences <span class="vitesse" role="group" aria-label="Vitesse">
-        <button id="v1" aria-pressed="true">×1</button><button id="v2" aria-pressed="false">×2</button><button id="v5" aria-pressed="false">×5</button></span></p>
+        <button id="v05" data-sp="0.5" aria-pressed="false">×0,5</button><button id="v1" aria-pressed="true">×1</button><button id="v2" aria-pressed="false">×2</button><button id="v5" aria-pressed="false">×5</button></span></p>
       <span id="skTot"></span>
       <div class="skBtns"><button id="bTro" type="button">🏆 Trophées</button><button id="bJob" type="button">💼 Emplois</button><button id="bTok" type="button">✈️ Tokyo</button><button id="bJou" type="button">📰 Résumés des journées</button></div>
       <div id="skills"></div>
@@ -4855,7 +4856,8 @@ function updatePhone(){const st=Mc.q[0];const tel=$('tel'),fil=$('fil'),tete=$('
 
 /* ================= Interface ================= */
 $('son').addEventListener('click',()=>{const o=SFX.toggle();$('son').setAttribute('aria-pressed',o?'true':'false');$('son').textContent=o?'🔊 Son activé':'🔇 Activer le son';});
-for(const[id,v]of[['v1',1],['v2',2],['v5',5]])$(id).addEventListener('click',()=>{speed=v;document.querySelectorAll('.vitesse button').forEach(b=>b.setAttribute('aria-pressed',b.id===id?'true':'false'));});
+for(const[id,v]of[['v05',.5],['v1',1],['v2',2],['v5',5]])$(id).addEventListener('click',()=>{speed=v;document.querySelectorAll('.vitesse button').forEach(b=>b.setAttribute('aria-pressed',b.id===id?'true':'false'));document.querySelectorAll('#spd button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.sp===v?'true':'false'));});
+document.querySelectorAll('#spd button').forEach(b=>b.addEventListener('click',()=>{const v=+b.dataset.sp;speed=v;document.querySelectorAll('#spd button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.sp===v?'true':'false'));document.querySelectorAll('.vitesse button').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.sp===v||(!x.dataset.sp&&x.id==='v'+v)?'true':'false'));}));
 function lvBox(){const el=$('camlabel');let t=null,p=0,job=false;
   if(Mc.job&&Mc.job.id){const J=[...JOBS,...JOBS2].find(j=>j.id===Mc.job.id);const i=jobInfo(Mc.job.id);t=(J?J.t.split(' ')[0]:'💼')+' '+Mc.job.t+' · niv. '+i.l+' ▲';p=i.x/i.need;job=true;}
   else if(SKACT&&tReal-SKACT.t<8){const S=SKILLS.find(x=>x.k===SKACT.k);if(S){const i=skInfo(S.k);t=S.e+' '+S.n+' · niv. '+i.l+' ▲';p=i.x/i.need;}}
@@ -6146,7 +6148,7 @@ const escH=t=>String(t||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
   if(!det&&app!=='comp'&&app!=='reglages'){if(CELL.skSet&&!SKOPEN_BY_USER()){skOpen=null;}CELL.skSet=false;_r();if(app==='marcel'){const c=$('contrat').textContent,f=$('frigo').textContent;if(c||f)B.innerHTML+=`<div class="ch2">Contrat & frigo</div>`+(c?`<div class="cinfo">${escH(c)}</div>`:'')+(f?`<div class="cinfo">${escH(f)}</div>`:'');}return;}
   const sc=B.scrollTop;_r();let h='';
   if(app==='reglages'){const pr=v=>$('v'+v).getAttribute&&$('v'+v).getAttribute('aria-pressed')==='true';
-    h=`<div class="ch2">⏩ Vitesse du jeu</div><div class="cset">`+[1,2,5].map(v=>`<button type="button" data-a="spd:${v}" class="${pr(v)?'on':''}">×${v}</button>`).join('')+`</div><div class="ch2">💾 Partie</div><div class="cset"><button type="button" data-a="save">💾 Sauvegarder</button><button type="button" data-a="newg">Nouvelle partie</button></div><div class="cmut">${escH($('saveInfo').textContent)}</div>`;}
+    h=`<div class="ch2">⏩ Vitesse du jeu</div><div class="cset">`+['05',1,2,5].map(v=>`<button type="button" data-a="spd:${v}" class="${pr(v)?'on':''}">×${v==='05'?'0,5':v}</button>`).join('')+`</div><div class="ch2">💾 Partie</div><div class="cset"><button type="button" data-a="save">💾 Sauvegarder</button><button type="button" data-a="newg">Nouvelle partie</button></div><div class="cmut">${escH($('saveInfo').textContent)}</div>`;}
   else{const tmp=skOpen;skOpen=det;CELL.skSet=true;albSig='';skDetail();let inner=$('skDetC').innerHTML;
     if(app==='comp'&&CELL.skd)inner=`<button type="button" class="crow" data-a="skback"><span>‹ Toutes les compétences</span></button>`+inner;
     if(app==='journal')inner=`<h2>📅 Journal de la journée</h2><ul class="jl" style="margin-bottom:10px">`+[...$('journal').children].map(li=>`<li>${escH(li.textContent)}</li>`).join('')+`</ul>`+inner;
