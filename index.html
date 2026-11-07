@@ -1257,7 +1257,7 @@ leafG.setAttribute('position',new THREE.BufferAttribute(leafP,3));leafG.setAttri
 const leaves=new THREE.Points(leafG,new THREE.PointsMaterial({size:.14,vertexColors:true}));leaves.frustumCulled=false;town.add(leaves);
 
 /* ---------- vie du quartier ---------- */
-const birds=[];for(let i=0;i<10;i++){const b=new THREE.Group();const wm=M('#2a2a2e');const bd=new THREE.Mesh(new THREE.BoxGeometry(.12,.08,.3),wm);b.add(bd);const ws=[];for(const sd of[-1,1]){const w=new THREE.Mesh(new THREE.BoxGeometry(.4,.02,.16),wm);w.position.x=sd*.22;b.add(w);ws.push(w);}
+const birds=[];for(let i=0;i<18;i++){const b=new THREE.Group();const wm=M('#2a2a2e');const bd=new THREE.Mesh(new THREE.BoxGeometry(.12,.08,.3),wm);b.add(bd);const ws=[];for(const sd of[-1,1]){const w=new THREE.Mesh(new THREE.BoxGeometry(.4,.02,.16),wm);w.position.x=sd*.22;b.add(w);ws.push(w);}
   b.position.set(0,20,0);town.add(b);birds.push({m:b,ws,a:rnd(0,PI*2),r:rnd(14,26),h:rnd(16,24),v:rnd(.25,.4),cx:rnd(-20,20),cz:rnd(-20,20)});}
 const squirrels=[];for(let i=0;i<3;i++){const g=new THREE.Group();const fm=M('#8a5a3a',{r:.9});const b=new THREE.Mesh(new THREE.SphereGeometry(.09,8,6),fm);b.scale.set(1,1,1.5);b.position.y=.1;g.add(b);const t=new THREE.Mesh(new THREE.SphereGeometry(.08,8,6),fm);t.scale.set(.8,1.6,.8);t.position.set(0,.2,-.13);g.add(t);const h=new THREE.Mesh(new THREE.SphereGeometry(.05,8,6),fm);h.position.set(0,.16,.12);g.add(h);
   town.add(g);const tr0=pick(treeSpots.filter(t2=>Math.abs(t2[0])<23&&Math.abs(t2[1])<23));squirrels.push({m:g,x:tr0[0]+1,z:tr0[1],tx:tr0[0]+1,tz:tr0[1],t:0});}
@@ -2692,8 +2692,8 @@ KIDS.forEach(k=>{setArea(k,'none');k.m.root.visible=false;});
 const SHIRTS=['#6a9fd8','#d86a8f','#8fc46a','#c9a14a','#7a6ad8','#4fb3a9','#d8824f','#b8473b'];
 const SKINS=['#f1c29c','#e8b996','#c98e66','#8a5a3c','#6e4a32','#f2cfb5'];
 const peds=[];
-const PNAMES=['Gilles','Francine','Réjean','Nadia','Kevin','Sophie','Ahmed','Jonathan','Mélanie','Patrick','Chantal','Yves','Amélie'];
-for(let i=0;i<12;i++){const c=new Ch(PNAMES[i],{skin:pick(SKINS),hair:pick(['#2a1d15','#5a3b2a','#a8452a','#d8d4cc','#120e0c','#b07a3a']),shirt:pick(SHIRTS),pants:pick(['#2f3442','#3d4252','#5a4a3a','#1f2430']),long:Math.random()<.4,beard:Math.random()<.2,h:rnd(.92,1.04),coat:pick(SHIRTS)},{npc:1});
+const PNAMES=['Gilles','Francine','Réjean','Nadia','Kevin','Sophie','Ahmed','Jonathan','Mélanie','Patrick','Chantal','Yves','Amélie','Lucie','Marc-André','Fatima','Olivier','Josée','Samuel','Carole','Étienne','Rita','Mathis','Léa','Benoît','Océane','Raymond','Zoé','Tommy','Lise','Hugo','Mireille'];
+for(let i=0;i<30;i++){const kid=i>=26,c=new Ch(PNAMES[i],{skin:pick(SKINS),hair:pick(['#2a1d15','#5a3b2a','#a8452a','#d8d4cc','#120e0c','#b07a3a']),shirt:pick(SHIRTS),pants:pick(['#2f3442','#3d4252','#5a4a3a','#1f2430']),long:Math.random()<.4,beard:Math.random()<.2,h:kid?rnd(.74,.84):rnd(.92,1.04),coat:pick(SHIRTS)},{npc:1});
   setArea(c,'town');const n=pick(NODE_LIST);c.pos={x:n.x,z:n.z};c.node=n.k;c.ped=true;c.hatPref=Math.random()<.5;c.m.hat.visible=false;
   if(Math.random()<.35){const d=new THREE.Group();const dm=M(pick(['#c08a4a','#2b2b2b','#e8dcc8','#8a5a3a']));const b=new THREE.Mesh(new THREE.BoxGeometry(.22,.22,.55),dm);b.position.y=.38;d.add(b);const h=new THREE.Mesh(new THREE.BoxGeometry(.18,.18,.22),dm);h.position.set(0,.52,.32);d.add(h);
     for(const[a,b2]of[[-.08,.2],[.08,.2],[-.08,-.2],[.08,-.2]]){const l=new THREE.Mesh(new THREE.BoxGeometry(.06,.3,.06),dm);l.position.set(a,.15,b2);d.add(l);}d.children.forEach(m=>m.castShadow=true);town.add(d);c.dog=d;}
@@ -4355,8 +4355,17 @@ function avoid(dt){const Wk=ALL.filter(c=>c.area==='town'&&c.m.root.visible!==un
     if(walking)for(const b of Wk){if(a===b)continue;const dx=b.pos.x+(b.offx||0)-a.pos.x,dz=b.pos.z+(b.offz||0)-a.pos.z;const al=dx*f[0]+dz*f[1],lat=-dx*f[1]+dz*f[0];
       if(al>-.2&&al<2.8&&Math.abs(lat)<.95){want=lat>0?-.8:.8;break;}}
     a.side=lerp(a.side||0,want,Math.min(1,dt*3*speed));a.offx=-f[1]*a.side;a.offz=f[0]*a.side;}}
-function pedPlan(c){const n=pick(NODE_LIST);TOWN_SPOTS['_p'+c.m.root.id]={node:n.k,extra:[],yaw:0};c.q=[{t:'path',pts:null,dest:TOWN_SPOTS['_p'+c.m.root.id],town:true,act:Math.random()<.25?'phonewalk':null}];
-  if(Math.random()<.3)c.q.push(D('look',rnd(2,8)));}
+function pedPlan(c){const h=hourOf(),r=Math.random();
+  if((h>=23||h<5.5)&&r<.85){const hid=c.dog;c.q=[F(()=>{setArea(c,'none');c.m.root.visible=false;if(hid)hid.visible=false;}),W(()=>{const hh=hourOf();return hh>=5.5&&hh<22.5;},{max:900}),F(()=>{const n=pick(NODE_LIST);setArea(c,'town');c.pos={x:n.x,z:n.z};c.node=n.k;c.back=[];})];return;}
+  const n=pick(NODE_LIST);TOWN_SPOTS['_p'+c.m.root.id]={node:n.k,extra:[],yaw:0};
+  const jog=c.look&&c.look.h>.9&&r<.12&&!c.dog;
+  c.q=[{t:'path',pts:null,dest:TOWN_SPOTS['_p'+c.m.root.id],town:true,run:jog?1:0,act:jog?null:(Math.random()<.25?'phonewalk':null)}];
+  const q2=Math.random();
+  if(q2<.12)c.q.push(D('call',rnd(4,10),{label:'Au téléphone'}));
+  else if(q2<.2)c.q.push(D('drink',rnd(4,9)));
+  else if(q2<.26)c.q.push(D('wave',rnd(1.5,3)));
+  else if(q2<.38)c.q.push(D('look',rnd(3,10)));
+  else if(q2<.44)c.q.push(D('photo',rnd(2,5)));}
 
 /* ================= Animation des personnages ================= */
 function animate(ch,dt){if(ch.act==='tread'||ch.act==='swim'||ch.act==='paddle')ch.ph+=dt*speed*(ch.act==='tread'?10:4);
@@ -4593,6 +4602,8 @@ const THROUGH=[];for(const c of RD){THROUGH.push([[c-2,-EX],[c-2,EX]],[[c+2,EX],
 const cars=[];const CARCOL=['#c8473b','#3b6fb6','#e0c35a','#5a8f6a','#d9dde3','#2b2f38','#8b5ea8','#e8eef0','#7a2a2a'];
 for(let i=0;i<14;i++){const g=new THREE.Group();carBody(g,pick(CARCOL),pick(CARTYPES));town.add(g);cars.push({g,P:LOOPS[i%LOOPS.length],s:0,v:0,vmax:rnd(8,10.5)});}
 for(let i=0;i<6;i++){const g=new THREE.Group();carBody(g,pick(CARCOL),pick(CARTYPES));town.add(g);const pr=pick(THROUGH);cars.push({g,P:linePath(pr[0],pr[1]),s:0,v:0,vmax:rnd(10,12.5),through:1});}
+for(let i=0;i<9;i++){const g=new THREE.Group();carBody(g,pick(CARCOL),pick(CARTYPES));town.add(g);const P=LOOPS[(i+2)%LOOPS.length];cars.push({g,P,s:rnd(0,P.len),v:0,vmax:rnd(8,10.5)});}
+for(let i=0;i<4;i++){const g=new THREE.Group();carBody(g,pick(CARCOL),pick(CARTYPES));town.add(g);const pr=pick(THROUGH);cars.push({g,P:linePath(pr[0],pr[1]),s:rnd(0,60),v:0,vmax:rnd(10,12.5),through:1});}
 const BUSES=[];
 for(let bi=0;bi<3;bi++){const g=new THREE.Group();const bm=M('#2f6fb6',{r:.4,m:.3});bx(g,bm,2.5,2.4,11,0,.35,0);bx(g,M('#f2f0ea',{r:.4}),2.52,.5,11.02,0,1.6,0);bx(g,M('#1f2a35',{r:.1,m:.6}),2.54,.8,10,0,1.75,-.2);
   for(const z of[-3.6,3.4])for(const x of[-1.1,1.1]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.48,.48,.3,14),M('#1a1b1e'));w.rotation.z=PI/2;w.position.set(x,.48,z);g.add(w);}
