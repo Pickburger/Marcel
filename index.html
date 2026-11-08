@@ -268,7 +268,7 @@ R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
 R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.05;
 const scene=new THREE.Scene();
 scene.fog=new THREE.Fog(0xc9d8e6,80,260);
-const cam=new THREE.PerspectiveCamera(48,1,.1,1500);
+const cam=new THREE.PerspectiveCamera(48,1,.3,1500);
 function resize(){const r=sceneEl.getBoundingClientRect();R.setSize(r.width,r.height,false);cam.aspect=r.width/Math.max(1,r.height);cam.updateProjectionMatrix();}
 window.addEventListener('resize',resize);
 
@@ -713,7 +713,7 @@ function groundY(x,z){if(x<-160.9&&x>-165.7&&z>19&&z<71)return .4;if(x>154.3&&x<
 // sol et routes
 {const g=new THREE.PlaneGeometry(460,460);g.rotateX(-PI/2);const uv=g.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)*92,uv.getY(i)*92);
  const m=new THREE.Mesh(g,M('#ffffff',{map:TX.grass,r:1}));m.userData.ns=1;TR.add(m);
- const asph=M('#ffffff',{map:TX.asphalt,r:.9}),conc=M('#ffffff',{map:TX.concrete,r:.95}),yel=M('#e8c548',{r:.7}),wht=M('#eeeeea',{r:.7});yel.polygonOffset=true;yel.polygonOffsetFactor=-3;yel.polygonOffsetUnits=-3;
+ const asph=M('#ffffff',{map:TX.asphalt,r:.9}),conc=M('#ffffff',{map:TX.concrete,r:.95}),yel=M('#e8c548',{r:.7}),wht=M('#eeeeea',{r:.7});wht.polygonOffset=true;wht.polygonOffsetFactor=-3;wht.polygonOffsetUnits=-3;yel.polygonOffset=true;yel.polygonOffsetFactor=-3;yel.polygonOffsetUnits=-3;
  for(const c of RD){ns(bx(TR,asph,8,.04,EX*2,c,0,0,0,6));ns(bx(TR,asph,EX*2,.06,8,0,0,c,0,6));}
  const cutA=[-EX,...RD.flatMap(c=>[c-7,c+7]),EX],cutB=[-EX,...RD.flatMap(c=>[c-4,c+4]),EX];
  for(const c of RD)for(let i=0;i<cutA.length;i+=2){const a=cutA[i],b=cutA[i+1],mid=(a+b)/2,len=b-a;
@@ -722,7 +722,7 @@ function groundY(x,z){if(x<-160.9&&x>-165.7&&z>19&&z<71)return .4;if(x>154.3&&x<
  for(const c of RD)for(let i=0;i<cutB.length;i+=2){const a=cutB[i],b=cutB[i+1],mid=(a+b)/2,len=b-a;for(const sd of[-1,1])ns(bx(TR,conc,len,.152,3,mid,0,c+sd*5.5,0,2));}
  const stopM=signMat('ARRÊT','#c8202a','#ffffff',256,256,'800 70px "Bricolage Grotesque", sans-serif');
  for(const cx of RD)for(const cz of RD){
-   for(const sd of[-1,1]){for(let i=-3.5;i<=3.5;i+=1){ns(bx(TR,wht,.5,.012,2.4,cx+i,.045,cz+sd*5.5));ns(bx(TR,wht,2.4,.012,.5,cx+sd*5.5,.05,cz+i));}}
+   for(const sd of[-1,1]){for(let i=-3.5;i<=3.5;i+=1){ns(bx(TR,wht,.5,.012,2.4,cx+i,.085,cz+sd*5.5));ns(bx(TR,wht,2.4,.012,.5,cx+sd*5.5,.09,cz+i));}}
    for(const[sx,sz,ry]of[[cx-7.2,cz-7.2,PI],[cx+7.2,cz+7.2,0]]){cy(TR,M('#8a8f96',{m:.6,r:.4}),.035,.035,2.4,sx,0,sz,6);
      const ay=ry+PI/4,nx=Math.sin(ay),nz=Math.cos(ay);for(const sg of[1,-1]){const o=new THREE.Mesh(new THREE.CircleGeometry(.4,8,PI/8),stopM);o.rotation.y=sg>0?ay:ay+PI;o.position.set(sx+nx*.012*sg,2.35,sz+nz*.012*sg);TR.add(o);}}}
 }
@@ -1237,6 +1237,41 @@ function updateFair(dt){if(VIS_AREA!=='town')return;const sp2=dt*speed;FAIR.roue
   FAIR.car.rotation.y=-FAIR.carA;FAIR.horses.forEach((h,i)=>{h.g.children[0].position.y=.9+Math.sin(FAIR.carA*3+i)*.2;h.g.children[1].position.y=1.2+Math.sin(FAIR.carA*3+i)*.2;});
   FAIR.sw.rotation.y=FAIR.swA;FAIR.chairs.forEach((g,i)=>{g.rotation.y=i/8*PI*2;g.children.forEach(c=>{});g.position.set(Math.cos(i/8*PI*2)*2.6,0,Math.sin(i/8*PI*2)*2.6);g.rotation.set(0,-i/8*PI*2,.55);});
   FAIR.wheelMat.emissiveIntensity=night*.8;}
+// ---- Dépôt Transport Boréal (extension sud : rue du Camionnage)
+function mkTruck(tier){const TG=new THREE.Group();
+  if(tier===0)vehicle(TG,0,0,0,{L:5.6,W:2.1,H:2.3,col:'#f6f6f4',stripe:'#2f6fb6'});
+  else if(tier===1)vehicle(TG,0,0,0,{L:8.6,W:2.4,H:2.9,col:'#f4f4f2',cab:2.4,cabCol:'#2f6fb6',stripe:'#e8a33a'});
+  else if(tier===2)vehicle(TG,0,0,0,{L:11.8,W:2.5,H:3.1,col:'#ecebe6',cab:3,cabCol:'#c8402f',stripe:'#1a1a1a'});
+  else{vehicle(TG,0,6.2,0,{L:5.2,W:2.5,H:3,col:'#c8402f'});vehicle(TG,0,-3.3,0,{L:13.5,W:2.5,H:3.4,col:'#e8e8e6',stripe:'#1f3a5a'});}
+  return TG;}
+{const asph=M('#ffffff',{map:TX.asphalt,r:.9}),conc=M('#ffffff',{map:TX.concrete,r:.95}),Y=M('#e8c548',{r:.7}),Wt=M('#eeeeea',{r:.7});
+ const met=M('#ffffff',{map:TX.siding('#6f8296'),r:.6,m:.2}),brk=M('#ffffff',{map:TX.brick('#8a4a36'),r:.9}),fence=M('#9aa3aa',{m:.5,r:.4});
+ const ZA=150,ZB=215,zm=(ZA+ZB)/2,zl=ZB-ZA;
+ ns(bx(TR,asph,8,.04,zl,30,0,zm,0,6));for(const sd of[-1,1])ns(bx(TR,conc,3,.15,zl,30+sd*5.5,0,zm,0,2));
+ for(const o of[-.13,.13])ns(bx(TR,Y,.1,.012,zl,30+o,.085,zm));
+ ns(bx(TR,asph,64.5,.04,57,69.75,0,186.5,0,6));
+ for(const z of[157.5,215.5])bx(TR,M('#9aa3aa',{op:.45,m:.4}),64.5,1.8,.03,69.75,.15,z);bx(TR,M('#9aa3aa',{op:.45,m:.4}),.03,1.8,58,102,.15,186.5);
+ for(let z=158;z<=215;z+=2.5)cy(TR,fence,.04,.04,2,102,0,z,6);for(let x=40;x<=102;x+=2.5){cy(TR,fence,.04,.04,2,x,0,215.5,6);cy(TR,fence,.04,.04,2,x,0,157.5,6);}
+ // entrepôt
+ bx(TR,met,40,9,16,78,0,168,0,3);bx(TR,M('#4a5560',{r:.6}),40.5,.5,16.5,78,9,168);AABB.push({x0:58,x1:98,z0:160,z1:176,h:9});
+ for(const x of[62,70,78,86,94]){bx(TR,M('#cfd6dc',{r:.5,m:.4}),4,4.2,.12,x,0,176.06);for(let y=.5;y<4.2;y+=.5)bx(TR,M('#aab2b9',{r:.5}),4,.05,.14,x,y,176.09);bx(TR,M('#e8c547'),.25,1.2,.25,x-2.4,0,177.3);bx(TR,M('#e8c547'),.25,1.2,.25,x+2.4,0,177.3);bx(TR,M('#2a2c30'),3.6,.4,.3,x,.2,176.2);}
+ for(let x=60;x<=96;x+=6)bx(TR,winMat,2.4,1,.06,x,6.2,176.03);
+ {const s=new THREE.Mesh(new THREE.PlaneGeometry(16,1.9),signMat('TRANSPORT BORÉAL','#1f3a5a','#ffffff',1024,122,'800 70px "Bricolage Grotesque", sans-serif'));s.position.set(78,7.6,176.12);TR.add(s);}
+ // bureau de répartition
+ bx(TR,brk,14,4,12,47,0,170,0,3);bx(TR,M('#3a3a3a'),14.5,.4,12.5,47,4,170);AABB.push({x0:40,x1:54,z0:164,z1:176,h:4});
+ bx(TR,M('#3a2a20'),1.5,2.4,.1,47,0,176.05);for(const x of[42,52])bx(TR,winMat,2.4,1.5,.06,x,1.1,176.03);
+ {const s=new THREE.Mesh(new THREE.PlaneGeometry(7,.8),signMat('BUREAU DE RÉPARTITION','#c8402f','#ffffff',1024,120,'800 62px "Bricolage Grotesque", sans-serif'));s.position.set(47,3.1,176.12);TR.add(s);}
+ // pompe à diesel
+ bx(TR,conc,1.6,.2,5,96,0,194);bx(TR,M('#c8202a',{r:.4}),.7,1.5,.55,96,.2,194);bx(TR,M('#1a1a1c'),.5,.4,.05,96,1.1,193.7);for(const z of[191.8,196.2])cy(TR,fence,.07,.07,3.8,96+(z>194?1:-1)*.6,0,z,6);bx(TR,M('#e8e4dc',{r:.5}),3,.3,7,96,3.8,194);
+ {const s=new THREE.Mesh(new THREE.PlaneGeometry(2.4,.5),signMat('DIESEL','#c8202a','#ffffff',512,100,'800 54px "Bricolage Grotesque", sans-serif'));s.position.set(94.4,3.95,194);s.rotation.y=-PI/2;TR.add(s);}
+ // places de stationnement et flotte
+ for(const x of[51,61,72,84,97])ns(bx(TR,Wt,.14,.012,13,x,.085,201.5));
+ [[56,0],[66,1],[78,2]].forEach(([x,t])=>{const g=mkTruck(t);g.position.set(x,0,201.5);g.rotation.y=PI;TR.add(g);});
+ {const g=mkTruck(3);g.position.set(91,0,203);g.rotation.y=PI;TR.add(g);}
+ for(const[x,z]of[[44,190],[44,166],[72,184],[98,184],[98,164],[26.5,160],[33.5,180],[26.5,200]])lampPost(x,z,0);
+ for(const z of[158,172,186,200,212]){tree(19,z,1+(z%3)*.05);}
+ {const s=new THREE.Mesh(new THREE.PlaneGeometry(4.6,.9),signMat('RUE DU CAMIONNAGE','#2f6fb6','#ffffff',512,100,'800 46px "Bricolage Grotesque", sans-serif'));s.position.set(36,3,152);s.rotation.y=PI/2;TR.add(s);cy(TR,fence,.05,.05,3,36,0,152,6);}
+}
 // ---- arrêts d'autobus
 const BUS_STOPS=[{id:'S1',lane:[-28,-62],walk:[-24.5,-62],nom:'Principale'},{id:'S5',lane:[28,-86],walk:[24.5,-86],nom:'Parc des Saules'},{id:'S2',lane:[0,-103],walk:[0,-99.5],nom:'Les Galeries'},{id:'S3',lane:[0,103],walk:[0,99.5],nom:'La Foire'},{id:'S4',lane:[28,62],walk:[24.5,62],nom:'Aréna'}];
 for(const st of BUS_STOPS){const dx=st.walk[0]-st.lane[0],dz=st.walk[1]-st.lane[1];const ry=Math.atan2(-dx,-dz);const g=grp(TR,st.walk[0]+Math.sign(dx)*1.6,0,st.walk[1]+Math.sign(dz)*1.6,ry);
@@ -1323,7 +1358,7 @@ function launchBall(){const gb=golfBalls[gbI++%3];const p=Mc.world(new V3());gb.
 const NODES={};const nk=(x,z)=>x.toFixed(1)+','+z.toFixed(1);
 function addNode(x,z){const k=nk(x,z);if(!NODES[k])NODES[k]={k,x,z,e:[]};return k;}
 const stops=[];for(const k in BLD)stops.push(BLD[k].stop);
-stops.push([86,-99.5],[24.5,-86],[-24.5,-62],[0,-99.5],[0,99.5],[24.5,62],[0,110.5],[0,-24.5],[-24.5,0],[24.5,0],[0,24.5],[-53,-35.5],[-69,35.5],[-35.5,70],[-3.3,-35.5],[2.5,35.5],[-35.5,-76.5],[35.5,64.5],[78,-110.5],[62,110.5],[-65,-110.5],[-95,-110.5],[117,-110.5],[66,-110.5],[52,110.5],[-146,35.5],[-79,-35.5],[-57,35.5],[-35.5,17],[-75,99.5],[77,99.5],[91,99.5],[-110.5,-82],[-110.5,-57],[-110.5,-14],[-110.5,10],[-110.5,53],[-110.5,78],[110.5,-78],[110.5,-53],[110.5,-10],[110.5,14],[110.5,57],[110.5,82],[35.5,0],[-152,35.5]);
+stops.push([86,-99.5],[24.5,-86],[-24.5,-62],[0,-99.5],[0,99.5],[24.5,62],[0,110.5],[0,-24.5],[-24.5,0],[24.5,0],[0,24.5],[-53,-35.5],[-69,35.5],[-35.5,70],[-3.3,-35.5],[2.5,35.5],[-35.5,-76.5],[35.5,64.5],[78,-110.5],[62,110.5],[-65,-110.5],[-95,-110.5],[117,-110.5],[66,-110.5],[52,110.5],[-146,35.5],[-79,-35.5],[-57,35.5],[-35.5,17],[-75,99.5],[77,99.5],[91,99.5],[-110.5,-82],[-110.5,-57],[-110.5,-14],[-110.5,10],[-110.5,53],[-110.5,78],[110.5,-78],[110.5,-53],[110.5,-10],[110.5,14],[110.5,57],[110.5,82],[35.5,0],[-152,35.5],[35.5,188.5]);
 {const lines=[];for(const v of L){lines.push({h:true,v},{h:false,v});}
  for(const ln of lines){const pts=[-140,140];for(const u of L)pts.push(u);for(const[sx,sz]of stops){if(ln.h&&Math.abs(sz-ln.v)<.01)pts.push(sx);if(!ln.h&&Math.abs(sx-ln.v)<.01)pts.push(sz);}
    const u=[...new Set(pts.map(p=>+p.toFixed(1)))].sort((a,b)=>a-b);
@@ -1965,7 +2000,7 @@ function airliner(par,s=1){const g=new THREE.Group();g.scale.setScalar(s);par.ad
   g.traverse(o=>{if(o.isMesh)o.castShadow=true;});return g;}
 {const I=farArea('aeroport','Aéroport international',7200,70,50);const r=I.root;const asph=M('#ffffff',{map:TX.asphalt,r:.9}),conc=M('#ffffff',{map:TX.concrete,r:.95}),gls=M('#cfe2ee',{op:.3,r:.05,m:.3}),st=M('#c9ced2',{m:.6,r:.3});
  ns(bx(r,M('#ffffff',{map:TX.grass,r:1}),220,.02,160,0,-.02,0,0,6));ns(bx(r,asph,200,.03,60,0,0,-44,0,6));ns(bx(r,asph,36,.03,14,18,0,18,0,6));
- ns(bx(r,M('#3a3d43',{r:.9}),200,.035,10,0,0,-55));for(let x=-95;x<95;x+=8)ns(bx(r,M('#eeeeea'),4,.01,.4,x,.04,-55));for(const sd of[-1,1])ns(bx(r,M('#eeeeea'),200,.01,.3,0,.04,-55+sd*4.6));
+ ns(bx(r,M('#3a3d43',{r:.9}),200,.035,10,0,0,-55));for(let x=-95;x<95;x+=8)ns(bx(r,M('#eeeeea'),4,.01,.4,x,.08,-55));for(const sd of[-1,1])ns(bx(r,M('#eeeeea'),200,.01,.3,0,.08,-55+sd*4.6));
  for(let x=19;x<=35;x+=4)ns(bx(r,M('#eeeeea'),.15,.01,4.5,x,.035,18));
  {const g=grp(r,0,0,-4);ns(bx(g,M('#ffffff',{map:TX.tile,r:.4}),42,.1,15,0,0,-4,0,2));bx(g,gls,42,9,.15,0,0,-11.5);for(let x=-20;x<=20;x+=4)bx(g,st,.2,9,.25,x,0,-11.5);
    for(const sd of[-1,1])bx(g,M('#e8e4dc'),.3,9,15,sd*21,0,-4);bx(g,M('#e8e4dc',{r:.6}),44,.6,18,0,9,-3.5);for(const x of[-20,-10,0,10,20])cy(g,st,.25,.25,9,x,0,3.4,10);
@@ -2175,7 +2210,7 @@ function dLamps(I,xs,zs){I.glows=I.glows||[];for(const x of xs)for(const z of zs
 
 // --- Akihabara
 {const I=tkDistrict('akiba','Akihabara',9300,100,60);const r=I.root;
- ns(bx(r,M('#ffffff',{map:TX.concrete,r:.95}),110,.02,70,0,-.02,0,0,3));ns(bx(r,M('#ffffff',{map:TX.asphalt,r:.9}),110,.04,9,0,0,0,0,6));for(let x=-48;x<48;x+=6)ns(bx(r,M('#eeeeea'),3,.01,.18,x,.045,0));
+ ns(bx(r,M('#ffffff',{map:TX.concrete,r:.95}),110,.02,70,0,-.02,0,0,3));ns(bx(r,M('#ffffff',{map:TX.asphalt,r:.9}),110,.04,9,0,0,0,0,6));for(let x=-48;x<48;x+=6)ns(bx(r,M('#eeeeea'),3,.01,.18,x,.08,0));
  const BL=[['#ff8ad8','#8a4ad8','#e8c547','#2a6ab8','ANIME!'],['#4ad8ff','#2a4a8a','#c8302a','#3aa85a','GAME!'],['#ffd24a','#e8402a','#2a2a2a','#b05ad9','MANGA'],['#8aff8a','#2a8a5a','#e8702a','#2a2a6a','FIGURE']];
  dB(I,-34,12,12,12,26,'N',{sign:'TOUR ÉLECTRO RADIO',bg:'#e8402a',bill:BL[0],billT:BL[0][4],v:'電気街',vbg:'#e8402a',fac:0});
  dB(I,-20,11,10,10,16,'N',{sign:'GASHAPON · カプセル',bg:'#e8c547',fg:'#14202a',col:'#fff4c8',bill:BL[2],billT:BL[2][4],fac:1});
@@ -2251,8 +2286,8 @@ function dLamps(I,xs,zs){I.glows=I.glows||[];for(const x of xs)for(const z of zs
  bx(r,M('#2a6ab8',{r:.5}),3.6,.45,.7,0,0,-1.1);bx(r,M('#cfe2ee',{op:.15}),3.8,1.4,.05,0,1,-1.65).userData.ns=1;bake(r,I.g);I.obs=[];spot(I,'banc',0,-.75,PI,{seat:.47});}
 
 {const I=farArea('tokyo','Tokyo',8000,140,110);const r=I.root;const asph=M('#ffffff',{map:TX.asphalt,r:.9}),side=M('#b8b4ac',{map:TX.concrete,r:.95}),wh=M('#eeeeea',{r:.7}),red=M('#c8302a',{r:.5}),dk=M('#2e3238',{r:.6,m:.3});
- ns(bx(r,side,170,.02,130,0,-.02,0,0,3));ns(bx(r,asph,150,.04,12,0,0,0,0,6));for(let x=-72;x<72;x+=6)if(Math.abs(x)>9)ns(bx(r,wh,3,.01,.18,x,.045,0));
- for(const sx of[-8.4,8.4])for(let k=-5;k<=5;k++)ns(bx(r,wh,1.6,.012,.5,sx,.045,k*1.1));
+ ns(bx(r,side,170,.02,130,0,-.02,0,0,3));ns(bx(r,asph,150,.04,12,0,0,0,0,6));for(let x=-72;x<72;x+=6)if(Math.abs(x)>9)ns(bx(r,wh,3,.01,.18,x,.08,0));
+ for(const sx of[-8.4,8.4])for(let k=-5;k<=5;k++)ns(bx(r,wh,1.6,.012,.5,sx,.08,k*1.1));
  const FAC=(base,glass,lit)=>{const map=ctex(128,(g,s)=>{g.fillStyle=base;g.fillRect(0,0,s,s);specks(g,s,['rgba(0,0,0,.5)','rgba(255,255,255,.5)'],900,1.5,.05,.12);const gr=g.createLinearGradient(0,20,0,88);gr.addColorStop(0,'#9ab8d8');gr.addColorStop(.35,glass);gr.addColorStop(1,glass);g.fillStyle=gr;g.fillRect(10,20,108,68);
      g.fillStyle='rgba(255,255,255,.14)';g.beginPath();g.moveTo(10,88);g.lineTo(52,20);g.lineTo(76,20);g.lineTo(34,88);g.fill();g.fillStyle='rgba(30,32,36,.9)';for(const x of[10,46,82,116])g.fillRect(x,20,3,68);g.fillRect(10,52,108,2);g.fillRect(8,18,112,3);g.fillStyle='rgba(255,255,255,.2)';g.fillRect(8,88,112,3);g.fillStyle='rgba(0,0,0,.28)';g.fillRect(0,112,128,16);});map.userData=map.userData||{};map.userData.bump=.012;
    const em=ctex(128,(g,s)=>{g.fillStyle='#000';g.fillRect(0,0,s,s);for(const[x,w]of[[13,33],[49,33],[85,31]]){const r=Math.random();if(r<.75){g.fillStyle=r<.15?'#9ad0f0':lit;g.fillRect(x,22,w,64);g.fillStyle='rgba(0,0,0,.35)';g.fillRect(x,22+rnd(0,40),w,rnd(4,14));}}});const m=new THREE.MeshStandardMaterial({map,emissiveMap:em,emissive:new THREE.Color(1,1,1),emissiveIntensity:0,roughness:.35,metalness:.3});signMats.push(m);return m;};
@@ -2341,7 +2376,7 @@ function dLamps(I,xs,zs){I.glows=I.glows||[];for(const x of xs)for(const z of zs
  nob(-45.6,8.9,'#c8302a','ラーメン');nob(-38.4,8.9,'#e8a33a','うまい');nob(-47.4,-8.9,'#14202a','すし');nob(8.6,-8.9,'#5a2a1a','やきとり');nob(17.4,-8.9,'#c8302a','生ビール');nob(48.2,8.9,'#3a6a3a','抹茶');
  const mh=M('#3a3a3c',{m:.5,r:.5});for(const[x,z]of[[-30,2.5],[22,-2.5],[-55,-2.5],[48,2.5],[-12,2.6],[60,-2.6]]){const m=new THREE.Mesh(new THREE.CircleGeometry(.45,16),mh);m.rotation.x=-PI/2;m.position.set(x,.046,z);m.userData.ns=1;r.add(m);}
  for(const[x,z,ry]of[[-24,2.6,0],[24,-2.6,PI],[-50,2.6,0],[50,-2.6,PI]]){const g=grp(r,x,.046,z,ry);const a=new THREE.Mesh(new THREE.PlaneGeometry(.35,2.2),wh);a.rotation.x=-PI/2;g.add(a);const hd=new THREE.Mesh(new THREE.CircleGeometry(.6,3),wh);hd.rotation.x=-PI/2;hd.rotation.z=PI/2;hd.position.x=1.3;g.add(hd);a.rotation.z=PI/2;}
- for(const sx of[-1,1])ns(bx(r,wh,.4,.012,5.6,sx*9.6,.046,-sx*3));
+ for(const sx of[-1,1])ns(bx(r,wh,.4,.012,5.6,sx*9.6,.08,-sx*3));
  for(const z of[6,-6])for(const sx of[-1,1])ns(bx(r,M('#9a968e',{map:TX.concrete}),66,.18,.25,sx*41,0,z));
  const lantM=new THREE.MeshBasicMaterial({color:0xff5a2a,toneMapped:false}),lantW=new THREE.MeshBasicMaterial({color:0xffe0a0,toneMapped:false});
  for(let x=-60;x<=60;x+=4){const l=sp(r,x%8?lantM:lantW,.2,x,4.6+Math.sin(x*.4)*.15,40,1);l.scale.y=1.4;}for(let z=-29;z>=-31;z-=2)for(const sx of[-2,2]){const l=sp(r,lantM,.3,-45+sx,3.2,z,1);l.scale.y=1.4;}
@@ -2370,7 +2405,7 @@ function dLamps(I,xs,zs){I.glows=I.glows||[];for(const x of xs)for(const z of zs
 
 {const I=farArea('route','Autoroute 40',3600,40,40);const r=I.root;const g=I.dyn;
  ns(bx(r,M('#ffffff',{map:TX.grass,r:1}),160,.02,700,0,-.02,0,0,6));ns(bx(r,M('#ffffff',{map:TX.asphalt,r:.85}),8,.04,700,-4.6,0,0,0,6));ns(bx(r,M('#ffffff',{map:TX.asphalt,r:.85}),8,.04,700,4.6,0,0,0,6));
- for(const x of[-8.4,-.8,.8,8.4])ns(bx(r,M('#eeeeea'),.15,.01,700,x,.045,0));bake(r,I.g);
+ for(const x of[-8.4,-.8,.8,8.4])ns(bx(r,M('#eeeeea'),.15,.01,700,x,.08,0));bake(r,I.g);
  const scen=[];const add=(m,z)=>{g.add(m);scen.push(m);m.userData.z0=z;};
  for(let z=-200;z<200;z+=8){const d=new THREE.Mesh(new THREE.BoxGeometry(.15,.01,3),M('#eeeeea'));d.position.set(-4.6,.05,z);add(d,z);const d2=d.clone();d2.position.x=4.6;add(d2,z);}
  for(let i=0;i<70;i++){const t=new THREE.Group();const side=i%2?1:-1;const x=side*rnd(12,45);t.position.set(x,0,rnd(-200,200));if(Math.random()<.6){cy(t,TRUNK,.18,.25,2.5,0,0,0,6);const c=new THREE.Mesh(new THREE.ConeGeometry(rnd(1.4,2.2),rnd(4,6),7),M(pick(['#2f5a32','#3a6a3a','#d9622b','#e8a33a']),{flat:1}));c.position.y=4.5;t.add(c);}else{cy(t,TRUNK,.16,.22,2.6,0,0,0,6);sp(t,pick(LEAF),1.6,0,3.6,0,1);}
@@ -3071,6 +3106,7 @@ const PARKS={home:{att:[-59.1,-30],park:[-59.1,-42.8],yaw:PI,out:[[-59.1,-42.8],
   quai:{att:[138,30],park:[138,33.4],yaw:-PI/2,out:[[138,33.4]],inn:[],door:[138,34.9],node:[140,35.5]},
   gare:{att:[-146,30],park:[-146,33.4],yaw:-PI/2,out:[[-146,33.4]],inn:[],door:[-146,34.9],node:[-146,35.5]},
   hwOut:{att:[148,-30],out:[],inn:[]},hwIn:{att:[148,30],out:[],inn:[]}};
+PARKS.depot={att:[30,190],park:[50,190],yaw:PI/2,out:[[50,190],[35.6,190,'r']],inn:[[35.6,190]],door:[47,188.5],walk:[[37.6,188.5],[47,188.5]],node:[35.5,188.5]};
 for(const H of HOUSES){PARKS['d_'+H.k]=H.park;}
 {const RL=RD.flatMap(v=>[{h:true,v},{h:false,v}]);const at2=Object.values(PARKS).map(p=>p.att);
  for(const ln of RL){const pts=[-148,148,...RD];for(const[a,b]of at2){if(ln.h&&Math.abs(b-ln.v)<.01)pts.push(a);if(!ln.h&&Math.abs(a-ln.v)<.01)pts.push(b);}
@@ -3086,6 +3122,13 @@ const MCAR={g:new THREE.Group(),x:-59.1,z:-42.8,yaw:PI,v:0,at:'home',fuel:.8,dri
  const hl=new THREE.SpotLight(0xfff0d0,0,40,.5,.6,1.5);hl.position.set(0,.7,2.2);hl.target.position.set(0,0,14);MCAR.g.add(hl);MCAR.g.add(hl.target);MCAR.hl=hl;}
 function placeMcar(){MCAR.g.position.set(MCAR.x,.04,MCAR.z);MCAR.g.rotation.y=MCAR.yaw;MCAR.g.visible=!MCAR.away;}placeMcar();
 for(const k in PARKS){const p=PARKS[k];if(!p.door)continue;const nd=p.node?nk(p.node[0],p.node[1]):nearestNode(p.door[0],p.door[1]);TOWN_SPOTS['car_'+k]={node:nd,extra:p.walk||[[p.door[0],p.door[1]]],yaw:(p.yaw||0)+PI/2,full:1};}
+townSpot('dep_office',[35.5,188.5],[[37.6,188.5],[47,188.5],[47,177.7]],PI);
+townSpot('dep_dock',[35.5,188.5],[[37.6,188.5],[62,188.5],[62,177.7]],PI);
+townSpot('dep_pompe',[35.5,188.5],[[37.6,188.5],[93,188.5],[93,194]],-PI/2);
+/* ---- camion de Marcel (remplace son auto pendant une mission) ---- */
+const CARG=new THREE.Group();{const keep=[MCAR.driver,MCAR.hl,MCAR.hl.target];for(const k of[...MCAR.g.children])if(!keep.includes(k))CARG.add(k);MCAR.g.add(CARG);}
+const TRKG=[0,1,2,3].map(t=>{const g=mkTruck(t);g.visible=false;MCAR.g.add(g);return g;});
+function setTruck(t){MCAR.trk=t==null?null:t;CARG.visible=t==null;TRKG.forEach((g,i)=>g.visible=i===t);}
 {const H=[-53,-35.5],CP=[[-53,-40],[-61.5,-40],[-61.5,-58.5]];
  townSpot('drop',H,[[-53,-40],[-53,-45.9]],PI);townSpot('velo',H,[[-53,-40],[-50.4,-45.4]],PI/2);townSpot('mowstart',H,[[-53,-40],[-57.6,-45.6]],PI/2);
  townSpot('c_patio',H,[...CP,[-61.5,-60.6],[-56,-60.6],[-56,-59.2]],0,{seat:.47});townSpot('c_bbq',H,[...CP,[-61.5,-60.6],[-52,-60.6],[-52,-58.8]],0);
@@ -3514,6 +3557,7 @@ const JOBS=[{id:'casse',t:'🍔 Aide-cuisinier chez Ti-Guy',r:18,steps:[['casse.
   {id:'gymj',t:'💪 Moniteur au Gym Énergie',r:26,need:['muscu',20],steps:[['gym.tapisol','squat','Donne un cours de mise en forme',['Allez, encore 10!','On respire!']],['gym.accueil','work','Accueille les membres du gym',['Bienvenue au Gym Énergie!','Bon entraînement!']]]},
   {id:'guide',t:'🎣 Guide de pêche au parc',r:28,need:['peche',20],drive:'etang',steps:[['town.e_dock','fish','Montre à des touristes comment pêcher',['Doucement… ferre maintenant!','Le doré aime les vers.']],['peche.comptoir','work','Aide Réal à la boutique de pêche',['Ces leurres-là, c\'est magique.','Bonne pêche!']]]}];
 // t:[label, spot, act, durMin, durMax, say[], opts]  opts: carry (pris au départ), from (spot où prendre l'objet), client:[x,z,yaw], car:1, path:[spots]
+JOBS2.push({id:'camion',t:'🚚 Camionneur chez Transport Boréal',r:26,hid:1});
 const JTASKS={
  prepose:{ap:'#7ab8d8',tasks:[['Distribue les plateaux-repas','hopital.h_attente2','give',3,5,['Bon appétit, madame Tremblay!'],{carry:'tray',from:'hopital.h_chariot'}],['Désinfecte une civière','hopital.h_lit','wipe',4,6,['Tout propre pour le prochain patient.']],['Accompagne un patient à l\'accueil','hopital.h_desk','talk',3,4,['On y va doucement…']],['Passe la vadrouille dans le corridor','hopital.h_f1','mop',3,5,['Attention, plancher mouillé!'],{path:['hopital.h_f2']}]]},
  concierge:{ap:'#5a6a7a',tasks:[['Lave le tableau','ecole.e_tab','wipe',3,5,['Prêt pour demain matin!']],['Passe la vadrouille dans la classe','ecole.e_f1','mop',4,6,['Des miettes de collation partout…'],{path:['ecole.e_f2']}],['Nettoie les pupitres','ecole.e_bureau','wipe',4,6,['Pas de gomme sous les pupitres, j\'espère…']],['Répare une chaise','ecole.e_bureau','install',4,6,['Une vis de plus et c\'est réglé.']]]},
@@ -3591,7 +3635,7 @@ function addJobXP(id,v){const J=[...JOBS,...JOBS2].find(j=>j.id===id);if(!J)retu
 function jobsHTML(){const L2=[...JOBS,...JOBS2].map(J=>({J,i:jobInfo(J.id),x:(LIFE.jx&&LIFE.jx[J.id])||0})).sort((a,b)=>b.x-a.x);
   return`<h2 id="skDetT">💼 Emplois</h2><div class="mut" style="margin:4px 0 10px">Chaque heure travaillée fait monter le niveau de l'emploi, et chaque niveau demande plus de temps que le précédent. Chaque niveau donne +2 % de salaire. Aux 10 niveaux : une promotion et une prime (75 $ × niveau).</div>
   <div class="tro">${L2.map(({J,i,x})=>`<div class="${x>0?'ok':''}"><i>${J.t.split(' ')[0]}</i><b>${jobName(J)}</b>${x>0?'Niveau '+i.l+' · '+i.title+'<br>'+Math.round(i.x)+' / '+i.need+' XP<br>'+Math.round(jobRate(J))+' $/h':'Jamais essayé · '+J.r+' $/h'}</div>`).join('')}</div>`;}
-function jobChoice(){const h=hourOf();const ok=[...JOBS,...JOBS2].filter(J=>(!J.need||skLv(J.need[0])>=J.need[1])&&(!J.cond||J.cond(h)));const L2=[...ok].sort(()=>Math.random()-.5).slice(0,3);
+function jobChoice(){const h=hourOf();const ok=[...JOBS,...JOBS2].filter(J=>!J.hid&&(!J.need||skLv(J.need[0])>=J.need[1])&&(!J.cond||J.cond(h)));const L2=[...ok].sort(()=>Math.random()-.5).slice(0,3);
   const opts=L2.map(J=>{const hrs=Math.max(2,Math.min(5,Math.round(rnd(2,5)),Math.floor(20-h)));const i=jobInfo(J.id);return{t:J.t,sub:'Niv. '+i.l+' ('+Math.floor(i.x/i.need*100)+' %)'+(i.l>=10?' · '+i.title:'')+' · '+hrs+' h · '+Math.round(jobRate(J)*hrs)+' $',fn:()=>jobShift(J,hrs)};});opts.push({t:'Pas aujourd\'hui',none:1});
   return choiceSteps('Offres d\'emploi du jour : laquelle Marcel accepte?',opts,{a:'scroll',label:'Regarde les offres d\'emploi sur son cell',phone:{feed:1},autoNone:1,noneP:.25});}
 /* ================= Compétences ================= */
@@ -6080,7 +6124,7 @@ TROPHIES.push(['mgtri','♻️','Éco-citoyen','Réussir le tri des déchets à 
  ['mggazon','🌱','Pelouse de golf','Tondre la pelouse à la perfection',()=>C_('mg_tondre')>=1]);
 
 /* ================= Cellulaire interactif (pause + Carte) ================= */
-const CELL={on:false,app:null,tab:'lieux',cat:'tous'};const TODO=()=>(LIFE.todo=Array.isArray(LIFE.todo)?LIFE.todo:[]);const todoFind=id=>[...mapDests(),...mapJobs()].find(x=>x.id===id);const todoHas=id=>TODO().some(t=>t.id===id);
+const CELL={on:false,app:null,tab:'lieux',cat:'tous'};const TODO=()=>(LIFE.todo=Array.isArray(LIFE.todo)?LIFE.todo:[]);const todoFind=id=>[...mapDests(),...mapJobs(),...(typeof camMissions==='function'?camMissions():[])].find(x=>x.id===id);const todoHas=id=>TODO().some(t=>t.id===id);
 const MAPCAT={commerces:['dep','boul','pharma','quinc','casse','shop','rprinc','mall','electroO','animal','garage','cafe','micro','kiosk','puces'],
  nature:['walk','bench','ducks','photo','jog','quai','peche','velo','parcnat','ski','cabane','patin','trains','kayak','golf'],
  maison:['semer','arroser','recolte','poules','oeufs','kiosque','chantier','nourrir','coopb','kiob','trash','rake','mow','pelle']};
@@ -6096,7 +6140,7 @@ function mapDests(){const L=[];const H=()=>hourOf();
   for(const a of A){if(!a.out||!CHN[a.id]||L.some(x=>x.id===a.id))continue;const lab=CHN[a.id],i=lab.indexOf(' ');
     L.push({id:a.id,e:lab.slice(0,i),n:lab.slice(i+1),ok:()=>{const hh=H();if(weather==='tempete')return'Tempête de neige dehors';if(!(hh>=8&&hh<20.7))return'Seulement de 8 h à 20 h 40';if(!(powerOn()||!POW.has(a.id)))return'Panne de courant';return a.w(hh)>0?true:'Pas disponible pour l\'instant';},go:()=>{HIST.push(a.id);if(HIST.length>20)HIST.shift();return a.f();}});}
   return L;}
-function mapJobs(){const h=hourOf();return[...JOBS,...JOBS2].map(J=>{const need=J.need&&skLv(J.need[0])<J.need[1]?'Niveau '+J.need[1]+' requis en '+(SKILLS.find(S=>S.k===J.need[0])||{n:J.need[0]}).n:null;
+function mapJobs(){const h=hourOf();return[...JOBS,...JOBS2].filter(J=>!J.hid).map(J=>{const need=J.need&&skLv(J.need[0])<J.need[1]?'Niveau '+J.need[1]+' requis en '+(SKILLS.find(S=>S.k===J.need[0])||{n:J.need[0]}).n:null;
     const ok=()=>{const hh=hourOf();if(need)return need;if(J.cond&&!J.cond(hh))return'Pas d\'embauche en ce moment';if(hh<6||hh>17.5)return'Trop tard pour un quart';return true;};
     return{id:'job_'+J.id,e:J.t.split(' ')[0],n:J.t.slice(J.t.indexOf(' ')+1),J,ok,go:()=>{flags.jobOff=true;LIFE.jobAskD=dayN();const hh=hourOf();return jobShift(J,Math.max(2,Math.min(4,Math.floor(20-hh))));}};});}
 const mapOk=d=>{try{return typeof d.ok==='function'?d.ok():true;}catch(e){return'Indisponible';}};
@@ -6192,7 +6236,7 @@ $('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.close
   else if(k==='rm'){LIFE.todo=TODO().filter(t=>t.id!==v);toast('Tâche retirée',false);cellRender();}
   else if(k==='gocarte'){CELL.app='carte';CELL.tab='travail';cellRender();}
   else if(k==='jobsall'){CELL.app='jobs';cellRender();}
-  else if(k==='dest'){const d=[...mapDests(),...mapJobs()].find(x=>x.id===v);if(!d)return;const r=mapOk(d);if(todoHas(v)){LIFE.todo=TODO().filter(t=>t.id!==v);toast('Tâche retirée : '+d.n,false);cellRender();return;}if(r!==true)toast('📍 '+d.n+' ajouté (attend : '+r+')',false);else toast('📍 Ajouté à la liste : '+d.n,true);TODO().push({id:v,t:dayN()});try{SFX.ping();}catch(er){}cellRender();}});
+  else if(k==='dest'){const d=todoFind(v);if(!d)return;const r=mapOk(d);if(todoHas(v)){LIFE.todo=TODO().filter(t=>t.id!==v);toast('Tâche retirée : '+d.n,false);cellRender();return;}if(r!==true)toast('📍 '+d.n+' ajouté (attend : '+r+')',false);else toast('📍 Ajouté à la liste : '+d.n,true);TODO().push({id:v,t:dayN()});try{SFX.ping();}catch(er){}cellRender();}});
 if(document.addEventListener)document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CELL.on&&!(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName)))cellClose();});
 {const _u=ui;ui=()=>{_u();try{const due=LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1&&LIFE.fixSeen!==LIFE.fixNext;$('cellB').classList.toggle('alert',(due||frUnread()>0)&&!CELL.on);}catch(e){}};}
 
@@ -6626,7 +6670,41 @@ function notesHTML(){const N=NT(),t=CELL.nt||'notes',esc=x=>String(x).replace(/[
     const L=[...N.rem.map((r,i)=>[r,i])].sort((a,b)=>(a[0].ok-b[0].ok)||((a[0].at??1e12)-(b[0].at??1e12)));
     h+=L.length?L.map(([r,i])=>`<div class="cinfo cnote${r.ok?' done':''}"><button type="button" class="ck" data-a="rtog:${i}" aria-label="Cocher">${r.ok?'☑️':r.due?'🔔':'⬜'}</button><span style="flex:1">${esc(r.tx)}<br><span class="cmut">${r.at!=null?(Math.floor(r.at/1440)===dayN()?'Aujourd\'hui':Math.floor(r.at/1440)===dayN()+1?'Demain':DAYS[Math.floor(r.at/1440)%7])+' à '+fmt(r.at):'Sans heure'}</span></span><button type="button" class="cx" data-a="rdel:${i}" aria-label="Supprimer">✕</button></div>`).join(''):'<div class="cmut" style="margin-top:6px">Aucun rappel.</div>';}
   return h;}
-CAPPS.push(['notes','📝','Notes','linear-gradient(135deg,#ffd84a,#e8a317)']);
+/* ================= 🚚 Camionnage (Transport Boréal) ================= */
+const CAMD={poste:['Bureau de poste','des colis','poste'],gas:['Station-service','des caisses de boissons',null],sud:['Dépanneur','des caisses de chips et de boissons',null],garage:['Garage chez Réjean','des pneus','garage'],animal:['Animalerie Pattes & Museaux','des sacs de moulée','animal'],quilles:['Salon de quilles Le Strike','des caisses de bière','quilles'],hopital:['Hôpital','des fournitures médicales','hopital'],ecole:['École','des cahiers et du matériel','ecole'],eglise:['Salle paroissiale','des tables pliantes','eglise'],usine:['Usine Laflamme','des matières premières',null],quai:['Bistro du Quai','des denrées fraîches',null],rprinc:['Rue Principale','de la marchandise',null],etang:['Boutique Pêche & Plein Air','du matériel de pêche',null],centre:['Commerces du centre','des cartons',null],est:['Bureaux de l\'est','de la papeterie',null],d_steve:['chez Steve','un colis','steve'],d_maman:['chez Maman','un colis','maman']};
+const CAMV=['Fourgonnette de livraison','Camion 16 pieds','Camion 10 roues','Semi-remorque'],CAMX=[1,1.25,1.5,1.8];
+const CAMALL=Object.keys(CAMD);
+const CAMM=[{k:'t0a',tier:0,name:'Colis de quartier',n:3,pool:['poste','sud','d_steve','d_maman','centre','est']},{k:'t0b',tier:0,name:'Tournée express',n:4,pool:['poste','sud','d_steve','d_maman','centre','est','gas','garage','animal','quilles']},
+ {k:'t1a',tier:1,name:'Meubles et matériaux',n:4,pool:['usine','garage','rprinc','etang','eglise','centre']},{k:'t1b',tier:1,name:'Produits frais',n:5,pool:['sud','quai','gas','rprinc','centre','animal']},
+ {k:'t2a',tier:2,name:'Chargement lourd',n:5,pool:['usine','hopital','ecole','eglise','quai','garage','gas']},{k:'t2b',tier:2,name:'Approvisionnement des commerces',n:6,pool:CAMALL},
+ {k:'t3a',tier:3,name:'Grand convoi',n:6,pool:CAMALL},{k:'t3b',tier:3,name:'Livraison d\'urgence',n:7,pool:CAMALL}];
+const camPay=(m)=>Math.round((35+12*m.n)*CAMX[m.tier]*(1+.02*jobInfo('camion').l));
+function camGo(m){const tier=m.tier,pay=camPay(m);const pool=[...m.pool].sort(()=>Math.random()-.5).slice(0,m.n);const s=[];s.dyn=1;
+  s.push({t:'drive',to:'depot',label:'Se rend au dépôt Transport Boréal'});
+  s.push(F(()=>{Mc.job={t:'Camionnage',id:'camion',pay,start:gm,end:gm+m.n*55+70,done:[],cur:'Arrive au dépôt',hrs:0};Mc.apron='#2f6fb6';setTruck(tier);}));
+  s.push(tr('town.dep_office',{label:'Va chercher son bon de livraison'}),D('scan',4,{label:'Prend son bon de livraison : '+m.name.toLowerCase(),say:pick(['Voyons la tournée du jour…','Allez, au boulot!'])}));
+  for(let i=0;i<1;i++)s.push(F(()=>{if(Mc.job)Mc.job.cur='Charge le camion';}),tr('town.dep_dock',{label:'Va chercher les caisses au quai'}),D('stock',3,{label:'Prend des caisses au quai',carry:'crate'}),F(()=>{Mc.carry='crate';}),tr('town.car_depot',{label:'Charge le camion'}),D('give',3,{label:'Charge le camion',say:'Voilà, tout est chargé!'}),F(()=>{Mc.carry=null;}));
+  for(const k of pool){const[nm,goods,bk]=CAMD[k];
+    s.push({t:'drive',to:k,label:'Livre '+goods+' : '+nm});
+    s.push(F(()=>{Mc.carry=tier>=2?'crate':'box';if(Mc.job)Mc.job.cur='Livre '+goods;}));
+    s.push(D('give',3,{label:'Livre '+goods+' : '+nm,say:pick(['Livraison!','Signez ici, svp.','Voilà votre commande!','Bonne journée!'])}));
+    s.push(F(()=>{Mc.carry=null;if(Mc.job){Mc.job.done.unshift(nm);Mc.job.done=Mc.job.done.slice(0,4);}}));
+  }
+  s.push({t:'drive',to:'depot',label:'Retourne au dépôt'});
+  s.push(F(()=>{setTruck(null);if(Mc.job)Mc.job.cur='Remet son bon de livraison';}),tr('town.dep_office',{label:'Remet son bon de livraison'}),D('give',3,{label:'Remet son bon signé',say:'Tournée terminée!'}));
+  s.push(F(()=>{Mc.job=null;Mc.apron=null;Mc.carry=null;addMoney(pay,'Camionnage : '+m.name);addJobXP('camion',m.n*4);LIFE.jobs=(LIFE.jobs||0)+1;cnt('camion');say(Mc,pick(['Bonne tournée!','Les clients sont contents!']),3);}));
+  return s;}
+function camMissions(){return CAMM.map(m=>({id:'cam_'+m.k,e:'🚚',n:'Camionnage · '+m.name,cam:m,ok:()=>{const l=jobInfo('camion').l;if(l<m.tier*10)return'Niveau '+m.tier*10+' requis en camionnage';const h=hourOf();if(h<6||h>=17)return'Le dépôt est ouvert de 6 h à 17 h';return true;},go:()=>{flags.jobOff=true;LIFE.jobAskD=dayN();return camGo(m);}}));}
+function camHTML(){const J=jobInfo('camion'),t=Math.min(3,Math.floor(J.l/10));
+  let h=`<div class="cinfo"><b>🚚 Transport Boréal</b><br>Niveau ${J.l} · ${J.title}<div class="cbar"><i style="width:${Math.round(J.x/J.need*100)}%;background:#3d8bfd"></i></div><span class="cmut">Véhicule actuel : <b>${CAMV[t]}</b>${t<3?' · prochain véhicule au niveau '+(t+1)*10:' · flotte complète'}</span></div>`;
+  if(Mc.job&&Mc.job.id==='camion')h+=`<div class="cban" style="display:block"><b>🚚 Mission en cours</b><br><span class="cmut">${Mc.job.cur} · ${Mc.job.pay} $</span></div>`;
+  h+=`<div class="cmut" style="margin:2px 0 6px">Touche une mission pour l'ajouter à la liste de Marcel. Dépôt ouvert de 6 h à 17 h, au bout de la rue du Camionnage (sud).</div>`;
+  for(let i=0;i<4;i++){h+=`<div class="ch2">${CAMV[i]}${J.l>=i*10?'':' 🔒'}</div>`+camMissions().filter(d=>d.cam.tier===i).map(d=>{const ok=mapOk(d),sel=todoHas(d.id);return`<button type="button" class="crow${sel?' sel':''}${ok===true?'':' no'}" data-a="dest:${d.id}"><span>${d.cam.name}<small>${d.cam.n} arrêts · environ ${camPay(d.cam)} $</small>${ok===true?'':'<small>'+ok+'</small>'}</span><em>${sel?'✓ Dans la liste':ok===true?'Ajouter ›':''}</em></button>`;}).join('');}
+  return h;}
+CAPPS.push(['camion','🚚','Camionnage','linear-gradient(135deg,#3d8bfd,#1f3a5a)']);
+{const _cr4=cellRender;cellRender=function(){if(CELL.app!=='camion')return _cr4();
+  const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent='Camionnage';const keep=B.scrollTop;let h='';try{h=camHTML();}catch(e){console.error(e);}B.innerHTML=h;B.scrollTop=keep;};}
+{const _u6=ui;ui=()=>{_u6();try{if(MCAR.trk!=null&&!(Mc.job&&Mc.job.id==='camion'))setTruck(null);}catch(e){}};}
 {const _cr3=cellRender;cellRender=function(){if(CELL.app!=='notes')return _cr3();
   const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent='Notes et rappels';
   const key='notes|'+(CELL.nt||'')+(CELL.nw||''),keep=B.scrollTop,same=CELL._sv3===key;let h='';try{h=notesHTML();}catch(e){console.error(e);}B.innerHTML=h;CELL._sv3=key;B.scrollTop=same?keep:0;};}
