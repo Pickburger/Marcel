@@ -1544,7 +1544,7 @@ function frame(p,x,y,z,ry,w,h,col){const g=grp(p,x,y,z,ry);bx(g,M('#3a2a20'),w+.
  S('guitar',-2.6,1.4,-PI/2);S('window',-6.7,4.4,-PI/2);S('dance',-5.3,4.3,0);S('plant',-6.7,.7,-PI*.75);S('shelf',-6.9,5,-PI/2);
  S('fridge',6.7,.6,PI/2);S('stove',6.8,2.4,PI/2);S('sink',6.8,4,PI/2);S('trash',6.9,5.3,PI/2);
  S('eat',2.25,3,PI/2,{seat:.47,via:[[1.4,3]]});S('eat2',4.15,3,-PI/2,{seat:.47,via:[[5,3]]});S('phonewalk',.5,1.8,0);S('pace',2.4,.6,PI/2);
- S('bed',-3.9,-4.3,-PI/2,{room:'ch',lie:{x:-5.2,z:-3.95,y:.53,yaw:0}});S('ward',-6.8,-3,-PI/2,{room:'ch'});S('bedsit',-4.55,-3.4,PI/2,{room:'ch',seat:.56,via:[[-3.6,-3.4]]});
+ S('bed',-3.9,-4.3,-PI/2,{room:'ch',lie:{x:-5.2,z:-3.95,y:.53,yaw:0}});S('ward',-6.8,-3,-PI/2,{room:'ch'});S('bedsit',-4.5,-4.6,PI/2,{room:'ch',seat:.56,via:[[-3.6,-3.4],[-3.6,-4.6]]});
  S('desk',1.2,-4.85,PI,{room:'bu',seat:.47,via:[[1.2,-3.9]]});S('yoga',1.2,-3,0,{room:'bu'});
  S('toilet',4.4,-5.45,0,{room:'ba',seat:.42,via:[[4.4,-4.4]]});S('bsink',5.9,-5.05,PI,{room:'ba'});S('shower',7.4,-5.2,0,{room:'ba',via:[[7.1,-3.8]]});
  I.obs=[[-8,-1.56,-4.5,-1.44],[-3.5,-1.56,.7,-1.44],[1.7,-1.56,4.7,-1.44],[5.7,-1.56,8,-1.44],[-1.06,-6,-.94,-1.5],[3.44,-6,3.56,-1.5],
@@ -4445,7 +4445,7 @@ function runChar(ch,dt){
   if(step.t==='do'||step.t==='wait'){
     if(!step.started){step.started=true;step.t0=gm;step.r0=tReal;
       if(step.t==='do'){step.end=step.until!=null?step.until:gm+(step.dur||1)*(ch===Mc?skSpeed(step.a):1);if(step.end<=gm)step.end=gm+1;}
-      ch.pose=step.pose||'stand';ch.act=step.a||'idle';ch.show=step.show||null;ch.swimY=step.swimY||0;ch.zap=!!step.zap;ch.zapAt=0;ch.seatH=step.seatH??null;if(step.yaw!=null)ch.tyaw=step.yaw;
+      const kSit=!step.pose&&!step.lie&&ch.pose==='sit'&&ch.seatH!=null;ch.pose=step.pose||(kSit?'sit':'stand');ch.act=step.a||'idle';ch.show=step.show||null;ch.swimY=step.swimY||0;ch.zap=!!step.zap;ch.zapAt=0;ch.seatH=step.seatH??(kSit?ch.seatH:null);if(step.yaw!=null)ch.tyaw=step.yaw;
       if(step.lie){ch.lie=step.lie;ch.lieFrom={...ch.pos};ch.pose='lie';ch.pos={x:step.lie.x,z:step.lie.z};}
       if(step.ride){ch.ride=step.ride;step.rideFrom={...ch.pos};}
       if(step.say&&ch===Mc)say(ch,step.say);step.ci=0;step.nextLine=tReal+1.2;}
