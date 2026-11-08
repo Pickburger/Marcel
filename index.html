@@ -159,6 +159,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #saveInfo{font-size:.68rem;color:var(--gris)}
 @media (prefers-reduced-motion:reduce){.lb,#tel,#appel{transition:none}}
 /* ---- Cellulaire interactif ---- */
+#camModes{position:absolute;left:10px;bottom:62px;z-index:7;display:flex;gap:4px}#camModes button{width:36px;height:32px;border-radius:9px;border:1px solid var(--trait);background:rgba(18,22,30,.82);backdrop-filter:blur(6px);font-size:.95rem;cursor:pointer;padding:0;display:grid;place-items:center}#camModes button[aria-pressed="true"]{background:var(--craie);border-color:var(--craie)}body.plein #camModes{bottom:calc(max(10px,env(safe-area-inset-bottom)) + 52px);left:max(10px,env(safe-area-inset-left))}
 #camR{position:absolute;top:92px;left:8px;z-index:7;width:36px;height:36px;border-radius:10px;border:1px solid var(--trait);background:rgba(18,22,30,.82);backdrop-filter:blur(6px);color:var(--craie);font-size:.95rem;cursor:pointer;display:grid;place-items:center;padding:0}#camR[hidden]{display:none}#cv{touch-action:none}
 #cellB{position:absolute;top:50px;left:8px;z-index:7;width:36px;height:36px;border-radius:10px;border:1px solid var(--trait);background:rgba(18,22,30,.82);backdrop-filter:blur(6px);color:var(--craie);font-size:1rem;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
 #cellB:hover{background:rgba(40,48,64,.9)}#cellB.on{background:var(--citrouille);border-color:var(--citrouille)}#cellB:focus-visible,#cellX:focus-visible,#cell button:focus-visible{outline:2px solid var(--citrouille);outline-offset:2px}
@@ -225,7 +226,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
     <span id="sclk">06:40</span><div id="fuelM" hidden><span class="fi">⛽</span><span class="fb"><i></i></span><span class="ft">—</span></div><button id="son" type="button" aria-pressed="false" aria-label="Activer le son" title="Son">🔇</button><button id="pauseB" type="button" aria-label="Mettre en pause" title="Pause">⏸</button><div id="pauseTag" hidden>⏸ PAUSE</div><div id="spd" role="group" aria-label="Vitesse du jeu"><button type="button" data-sp="0.5" aria-pressed="false">×0,5</button><button type="button" data-sp="1" aria-pressed="true">×1</button><button type="button" data-sp="2" aria-pressed="false">×2</button><button type="button" data-sp="5" aria-pressed="false">×5</button></div><button id="plein" type="button" aria-label="Plein écran" title="Plein écran">⛶</button><div id="toast"></div>
     <div id="choix" role="dialog" aria-live="polite"><p id="choixQ"></p><div id="choixB"></div><div class="chrono"><i id="choixT"></i></div><small id="choixS"></small></div>
     <div id="mg" hidden><div class="mgh"><b id="mgT"></b><span id="mgS"></span><button id="mgX" type="button" aria-label="Quitter le mini-jeu">✕</button></div><div class="mgbar"><i id="mgB"></i></div><canvas id="mgC"></canvas></div>
-    <button id="camR" type="button" hidden aria-label="Recentrer la caméra" title="Recentrer la caméra">🎥</button><button id="cellB" type="button" aria-label="Ouvrir le cellulaire de Marcel" title="Cellulaire (met le jeu en pause)">📱</button>
+    <div id="camModes" role="group" aria-label="Type de caméra"><button type="button" data-cm="cine" aria-pressed="true" title="Cinéma (plans automatiques)">🎬</button><button type="button" data-cm="suivi" aria-pressed="false" title="Derrière Marcel">🧍</button><button type="button" data-cm="iso" aria-pressed="false" title="Vue de côté en hauteur">📐</button><button type="button" data-cm="ciel" aria-pressed="false" title="Vue du ciel">🛰️</button></div><button id="camR" type="button" hidden aria-label="Recentrer la caméra" title="Recentrer la caméra">🎥</button><button id="cellB" type="button" aria-label="Ouvrir le cellulaire de Marcel" title="Cellulaire (met le jeu en pause)">📱</button>
     <div id="cell" hidden role="dialog" aria-modal="true" aria-label="Cellulaire de Marcel"><div class="cphone"><div class="cscr"><div class="cstat"><b id="cTime">08:00</b><span id="cTitle"></span><span>📶 🔋</span></div><div class="cbody" id="cBody"></div><button class="chome" id="cHome" type="button" aria-label="Retour à la liste des applications">🏠 Accueil</button></div><button id="cellX" type="button" aria-label="Fermer le cellulaire">✕</button></div></div>
     <div id="fondu"></div>
     <div id="chargement">Construction du quartier…</div>
@@ -4715,8 +4716,20 @@ function computeShot(dt){shot.t+=dt;const p=Mc.world(new V3());const yaw=Mc.yaw;
   }
   if(Mc.area==='town'&&shot.type!=='plongee')clearCam(look,pos);else{const I=INT[Mc.area];if(I&&I.camB)clearTk(I,look,pos);}
   D_.pos.copy(pos);D_.look.copy(look);D_.fov=fov;}
+let CAMV_MODE='cine';try{CAMV_MODE=localStorage.getItem('marcelCam')||'cine';}catch(e){}let camSY=null;
+function computeMode(dt){const p=Mc.world(new V3());const car=Mc.inCar||Mc.inBus;let yaw=car&&!Mc.inBus?MCAR.yaw:Mc.yaw;if(camSY==null)camSY=yaw;let d=yaw-camSY;while(d>PI)d-=2*PI;while(d<-PI)d+=2*PI;camSY+=d*(1-Math.exp(-dt*(car?2.2:1.6)));
+  const f=new V3(Math.sin(camSY),0,Math.cos(camSY));const town=Mc.area==='town'||!!OUTD[Mc.area];const I=INT[Mc.area];
+  const vl=Mc.inBus?12:car?(MCAR.trk!=null?TLEN[MCAR.trk]:4.5):0;let pos=new V3(),look=new V3(),fov=50;
+  if(CAMV_MODE==='suivi'){if(town){pos.copy(p).addScaledVector(f,-(car?4.5+vl*.75:5.2)).add(new V3(0,car?2.6+vl*.12:2.4,0));look.copy(p).addScaledVector(f,car?6:2.5).add(new V3(0,car?1:1.1,0));}else{pos.copy(p).addScaledVector(f,-3.4).add(new V3(0,2.3,0));look.copy(p).addScaledVector(f,1.5).add(new V3(0,1,0));}fov=car?56:52;}
+  else if(CAMV_MODE==='iso'){const k=town?(car?1.3+vl*.04:1):.7;pos.copy(p).add(new V3(9*k,9*k,9*k));look.copy(p).add(new V3(0,.9,0));fov=40;}
+  else{const h=town?(car?26+vl*.6:20):9;pos.copy(p).add(new V3(0,h,h*.18));look.copy(p);fov=46;}
+  if(!town&&I&&CAMV_MODE!=='ciel'&&CAMV_MODE!=='iso'){}
+  if(Mc.area==='town')clearCam(look,pos);else if(I&&I.camB)clearTk(I,look,pos);
+  D_.pos.copy(pos);D_.look.copy(look);D_.fov=fov;}
+function setCamMode(m){CAMV_MODE=m;try{localStorage.setItem('marcelCam',m);}catch(e){}document.querySelectorAll('#camModes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cm===m?'true':'false'));camSY=null;if(m==='cine'){shot.dur=0;}}
 function updateCamera(dt){
   if(trans){runTrans(dt);return;}
+  if(CAMV_MODE!=='cine'){computeMode(dt);const k=1-Math.exp(-dt*3);camPos.lerp(D_.pos,k);camLook.lerp(D_.look,1-Math.exp(-dt*5));camFov=lerp(camFov,D_.fov,k);applyCam();return;}
   shot.t+=0;if(shot.t>shot.dur||shot.ctx!==shotCtx())chooseShot();
   computeShot(dt);
   if(shot.cut){camPos.copy(D_.pos);camLook.copy(D_.look);camFov=D_.fov;shot.cut=false;}
@@ -6319,6 +6332,7 @@ function appOrderApply(){const o=LIFE.appOrder;if(!Array.isArray(o))return;const
  cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
  cv.addEventListener('wheel',e=>{e.preventDefault();ORB.tz=clamp(ORB.tz*Math.exp(e.deltaY*.0012),.35,2.6);show();},{passive:false});
  $('camR').addEventListener('click',reset);}
+document.querySelectorAll('#camModes button').forEach(b=>b.addEventListener('click',()=>setCamMode(b.dataset.cm)));setTimeout(()=>setCamMode(CAMV_MODE),0);
 $('cellB').addEventListener('click',()=>CELL.on?cellClose():cellOpen());
 $('cellX').addEventListener('click',cellClose);$('cHome').addEventListener('click',()=>{CELL.app=null;cellRender();});
 $('cell').addEventListener('click',e=>{if(e.target===$('cell'))cellClose();});
