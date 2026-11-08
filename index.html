@@ -3195,7 +3195,7 @@ const fv=()=>FUELV[MCAR.trk==null?4:MCAR.trk];
 function getFuel(tier){if(tier==null&&MCAR.trk==null||tier===4)return MCAR.fuel;const t=tier==null?MCAR.trk:tier;LIFE.tf=LIFE.tf||{};return LIFE.tf[t]==null?1:LIFE.tf[t];}
 function setFuel(f,tier){f=clamp(f,0,1);if(tier==null&&MCAR.trk==null||tier===4){MCAR.fuel=f;return;}const t=tier==null?MCAR.trk:tier;LIFE.tf=LIFE.tf||{};LIFE.tf[t]=f;}
 function useFuel(d){if(d<=0)return;const V=fv();setFuel(getFuel()-d*V.r/V.tank*(skLv('conduite')>=20?.78:1));}
-function fuelHUD(){const el=document.getElementById('fuelM');if(!el)return;const f=getFuel(),V=fv(),show=!!(Mc.inCar||MCAR.driving||MCAR.trk!=null||f<.3);el.hidden=!show;if(!show)return;
+function fuelHUD(){const el=document.getElementById('fuelM');if(!el)return;const f=getFuel(),V=fv(),show=!!(Mc.inCar||MCAR.driving);el.hidden=!show;if(!show)return;
   el.classList.toggle('low',f<.3&&f>=.12);el.classList.toggle('crit',f<.12);el.firstChild.textContent=MCAR.trk!=null?'🚚':'⛽';el.querySelector('i').style.width=Math.round(f*100)+'%';el.querySelector('.ft').textContent=Math.round(f*V.tank)+' / '+V.tank+' L';}
 {const _uf=ui;ui=()=>{_uf();try{fuelHUD();}catch(e){}};}
 {const H=[-53,-35.5],CP=[[-53,-40],[-61.5,-40],[-61.5,-58.5]];
