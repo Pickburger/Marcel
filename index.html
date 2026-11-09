@@ -3161,6 +3161,7 @@ const PARKS={home:{att:[-59.1,-30],park:[-59.1,-42.8],yaw:PI,out:[[-59.1,-42.8],
   quai:{att:[138,30],park:[138,33.4],yaw:-PI/2,out:[[138,33.4]],inn:[],door:[138,34.9],node:[140,35.5]},
   gare:{att:[-146,30],park:[-146,33.4],yaw:-PI/2,out:[[-146,33.4]],inn:[],door:[-146,34.9],node:[-146,35.5]},
   hwOut:{att:[148,-30],out:[],inn:[]},hwIn:{att:[148,30],out:[],inn:[]}};
+PARKS.deppark={att:[30,160.5],park:[43,160.5],yaw:PI/2,out:[[43,160.5],[35.6,160.5,'r']],inn:[[35.6,160.5]],door:[43,162.2],walk:[[37.6,188.5],[38.9,187.4],[38.9,162.2],[43,162.2]],node:[35.5,188.5]};
 PARKS.dpump={att:[30,190],park:[91,190],yaw:PI/2,out:[[91,190],[35.6,190,'r']],inn:[[35.6,190]],door:[91,192.6],walk:[[37.6,188.5],[37.6,193],[91,193],[91,192.6]],node:[35.5,188.5]};
 PARKS.depot={att:[30,190],park:[50,190],yaw:PI/2,out:[[50,190],[35.6,190,'r']],inn:[[35.6,190]],door:[47,188.5],walk:[[37.6,188.5],[47,188.5]],node:[35.5,188.5]};
 for(const H of HOUSES){PARKS['d_'+H.k]=H.park;}
@@ -3184,6 +3185,9 @@ townSpot('dep_pompe',[35.5,188.5],[[37.6,188.5],[37.6,193],[94.6,193],[94.6,193.
 /* ---- camion de Marcel (remplace son auto pendant une mission) ---- */
 const CARG=new THREE.Group();{const keep=[MCAR.driver,MCAR.hl,MCAR.hl.target];for(const k of[...MCAR.g.children])if(!keep.includes(k))CARG.add(k);MCAR.g.add(CARG);}
 const TRKG=[0,1,2,3].map(t=>{const g=mkTruck(t);g.visible=false;MCAR.g.add(g);return g;});
+const CARP=new THREE.Group();CARP.visible=false;town.add(CARP);
+function parkSwap(toTruck,tier){if(toTruck){CARP.clear();const c=CARG.clone();c.visible=true;CARP.add(c);CARP.position.set(MCAR.x,.04,MCAR.z);CARP.rotation.y=MCAR.yaw;CARP.visible=true;setTruck(tier);MCAR.x=50;MCAR.z=190;MCAR.yaw=PI/2;MCAR.at='depot';placeMcar();}
+  else{setTruck(null);if(CARP.visible){MCAR.x=CARP.position.x;MCAR.z=CARP.position.z;MCAR.yaw=CARP.rotation.y;MCAR.at='deppark';CARP.visible=false;placeMcar();}}}
 function setTruck(t){MCAR.trk=t==null?null:t;CARG.visible=t==null;TRKG.forEach((g,i)=>g.visible=i===t);MCAR.ta=null;placeMcar();}
 const VTK=[2.0,3.0,4.0,3.6];function vTrail(){return MCAR.trk==null?1.4:VTK[MCAR.trk];}
 {const _pm=placeMcar;placeMcar=()=>{_pm();if(MCAR.trk!==3)return;const TRL=TRKG[3].userData.trl;if(!TRL)return;const sy=Math.sin(MCAR.yaw),cw=Math.cos(MCAR.yaw),hx=MCAR.x+sy*2.9,hz=MCAR.z+cw*2.9,LT=11.1;
@@ -3217,8 +3221,11 @@ const W=(cond,o={})=>({t:'wait',cond,...o});
 function at(k,a,dur,o={}){const s=SPK(k);const lab=o.label;const oo={...o};delete oo.label;
   return[tr(k,{label:lab,act:o.walkAct}),D(a,dur,{yaw:s.yaw,pose:s.seat!=null?'sit':(s.lie?'lie':'stand'),seatH:s.seat,lie:s.lie,...oo})];}
 
-function depotRoute(ch,dest){const E=dest.extra,G=E[E.length-1],S=[ch.pos.x,ch.pos.z],CZ=187.4;let r;
-  if((S[1]>191.5&&G[1]>191.5)||(S[1]<187.7&&G[1]<187.7))r=[G];else r=[[S[0],CZ],[G[0],CZ],G];
+function depotRoute(ch,dest){const E=dest.extra,G=E[E.length-1],S=[ch.pos.x,ch.pos.z],CZ=187.4,WX=38.9,west=p=>p[1]<163.6;let r;
+  if(west(S)&&west(G))r=[G];
+  else if(west(S))r=[[WX,S[1]],...(G[1]<187.7?[[WX,G[1]]]:[[WX,CZ],[G[0],CZ]]),G];
+  else if(west(G))r=[...(S[1]<187.7?[[WX,S[1]]]:[[S[0],CZ],[WX,CZ]]),[WX,G[1]],G];
+  else if((S[1]>191.5&&G[1]>191.5)||(S[1]<187.7&&G[1]<187.7))r=[G];else r=[[S[0],CZ],[G[0],CZ],G];
   r=r.filter((p,i)=>Math.hypot(p[0]-(i?r[i-1][0]:S[0]),p[1]-(i?r[i-1][1]:S[1]))>.05);ch.back=[...E].reverse().slice(1);return r;}
 function townRoute(ch,dest){if(dest&&dest.node==='35.5,188.5'&&ch.node==='35.5,188.5'&&ch.pos&&ch.pos.x>37&&ch.pos.x<102&&ch.pos.z>158&&ch.pos.z<215)return depotRoute(ch,dest);let pts=[...ch.back];let from=ch.node;if(!from||!NODES[from]){from=nearestNode(ch.pos.x,ch.pos.z);}
   if(from===dest.node&&dest.extra.length){const E=dest.extra;if(dest.full)return[...pts,...E];const eq=(a,b)=>Math.abs(a[0]-b[0])<.3&&Math.abs(a[1]-b[1])<.3;
@@ -3694,8 +3701,8 @@ function jobShift(J,hrs){const pay=Math.round(jobRate(J)*hrs);const JT2=JTASKS[J
     const t=mkTask(false);if(st.nm==null)st.nm=JJ.start+rnd(18,35);if(gm>=st.nm&&gm<JJ.end-25&&typeof MGJOB!=='undefined'&&MGJOB[J.id]&&mgBlock(MGJOB[J.id][0],{})<2){st.nm=gm+rnd(55,95);const m=MGJOB[J.id];const d=t.find(x=>x&&x.t==='do');t.splice(t.indexOf(d),0,...mgSteps(m[0],{a:d.a,pose:d.pose,seatH:d.seatH,yaw:d.yaw,job:J.id,q:'Un coup de rush au travail!',label:'Gère un coup de rush',...(m[1]||{})}));}
     Mc.q.unshift(...t,loop());});
   s.push(...mkTask(true),loop());return s;}
-function updateJobHud(){const J=Mc.job;const el=$('jobhud');if(!J){if(!el.hidden)el.hidden=true;return;}el.hidden=false;const p=clamp((gm-J.start)/(J.end-J.start),0,1);const left=Math.max(0,J.end-gm);
-  {const ji=jobInfo(J.id);$('jhT').textContent='💼 '+J.t+' · niv. '+ji.l;}$('jhP').textContent=Math.round(J.pay*p)+' / '+J.pay+' $';$('jhB').style.width=(p*100).toFixed(1)+'%';$('jhC').textContent=J.cur+' · reste '+Math.floor(left/60)+' h '+String(Math.round(left%60)).padStart(2,'0');
+function updateJobHud(){const J=Mc.job;const el=$('jobhud');if(!J){if(!el.hidden)el.hidden=true;return;}el.hidden=false;const p=J.stages?clamp(J.st/J.stages,0,1):clamp((gm-J.start)/(J.end-J.start),0,1);const left=Math.max(0,J.end-gm);
+  {const ji=jobInfo(J.id);$('jhT').textContent='💼 '+J.t+' · niv. '+ji.l;}$('jhP').textContent=Math.round(J.pay*p)+' / '+J.pay+' $';$('jhB').style.width=(p*100).toFixed(1)+'%';$('jhC').textContent=J.stages?J.cur+' · étape '+Math.min(J.stages,J.st+1)+' / '+J.stages:J.cur+' · reste '+Math.floor(left/60)+' h '+String(Math.round(left%60)).padStart(2,'0');
   $('jhL').innerHTML=J.done.slice(0,3).map(x=>'<li>'+x+'</li>').join('');}
 const JTITLE=['Recrue','Employé confirmé','Chef d\'équipe','Superviseur','Gérant','Directeur','Directeur régional','Vice-président','Président','Légende','Légende vivante'];
 function jobInfo(id){let x=(LIFE.jx&&LIFE.jx[id])||0,l=0;while(l<99&&x>=xpNeed(l)){x-=xpNeed(l);l++;}return{l,x,need:xpNeed(l),title:JTITLE[Math.min(10,Math.floor(l/10))]};}
@@ -6788,11 +6795,11 @@ const CAMM=[{k:'t0a',tier:0,name:'Colis de quartier',n:2,pool:['poste','sud','d_
 const camPay=(m)=>Math.round((45+16*m.n)*CAMX[m.tier]*(1+.02*jobInfo('camion').l));
 function camGo(m){const tier=m.tier,L=TLEN[tier],pay0=camPay(m);const pool=[...m.pool].sort(()=>Math.random()-.5).slice(0,m.n);const s=[];s.dyn=1;const st={ot:0,n:0};
   const setSpots=()=>{const xr=50-L/2,xf=50+L/2;townSpot('dep_front',[35.5,188.5],[[37.6,188.5],[37.6,187.4],[xf-1.3,188.0]],0);townSpot('dep_rear',[35.5,188.5],[[37.6,188.5],[37.6,187.4],[xr-1.1,187.4],[xr-1.1,190]],PI/2);};
-  const cur=t=>F(()=>{if(Mc.job)Mc.job.cur=t;});
-  s.push({t:'drive',to:'depot',label:'Se rend au dépôt Transport Boréal'});
-  s.push(F(()=>{Mc.job={t:'Camionnage',id:'camion',pay:pay0,start:gm,end:gm+m.n*70+150,done:[],cur:'Arrive au dépôt',hrs:0};}));
+  let NS=0;const cur=t=>{NS++;return F(()=>{if(Mc.job){Mc.job.cur=t;Mc.job.st++;}});};
+  s.push({t:'drive',to:'deppark',label:'Se rend au dépôt Transport Boréal'});
+  const JOB={t:'Camionnage',id:'camion',pay:pay0,start:0,end:0,done:[],cur:'Arrive au dépôt',hrs:0,st:-1,stages:0};s.push(F(()=>{JOB.start=gm;JOB.end=gm+600;Mc.job=JOB;}));
   s.push(tr('town.dep_office',{label:'Va chercher son bon de livraison'}),D('scan',4,{label:'Prend son bon de livraison : '+m.name.toLowerCase(),say:pick(['Voyons la tournée du jour…','Allez, au boulot!'])}));
-  s.push(F(()=>{setTruck(tier);setSpots();if(Mc.job)Mc.job.cur='Inspection avant départ';}));
+  s.push(F(()=>{parkSwap(true,tier);setSpots();}),cur('Inspection avant départ'));
   s.push(tr('town.dep_front',{label:'Fait le tour du véhicule'}),D('squat',3,{label:'Vérifie les pneus avant'}));
   s.push(tr('town.dep_rear',{label:'Va à l\'arrière du véhicule'}),D('look',3,{label:'Vérifie les feux et les portes'}));
   const loads=Math.ceil(m.n/3);
@@ -6807,8 +6814,9 @@ function camGo(m){const tier=m.tier,L=TLEN[tier],pay0=camPay(m);const pool=[...m
     s.push(F(()=>{Mc.carry=null;if(!Mc.job)return;st.n++;const ok=gm<=Mc.job.start+170+(i+1)*85;if(ok)st.ot++;Mc.job.done.unshift((ok?'✓ ':'⏱ ')+nm);Mc.job.done=Mc.job.done.slice(0,4);toast(ok?'✅ Livré à temps : '+nm:'⏱ Livré en retard : '+nm,ok);}));
   });
   s.push(cur('Retourne au dépôt'),{t:'drive',to:'depot',label:'Retourne au dépôt'});
-  s.push(F(()=>{setTruck(null);if(Mc.job)Mc.job.cur='Remet son bon de livraison';}),tr('town.dep_office',{label:'Remet son bon de livraison'}),D('give',3,{label:'Remet son bon signé',say:'Tournée terminée!'}));
+  s.push(F(()=>{parkSwap(false);}),cur('Remet son bon de livraison'),tr('town.dep_office',{label:'Remet son bon de livraison'}),D('give',3,{label:'Remet son bon signé',say:'Tournée terminée!'}));
   s.push(F(()=>{const bonus=Math.round(pay0*.04*st.ot);Mc.job=null;Mc.apron=null;Mc.carry=null;addMoney(pay0+bonus,'Camionnage : '+m.name+(bonus?' (bonus ponctualité)':''));addJobXP('camion',m.n*4+st.ot*2);LIFE.jobs=(LIFE.jobs||0)+1;cnt('camion');toast('🚚 Tournée terminée : '+st.ot+'/'+m.n+' à temps',true);say(Mc,pick(['Bonne tournée!','Les clients sont contents!']),3);}));
+  s.push({t:'drive',to:'home',label:'Rentre à la maison en auto'});JOB.stages=NS;
   return s;}
 function camMissions(){return CAMM.map(m=>({id:'cam_'+m.k,e:'🚚',n:'Camionnage · '+m.name,cam:m,ok:()=>{const l=jobInfo('camion').l;if(l<m.tier*10)return'Niveau '+m.tier*10+' requis en camionnage';const h=hourOf();if(h<6||h>=17)return'Le dépôt est ouvert de 6 h à 17 h';return true;},go:()=>{flags.jobOff=true;LIFE.jobAskD=dayN();return camGo(m);}}));}
 function camHTML(){const J=jobInfo('camion'),t=Math.min(3,Math.floor(J.l/10));
@@ -6820,7 +6828,7 @@ function camHTML(){const J=jobInfo('camion'),t=Math.min(3,Math.floor(J.l/10));
 CAPPS.push(['camion','🚚','Camionnage','linear-gradient(135deg,#3d8bfd,#1f3a5a)']);
 {const _cr4=cellRender;cellRender=function(){if(CELL.app!=='camion')return _cr4();
   const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent='Camionnage';const keep=B.scrollTop;let h='';try{h=camHTML();}catch(e){console.error(e);}B.innerHTML=h;B.scrollTop=keep;};}
-{const _u6=ui;ui=()=>{_u6();try{if(MCAR.trk!=null&&!(Mc.job&&Mc.job.id==='camion'))setTruck(null);}catch(e){}};}
+{const _u6=ui;ui=()=>{_u6();try{if(MCAR.trk!=null&&!(Mc.job&&Mc.job.id==='camion'))parkSwap(false);}catch(e){}};}
 {const _cr3=cellRender;cellRender=function(){if(CELL.app!=='notes')return _cr3();
   const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent='Notes et rappels';
   const key='notes|'+(CELL.nt||'')+(CELL.nw||''),keep=B.scrollTop,same=CELL._sv3===key;let h='';try{h=notesHTML();}catch(e){console.error(e);}B.innerHTML=h;CELL._sv3=key;B.scrollTop=same?keep:0;};}
