@@ -1247,17 +1247,17 @@ function mkTruck(tier){const TG=new THREE.Group();
   const mat=(c,o)=>M(c,o||{r:.45,m:.25});
   const B=(m,w,h,d,x,y,z,rx=0,ry=0,rz=0)=>{const q=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);q.position.set(x,y,z);if(rx||ry||rz)q.rotation.set(rx,ry,rz);q.castShadow=true;TG.add(q);return q;};
   const C=(m,r,h,x,y,z,ax,seg=12)=>{const q=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,seg),m);q.position.set(x,y,z);if(ax==='x')q.rotation.z=PI/2;else if(ax==='z')q.rotation.x=PI/2;q.castShadow=true;TG.add(q);return q;};
-  const gl=M('#1c2633',{r:.06,m:.7}),tire=M('#141416',{r:.9}),rim=M('#b8bec6',{r:.3,m:.8}),dk=M('#1d1f23',{r:.7}),chr=M('#cdd2d8',{r:.2,m:.9}),tail=new THREE.MeshBasicMaterial({color:0xb5121b,toneMapped:false}),head=lampMat,wht=M('#ffffff',{r:.5}),grey=M('#b9c0c6',{r:.5,m:.3}),dgrey=M('#8d949b',{r:.5,m:.3});
+  const gl=M('#2a3644',{r:.06,m:.7,op:.42}),tire=M('#141416',{r:.9}),rim=M('#b8bec6',{r:.3,m:.8}),dk=M('#1d1f23',{r:.7}),chr=M('#cdd2d8',{r:.2,m:.9}),tail=new THREE.MeshBasicMaterial({color:0xb5121b,toneMapped:false}),head=lampMat,wht=M('#ffffff',{r:.5}),grey=M('#b9c0c6',{r:.5,m:.3}),dgrey=M('#8d949b',{r:.5,m:.3});
   const wheel=(x,z,r,dual)=>{const s=x>0?1:-1;C(tire,r,.3,x,r,z,'x',16);C(rim,r*.62,.34,x+s*.01,r,z,'x',14);C(dk,r*.22,.38,x+s*.02,r,z,'x',8);if(dual)C(tire,r,.3,x-s*.33,r,z,'x',16);};
   const sign=(txt,bg,fg,w,h,x,y,z,font)=>{for(const s of[-1,1]){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),signMat(txt,bg,fg,512,Math.round(512*h/w),font||'800 56px "Bricolage Grotesque", sans-serif'));m.position.set(s*x,y,z);m.rotation.y=s*PI/2;TG.add(m);}};
   const mirrors=(x,y,z,w,h)=>{for(const s of[-1,1]){B(dk,.05,.05,.3,s*(x-.1),y,z);B(dk,.07,h,w,s*x,y,z+.1);}};
   const plate=(z,y)=>B(wht,.5,.16,.02,0,y,z);
   if(tier===0){const W=2.05,L=5.9,body=mat('#f4f5f6'),blue=mat('#2f6fb6');
-    B(body,W,1.1,L,0,.93,0);B(body,W-.04,1.15,4.85,0,2.055,-.525);
+    B(body,W,1.1,L,0,.93,0);B(body,W-.04,1.15,3.75,0,2.055,-.975);B(body,W-.04,.12,1.15,0,2.57,1.45);for(const s of[-1,1]){B(body,.05,.2,1.1,s*1.0,1.58,1.45);B(body,.08,.95,.08,s*.98,2.1,1.97);}
     B(gl,W-.22,.03,1.28,0,2.05,2.4,.896);B(body,W,.1,.45,0,1.5,2.78,.5);
     B(dk,1.3,.4,.05,0,.95,2.96);B(head,.38,.2,.06,-.72,1.05,2.96);B(head,.38,.2,.06,.72,1.05,2.96);B(dk,W+.04,.28,.3,0,.55,2.88);
     B(dk,W+.02,.22,.25,0,.5,-2.98);for(const s of[-1,1])B(tail,.14,.55,.05,s*(W/2-.12),1.2,-2.96);B(dk,.02,1.6,.02,0,1.9,-2.96);plate(-2.99,.85);
-    B(blue,W+.03,.14,5.5,0,1.2,-.05);for(const s of[-1,1]){B(gl,.03,.65,1.0,s*1.03,2.02,1.4);B(dk,.03,1.5,.03,s*1.03,1.95,0);B(dk,.04,.6,1.0,s*1.02,.78,1.95);B(dk,.04,.6,1.0,s*1.02,.78,-1.9);}
+    B(blue,W+.03,.14,5.5,0,1.2,-.05);for(const s of[-1,1]){B(gl,.03,.72,1.05,s*1.0,2.04,1.45);B(dk,.03,1.5,.03,s*1.03,1.95,0);B(dk,.04,.6,1.0,s*1.02,.78,1.95);B(dk,.04,.6,1.0,s*1.02,.78,-1.9);}
     mirrors(1.2,1.9,2.0,.18,.28);sign('TRANSPORT BORÉAL','#f4f5f6','#1f3a5a',2.4,.34,1.04,1.7,-1.1);
     for(const s of[-1,1]){wheel(s*1.02,1.95,.4);wheel(s*1.02,-1.9,.4);}
   }else if(tier===1){const W=2.4,body=mat('#f4f4f2'),cab=mat('#2f6fb6');
@@ -1265,9 +1265,9 @@ function mkTruck(tier){const TG=new THREE.Group();
     for(let z=-3.7;z<1.5;z+=.9)for(const s of[-1,1])B(grey,.03,2.3,.05,s*(W/2+.012),2.2,z);
     sign('TRANSPORT BORÉAL','#f4f4f2','#1f3a5a',4.2,.62,W/2+.02,2.55,-1.3);
     B(grey,W-.1,2.3,.05,0,2.1,-4.42);for(let y=1.1;y<3.2;y+=.22)B(dgrey,W-.1,.03,.06,0,y,-4.44);B(dk,W,.3,.3,0,.7,-4.45);for(const s of[-1,1])B(tail,.2,.4,.05,s*(W/2-.15),.95,-4.42);plate(-4.5,.62);
-    B(cab,W-.05,1.9,1.6,0,1.6,2.6);B(gl,W-.3,.85,.04,0,2.1,3.42,-.2);B(cab,W-.1,.9,1.0,0,1.1,3.9);
+    B(cab,W-.05,1.05,1.6,0,1.175,2.6);B(cab,W-.05,.15,1.6,0,2.475,2.6);B(cab,W-.05,.75,.08,0,2.03,1.84);for(const s of[-1,1]){B(cab,.08,.75,.08,s*(W/2-.06),2.03,3.36);B(gl,.03,.72,1.4,s*(W/2-.04),2.03,2.62);}B(gl,W-.3,.85,.04,0,2.1,3.42,-.2);B(cab,W-.1,.9,1.0,0,1.1,3.9);
     B(dk,1.5,.55,.05,0,1.05,4.41);B(chr,1.5,.06,.06,0,1.2,4.43);B(chr,1.5,.06,.06,0,.95,4.43);for(const s of[-1,1])B(head,.4,.25,.06,s*.85,1.1,4.41);B(chr,W+.05,.32,.3,0,.62,4.35);
-    for(const s of[-1,1]){B(gl,.03,.8,1.0,s*(W/2),2.0,2.7);B(dk,.03,1.7,.03,s*(W/2),1.6,2.0);B(dk,.4,.06,.5,s*(W/2+.05),.62,2.5);B(dk,.5,.5,.04,s*1.0,.4,-3.5);}
+    for(const s of[-1,1]){B(dk,.03,1.0,.03,s*(W/2),1.2,2.0);B(dk,.4,.06,.5,s*(W/2+.05),.62,2.5);B(dk,.5,.5,.04,s*1.0,.4,-3.5);}
     mirrors(W/2+.25,2.1,3.3,.22,.45);C(chr,.32,1.4,-1.0,.62,.5,'z');
     for(const s of[-1,1]){wheel(s*1.08,3.4,.5);wheel(s*1.08,-2.8,.5,true);}
   }else if(tier===2){const W=2.5,body=mat('#eceae4'),cab=mat('#c8402f');
@@ -1275,9 +1275,9 @@ function mkTruck(tier){const TG=new THREE.Group();
     for(let z=-5.4;z<1.0;z+=.9)for(const s of[-1,1])B(grey,.03,2.5,.05,s*(W/2+.012),2.55,z);
     sign('TRANSPORT BORÉAL','#eceae4','#1f3a5a',4.6,.7,W/2+.02,2.9,-2.3);
     B(grey,W-.1,2.55,.05,0,2.35,-5.92);for(let y=1.2;y<3.6;y+=.22)B(dgrey,W-.1,.03,.06,0,y,-5.94);B(dk,W,.32,.3,0,.8,-5.95);for(const s of[-1,1])B(tail,.2,.4,.05,s*(W/2-.15),1.05,-5.92);plate(-6.0,.72);
-    B(cab,W-.1,2.15,1.9,0,1.85,2.35);B(gl,W-.4,1.1,.04,0,2.4,3.33,-.22);B(cab,W-.35,1.0,2.1,0,1.3,4.35);B(cab,W-.5,.12,2.0,0,1.9,4.4,.05);
+    B(cab,W-.1,1.075,1.9,0,1.31,2.35);B(cab,W-.1,.15,1.9,0,2.85,2.35);B(cab,W-.1,.95,.08,0,2.31,1.44);for(const s of[-1,1]){B(cab,.08,.95,.08,s*(W/2-.08),2.31,3.26);B(gl,.03,.9,1.7,s*(W/2-.07),2.31,2.35);}B(gl,W-.4,1.1,.04,0,2.4,3.33,-.22);B(cab,W-.35,1.0,2.1,0,1.3,4.35);B(cab,W-.5,.12,2.0,0,1.9,4.4,.05);
     B(chr,1.45,1.0,.06,0,1.3,5.42);B(dk,1.3,.85,.05,0,1.3,5.45);for(let i=0;i<4;i++)B(chr,1.3,.04,.05,0,1.0+i*.2,5.48);for(const s of[-1,1])B(head,.4,.28,.06,s*.95,1.25,5.4);B(chr,W,.35,.35,0,.72,5.72);
-    for(const s of[-1,1]){B(gl,.03,.85,1.15,s*(W/2-.04),2.35,2.6);B(dk,.03,1.9,.03,s*(W/2-.04),1.85,1.85);B(dk,.4,.06,.5,s*(W/2+.05),.75,2.3);B(dk,.5,.5,.04,s*1.1,.4,-5.0);C(chr,.07,2.5,s*1.1,2.45,1.3);C(chr,.4,1.4,s*1.0,.85,.0,'z');}
+    for(const s of[-1,1]){B(dk,.03,1.0,.03,s*(W/2-.04),1.3,1.85);B(dk,.4,.06,.5,s*(W/2+.05),.75,2.3);B(dk,.5,.5,.04,s*1.1,.4,-5.0);C(chr,.07,2.5,s*1.1,2.45,1.3);C(chr,.4,1.4,s*1.0,.85,.0,'z');}
     mirrors(W/2+.28,2.35,3.2,.24,.5);
     for(const s of[-1,1]){wheel(s*1.1,3.9,.52);wheel(s*1.1,-3.6,.52,true);wheel(s*1.1,-5.0,.52,true);}
   }else{const W=2.55,body=mat('#e8e8e6'),red=mat('#c8402f'),dkr=mat('#8f2a1e');
@@ -1292,10 +1292,10 @@ function mkTruck(tier){const TG=new THREE.Group();
     {const TRL=new THREE.Group();TRL.position.z=2.9;TG.children.slice(n0).forEach(k=>{TRL.add(k);k.position.z-=2.9;});TG.add(TRL);TG.userData.trl=TRL;}
     // tracteur
     B(dk,1.1,.3,6.4,0,1.0,6.0);B(dk,1.5,.2,1.4,0,1.3,2.9);
-    B(red,2.4,2.1,2.6,0,2.15,4.3);B(red,2.3,.7,1.6,0,3.5,3.9,-.28);B(gl,2.1,1.0,.04,0,2.55,5.62,-.18);
+    B(red,2.4,.95,2.6,0,1.575,4.3);B(red,2.4,1.15,1.2,0,2.625,3.6);B(red,2.4,.3,1.4,0,3.05,4.9);for(const s of[-1,1]){B(red,.1,.85,.1,s*1.15,2.475,5.55);B(gl,.03,.85,1.3,s*1.17,2.475,4.88);}B(red,2.3,.7,1.6,0,3.5,3.9,-.28);B(gl,2.1,1.0,.04,0,2.55,5.62,-.18);
     B(red,2.1,1.3,3.0,0,1.75,7.1);B(dkr,2.1,.08,3.0,0,2.42,7.1);
     B(chr,1.7,1.3,.08,0,1.75,8.62);B(dk,1.55,1.15,.06,0,1.75,8.66);for(let i=0;i<5;i++)B(chr,1.5,.05,.04,0,1.3+i*.2,8.7);for(const s of[-1,1])B(head,.45,.3,.06,s*.95,1.55,8.6);B(chr,2.5,.4,.4,0,.85,8.8);B(dk,2.2,.2,.3,0,.55,8.9);
-    for(const s of[-1,1]){B(gl,.03,.75,1.2,s*1.2,2.5,4.7);B(dk,.03,1.8,.03,s*1.2,2.15,4.0);B(dk,.4,.06,.5,s*1.25,.85,4.7);C(chr,.1,3.2,s*1.28,2.9,3.05);C(chr,.12,.2,s*1.28,4.55,3.05);C(chr,.4,1.9,s*1.35,1.3,4.2,'z');}
+    for(const s of[-1,1]){B(dk,.03,.9,.03,s*1.2,1.6,4.0);B(dk,.4,.06,.5,s*1.25,.85,4.7);C(chr,.1,3.2,s*1.28,2.9,3.05);C(chr,.12,.2,s*1.28,4.55,3.05);C(chr,.4,1.9,s*1.35,1.3,4.2,'z');}
     mirrors(1.5,2.6,5.4,.26,.6);
     for(const s of[-1,1]){wheel(s*1.05,7.4,.5);wheel(s*1.0,2.2,.52,true);wheel(s*1.0,3.5,.52,true);}
   }
@@ -3176,10 +3176,10 @@ function carPath(A,B){const center=[[...A.att],...rDijk(rk(...A.att),rk(...B.att
   for(let i=0;i<center.length-1;i++){const p=center[i],q=center[i+1];const dx=q[0]-p[0],dz=q[1]-p[1],Ln=Math.hypot(dx,dz)||1;const rx=-dz/Ln*2,rz=dx/Ln*2;lane.push([p[0]+rx,p[1]+rz],[q[0]+rx,q[1]+rz]);}
   return[...A.out.map(p=>[...p]),...lane,...B.inn.map(p=>[...p]),...(B.park?[[...B.park]]:[])];}
 const MCAR={g:new THREE.Group(),x:-59.1,z:-42.8,yaw:PI,v:0,at:'home',fuel:.8,driving:false,away:false};carBody(MCAR.g,'#7d8794','berline');town.add(MCAR.g);
-{const dh=new THREE.Group();const hd=new THREE.Mesh(new THREE.SphereGeometry(.12,10,8),M('#f0c29e'));dh.add(hd);const hr=new THREE.Mesh(new THREE.SphereGeometry(.125,10,6,0,PI*2,0,PI*.5),M('#5a3b2a'));hr.position.y=.02;dh.add(hr);dh.position.set(.38,1.18,-.15);dh.visible=false;MCAR.g.add(dh);MCAR.driver=dh;
+{const dh=new THREE.Group();const hd=new THREE.Mesh(new THREE.SphereGeometry(.12,10,8),M('#f0c29e'));dh.add(hd);const hr=new THREE.Mesh(new THREE.SphereGeometry(.125,10,6,0,PI*2,0,PI*.5),M('#5a3b2a'));hr.position.y=.02;dh.add(hr);{const tb=new THREE.Mesh(new THREE.BoxGeometry(.4,.36,.24),M('#3d6bb0'));tb.position.y=-.31;dh.add(tb);for(const s of[-1,1]){const a=new THREE.Mesh(new THREE.BoxGeometry(.1,.1,.34),M('#3d6bb0'));a.position.set(s*.2,-.36,.17);dh.add(a);}}dh.position.set(.38,1.18,-.15);dh.visible=false;MCAR.g.add(dh);MCAR.driver=dh;
  const hl=new THREE.SpotLight(0xfff0d0,0,40,.5,.6,1.5);hl.position.set(0,.7,2.2);hl.target.position.set(0,0,14);MCAR.g.add(hl);MCAR.g.add(hl.target);MCAR.hl=hl;}
 function placeMcar(){MCAR.g.position.set(MCAR.x,.04,MCAR.z);MCAR.g.rotation.y=MCAR.yaw;MCAR.g.visible=!MCAR.away;}placeMcar();
-for(const k in PARKS){const p=PARKS[k];if(!p.door)continue;const nd=p.node?nk(p.node[0],p.node[1]):nearestNode(p.door[0],p.door[1]);TOWN_SPOTS['car_'+k]={node:nd,extra:p.walk||[[p.door[0],p.door[1]]],yaw:(p.yaw||0)+PI/2,full:1};}
+for(const k in PARKS){const p=PARKS[k];if(!p.door)continue;const nd=p.node&&NODES[nk(p.node[0],p.node[1])]?nk(p.node[0],p.node[1]):nearestNode(p.door[0],p.door[1]);TOWN_SPOTS['car_'+k]={node:nd,extra:p.walk||[[p.door[0],p.door[1]]],yaw:(p.yaw||0)+PI/2,full:1};}
 townSpot('dep_office',[35.5,188.5],[[37.6,188.5],[37.6,187.4],[47,187.4],[47,177.7]],PI);
 townSpot('dep_dock',[35.5,188.5],[[37.6,188.5],[37.6,187.4],[62,187.4],[62,177.7]],PI);
 townSpot('dep_pompe',[35.5,188.5],[[37.6,188.5],[37.6,193],[94.6,193],[94.6,193.8]],PI/2);
@@ -3189,7 +3189,8 @@ const TRKG=[0,1,2,3].map(t=>{const g=mkTruck(t);g.visible=false;MCAR.g.add(g);re
 const CARP=new THREE.Group();CARP.visible=false;town.add(CARP);
 function parkSwap(toTruck,tier){if(toTruck){CARP.clear();const c=CARG.clone();c.visible=true;CARP.add(c);CARP.position.set(MCAR.x,.04,MCAR.z);CARP.rotation.y=MCAR.yaw;CARP.visible=true;setTruck(tier);MCAR.x=50;MCAR.z=190;MCAR.yaw=PI/2;MCAR.at='depot';placeMcar();}
   else{setTruck(null);if(CARP.visible){MCAR.x=CARP.position.x;MCAR.z=CARP.position.z;MCAR.yaw=CARP.rotation.y;MCAR.at='deppark';CARP.visible=false;placeMcar();}}}
-function setTruck(t){MCAR.trk=t==null?null:t;CARG.visible=t==null;TRKG.forEach((g,i)=>g.visible=i===t);MCAR.ta=null;placeMcar();}
+const DRVP=[[.5,1.95,1.45,1.15],[.6,2.05,2.6,1.2],[.62,2.3,2.4,1.25],[.6,2.5,4.85,1.25]];
+function setTruck(t){MCAR.trk=t==null?null:t;{const P=t==null?[.38,1.18,-.15,1]:DRVP[t];MCAR.driver.position.set(P[0],P[1],P[2]);MCAR.driver.scale.setScalar(P[3]);}CARG.visible=t==null;TRKG.forEach((g,i)=>g.visible=i===t);MCAR.ta=null;placeMcar();}
 const VTK=[2.0,3.0,4.0,3.6];function vTrail(){return MCAR.trk==null?1.4:VTK[MCAR.trk];}
 {const _pm=placeMcar;placeMcar=()=>{_pm();if(MCAR.trk!==3)return;const TRL=TRKG[3].userData.trl;if(!TRL)return;const sy=Math.sin(MCAR.yaw),cw=Math.cos(MCAR.yaw),hx=MCAR.x+sy*2.9,hz=MCAR.z+cw*2.9,LT=11.1;
   if(!MCAR.driving||!MCAR.ta)MCAR.ta=[hx-sy*LT,hz-cw*LT];else{const ex=hx-MCAR.ta[0],ez=hz-MCAR.ta[1],el=Math.hypot(ex,ez)||1;MCAR.ta=[hx-ex/el*LT,hz-ez/el*LT];}
@@ -3229,7 +3230,7 @@ function depotRoute(ch,dest){const E=dest.extra,G=E[E.length-1],S=[ch.pos.x,ch.p
   else if((S[1]>191.5&&G[1]>191.5)||(S[1]<187.7&&G[1]<187.7))r=[G];else r=[[S[0],CZ],[G[0],CZ],G];
   r=r.filter((p,i)=>Math.hypot(p[0]-(i?r[i-1][0]:S[0]),p[1]-(i?r[i-1][1]:S[1]))>.05);ch.back=[...E].reverse().slice(1);return r;}
 function townRoute(ch,dest){if(dest&&dest.node==='35.5,188.5'&&ch.node==='35.5,188.5'&&ch.pos&&ch.pos.x>37&&ch.pos.x<102&&ch.pos.z>158&&ch.pos.z<215)return depotRoute(ch,dest);let pts=[...ch.back];let from=ch.node;if(!from||!NODES[from]){from=nearestNode(ch.pos.x,ch.pos.z);}
-  if(from===dest.node&&dest.extra.length){const E=dest.extra;if(dest.full)return[...pts,...E];const eq=(a,b)=>Math.abs(a[0]-b[0])<.3&&Math.abs(a[1]-b[1])<.3;
+  if(from===dest.node&&dest.extra.length){const E=dest.extra;if(dest.full){const L=E[E.length-1];if(Math.hypot(L[0]-ch.pos.x,L[1]-ch.pos.z)<.9){ch.back=[...E].reverse().slice(1);return[];}return[...pts,...E];}const eq=(a,b)=>Math.abs(a[0]-b[0])<.3&&Math.abs(a[1]-b[1])<.3;
     {let ni=-1,nd=.9;E.forEach((p,i)=>{const d=Math.hypot(p[0]-ch.pos.x,p[1]-ch.pos.z);if(d<nd){nd=d;ni=i;}});
      if(ni>=0){const bj=pts.length?E.findIndex(e=>eq(e,pts[0])):-1;if(bj<0||ni>=bj){ch.back=[...E].reverse().slice(1);return E.slice(ni+1);}}}
     for(let i=0;i<pts.length;i++){const j=E.findIndex(e=>eq(e,pts[i]));if(j>=0){const used=E.slice(j);const out=[...pts.slice(0,i+1),...used.slice(1)];ch.back=[...E].reverse().slice(1);return out;}}
@@ -4479,11 +4480,11 @@ function runChar(ch,dt){
   if(step.t==='getout'){Mc.inCar=false;MCAR.driver.visible=false;MCAR.driving=false;const Pk=PARKS[MCAR.at];if(Pk&&Pk.door){Mc.pos={x:Pk.door[0],z:Pk.door[1]};}Mc.node=Pk&&Pk.node&&NODES[nk(Pk.node[0],Pk.node[1])]?nk(Pk.node[0],Pk.node[1]):nearestNode(Mc.pos.x,Mc.pos.z);Mc.back=Pk&&Pk.walk?[...Pk.walk].reverse().slice(1):[];if(VIS_AREA==='town')SFX.door();ch.q.shift();return 1;}
   if(step.t==='cardrive'){if(!step.pts){step.pts=carPath(PARKS[MCAR.at],PARKS[step.to]);MCAR.driving=true;MCAR.v=0;}
     const rv=step.pts[0]&&step.pts[0][2]==='r';const yf=[Math.sin(MCAR.yaw),Math.cos(MCAR.yaw)];const f=rv?[-yf[0],-yf[1]]:yf;MCAR.mf=f;let block=false;
-    for(const c2 of ALL){if(c2===Mc||c2.area!=='town')continue;const dx=c2.pos.x-MCAR.x,dz=c2.pos.z-MCAR.z;const al=dx*f[0]+dz*f[1],lat=Math.abs(-dx*f[1]+dz*f[0]);if(al>1&&al<7&&lat<1.8){block=true;break;}}
+    const HL=MCAR.trk==null?2.2:TLEN[MCAR.trk]/2,HW=MCAR.trk==null?1.8:2.1;for(const c2 of ALL){if(c2===Mc||c2.area!=='town')continue;const dx=c2.pos.x-MCAR.x,dz=c2.pos.z-MCAR.z;const al=dx*f[0]+dz*f[1]-(HL-1.2),lat=Math.abs(-dx*f[1]+dz*f[0]);if(al>1&&al<7&&lat<HW){block=true;break;}}
     const nxt=step.pts[0];if(!block&&nxt){const onNow=onRoadPt(MCAR.x,MCAR.z),onNext=onRoadPt(nxt[0],nxt[1]);
       if(!onNow&&onNext&&VEH.some(o=>{if(o.id==='m')return false;const d=Math.hypot(o.x-nxt[0],o.z-nxt[1]);return d<5.5||(o.v>.6&&d<14);}))block=true;
       if(onNow&&!onNext&&VEH.some(o=>{if(o.id==='m')return false;const dx=o.x-MCAR.x,dz=o.z-MCAR.z;const d=Math.hypot(dx,dz);return(d<5.5||(o.v>.6&&d<14))&&dx*yf[0]+dz*yf[1]>-1&&(o.f[0]*yf[0]+o.f[1]*yf[1])<.5;}))block=true;}
-    let mh=false;if(!block){const vb=vehBlocked('m',MCAR.x,MCAR.z,f,4.3);block=!!vb;mh=vb===2;}MCAR.bt=block?(MCAR.bt||0)+dt*speed:0;if(block&&MCAR.bt>25)MCAR.gh=tReal+5;if(tReal<(MCAR.gh||0)){block=false;mh=false;}
+    let mh=false;if(!block){const sh=HL-2.2;const vb=vehBlocked('m',MCAR.x+f[0]*sh,MCAR.z+f[1]*sh,f,4.3);block=!!vb;mh=vb===2;}MCAR.bt=block?(MCAR.bt||0)+dt*speed:0;if(block&&MCAR.bt>(MCAR.trk==null?14:8))MCAR.gh=tReal+5;if(tReal<(MCAR.gh||0)){block=false;mh=false;}
     const nearEnd=step.pts.length<=2,rev=step.pts[0]&&step.pts[0][2]==='r';MCAR.v=mh?0:lerp(MCAR.v,block?0:(rev||nearEnd?3.5:(OWN.car_moteur?12.5:10)),1-Math.exp(-dt*speed*(block?6:1.2)));if(block&&MCAR.v<.3)MCAR.v=0;let left=Math.min(MCAR.v*dt*speed,1.2);if(getFuel()<=.0005){left=0;MCAR.v=0;const w=dt*speed;if(!MCAR.dry)toast('⛽ Panne sèche!',false);MCAR.dry=(MCAR.dry||0)+w;if(MCAR.dry>25){MCAR.dry=0;setFuel(.12);if(MCAR.trk==null)addMoney(-30,'Dépannage (jerrican)');toast('⛽ Un dépanneur apporte un peu de carburant',false);}}else useFuel(left);
     const K=vTrail();let fb=rv||!step.pts.length||step.pts[0][2]==='r';if(!fb){let cx=MCAR.x,cz=MCAR.z,rx=cx-Math.sin(MCAR.yaw)*K,rz=cz-Math.cos(MCAR.yaw)*K,gd=0;
       while(left>1e-6&&step.pts.length&&gd++<400){const[tx,tz,fl]=step.pts[0];if(fl==='r')break;const dx=tx-cx,dz=tz-cz,d=Math.hypot(dx,dz);if(d<.0001){step.pts.shift();continue;}
