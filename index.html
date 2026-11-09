@@ -615,8 +615,8 @@ function makePerson(o){
     const ft=new THREE.Group();ft.position.y=-.4;kn.add(ft);const sole=mesh(new THREE.BoxGeometry(.112,.026,.27),M('#1c1a18',{r:.8}));sole.position.set(0,-.037,.055);ft.add(sole);const up=mesh(new THREE.SphereGeometry(.06,14,10),shoe);up.scale.set(.92,.72,1.75);up.position.set(0,.005,.035);ft.add(up);const toe=mesh(new THREE.SphereGeometry(.055,10,7),shoe);toe.scale.set(1,.7,1.25);toe.position.set(0,-.01,.13);ft.add(toe);const hl=mesh(new THREE.SphereGeometry(.05,10,8),shoe);hl.scale.set(1,.8,.9);hl.position.set(0,-.005,-.06);ft.add(hl);const ank=mesh(new THREE.CylinderGeometry(.05,.052,.08,10),pants);ank.position.y=.06;ft.add(ank);return{th,kn,ft};};
   const LL=leg(1),RL=leg(-1);
   const spine=new THREE.Group();spine.position.y=.08;hips.add(spine);
-  const torso=mesh(new THREE.LatheGeometry([[.001,-.03],[.12,-.025],[.152,.03],[.148,.13],[.156,.24],[.171,.35],[.178,.43],[.167,.5],[.13,.548],[.07,.572],[.001,.578]].map(q=>new THREE.Vector2(q[0],q[1])),20),shirt);torso.scale.z=.72;spine.add(torso);
-  for(const s of[1,-1]){const c=mesh(new THREE.SphereGeometry(.08,10,8),shirt);c.position.set(s*.19,.48,0);spine.add(c);}
+  const torso=mesh(new THREE.LatheGeometry([[.001,-.03],[.12,-.025],[.152,.03],[.148,.13],[.156,.24],[.17,.35],[.18,.42],[.178,.47],[.15,.525],[.1,.56],[.055,.575],[.001,.58]].map(q=>new THREE.Vector2(q[0],q[1])),20),shirt);torso.scale.z=.72;spine.add(torso);
+  for(const s of[1,-1]){const c=mesh(new THREE.SphereGeometry(.066,14,10),shirt);c.scale.set(1.05,.85,.95);c.position.set(s*.188,.462,0);spine.add(c);}
   const neck=mesh(new THREE.CylinderGeometry(.05,.056,.12,8),skin);neck.position.y=.6;spine.add(neck);
   const head=new THREE.Group();head.position.y=.72;spine.add(head);
   const sk=mesh(new THREE.SphereGeometry(.118,18,14),skin);sk.scale.set(1,1.1,1.05);head.add(sk);
@@ -631,7 +631,7 @@ function makePerson(o){
   const nose=new THREE.Mesh(new THREE.SphereGeometry(.022,8,6),skin);nose.scale.z=1.3;nose.position.set(0,-.005,.12);head.add(nose);
   const mouth=new THREE.Mesh(new THREE.BoxGeometry(.045,.009,.006),M('#8a4a42'));mouth.position.set(0,-.052,.113);head.add(mouth);
   if(o.glasses){const gm=M('#222',{r:.3,m:.5});for(const s of[1,-1]){const r=new THREE.Mesh(new THREE.TorusGeometry(.028,.005,6,14),gm);r.position.set(s*.044,.025,.122);head.add(r);}}
-  const arm=s=>{const sh=new THREE.Group();sh.position.set(s*.21,.47,0);spine.add(sh);const u=mesh(new THREE.CylinderGeometry(.056,.046,.3,12),shirt);u.position.y=-.15;sh.add(u);
+  const arm=s=>{const sh=new THREE.Group();sh.position.set(s*.2,.46,0);spine.add(sh);const u=mesh(new THREE.CylinderGeometry(.054,.046,.3,12),shirt);u.position.y=-.15;sh.add(u);{const sj=mesh(new THREE.SphereGeometry(.055,12,8),shirt);sh.add(sj);}
     const el=new THREE.Group();el.position.y=-.3;sh.add(el);const f=mesh(new THREE.CylinderGeometry(.046,.038,.26,12),shirt);f.position.y=-.13;el.add(f);el.add(mesh(new THREE.SphereGeometry(.047,10,8),shirt));
     const hd=mesh(new THREE.SphereGeometry(.047,12,8),skin);hd.scale.set(.8,1.2,.62);hd.position.y=-.3;el.add(hd);const th2=mesh(new THREE.SphereGeometry(.018,6,5),skin);th2.scale.set(1,1.6,1);th2.position.set(-s*.03,-.285,.03);el.add(th2);return{sh,el};};
   const LA=arm(1),RA=arm(-1);
@@ -1498,6 +1498,10 @@ function room(I,floorMat,wallHex,o={}){if(!I.obs)I.obs=[];const r=I.root,w=I.w,d
    const kn=new THREE.Mesh(new THREE.SphereGeometry(.04,8,6),M('#d8b45a',{m:.8,r:.3}));kn.position.set(.92,1.05,-.05);piv.add(kn);I.piv=piv;I.open=0;
    const out=new THREE.Mesh(new THREE.PlaneGeometry(1.3,2.4),new THREE.MeshBasicMaterial({color:0xdfe9f0,toneMapped:false}));out.position.set(I.door.x,1.15,d/2+.4);out.rotation.y=PI;out.visible=false;I.dyn.add(out);I.out=out;}
   ns(bx(r,floorMat,w,.1,d,0,-.1,0,0,2));bx(r,M('#d9d2c4'),w+.4,.25,d+.4,0,-.35,0);
+  {const H=Math.max(o.backH||2.8,2.8),cg=new THREE.Group();cg.visible=false;I.dyn.add(cg);I.closeG=cg;I.wallH=H;const cm=new THREE.MeshStandardMaterial({color:C('#efeae0'),roughness:.95,side:THREE.DoubleSide});
+   const c=new THREE.Mesh(new THREE.PlaneGeometry(w+.3,d+.3),cm);c.rotation.x=PI/2;c.position.y=H;cg.add(c);const fm=new THREE.MeshStandardMaterial({map:TX.plaster(wallHex),roughness:.95,side:THREE.DoubleSide});const dx=I.door.x;
+   const pn=(x0,x1,y0,y1)=>{if(x1-x0<.01)return;const m=new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,y1-y0),fm);m.position.set((x0+x1)/2,(y0+y1)/2,d/2+.08);cg.add(m);};pn(-w/2-.15,dx-.62,.5,H);pn(dx+.62,w/2+.15,.5,H);pn(dx-.62,dx+.62,2.3,H);
+   for(const sx of[-1,1]){const m=new THREE.Mesh(new THREE.PlaneGeometry(d+.3,H-.9),fm);m.rotation.y=PI/2;m.position.set(sx*(w/2+.12),.9+(H-.9)/2,0);cg.add(m);}}
   bx(r,wall,w,o.backH||2.8,.15,0,0,-d/2-.07);bx(r,wall,.15,2.8,d,-w/2-.07,0,0);bx(r,wall,.15,o.rightH||1,d,w/2+.07,0,0);
   const fw=.5;const dx=I.door.x;bx(r,wall,(dx-1+w/2),fw,.15,(-w/2+dx-1)/2,0,d/2+.07);bx(r,wall,(w/2-dx-1),fw,.15,(dx+1+w/2)/2,0,d/2+.07);
   const trim=M('#efe9df');bx(r,trim,w,.1,.04,0,0,-d/2+.02);bx(r,trim,.04,.1,d,-w/2+.02,0,0);
@@ -4824,11 +4828,13 @@ let CAMV_MODE='iso';try{CAMV_MODE=localStorage.getItem('marcelCam')||'iso';}catc
 function computeMode(dt){const p=Mc.world(new V3());const car=Mc.inCar||Mc.inBus;let yaw=car&&!Mc.inBus?MCAR.yaw:Mc.yaw;if(camSY==null)camSY=yaw;let d=yaw-camSY;while(d>PI)d-=2*PI;while(d<-PI)d+=2*PI;camSY+=d*(1-Math.exp(-dt*(car?2.2:1.6)));
   const f=new V3(Math.sin(camSY),0,Math.cos(camSY));const town=Mc.area==='town'||!!OUTD[Mc.area];const I=INT[Mc.area];
   const vl=Mc.inBus?12:car?(MCAR.trk!=null?TLEN[MCAR.trk]:4.5):0;let pos=new V3(),look=new V3(),fov=50;
-  if(CAMV_MODE==='suivi'){if(town){pos.copy(p).addScaledVector(f,-(car?4.5+vl*.75:5.2)).add(new V3(0,car?2.6+vl*.12:2.4,0));look.copy(p).addScaledVector(f,car?2.5:.6).add(new V3(0,car?1:1.1,0));}else{pos.copy(p).addScaledVector(f,-3.4).add(new V3(0,2.3,0));look.copy(p).addScaledVector(f,1.5).add(new V3(0,1,0));}fov=car?56:52;}
-  else if(CAMV_MODE==='face'){if(town){pos.copy(p).addScaledVector(f,car?4+vl*.75:4.2).add(new V3(0,car?2.2+vl*.1:1.7,0));look.copy(p).add(new V3(0,car?1:1.2,0));}else{pos.copy(p).addScaledVector(f,3).add(new V3(0,1.7,0));look.copy(p).add(new V3(0,1.1,0));}fov=car?54:48;}
+  if(CAMV_MODE==='suivi'){if(town){pos.copy(p).addScaledVector(f,-(car?4.5+vl*.75:5.2)).add(new V3(0,car?2.6+vl*.12:2.4,0));look.copy(p).addScaledVector(f,car?2.5:.6).add(new V3(0,car?1:1.1,0));}else{pos.copy(p).addScaledVector(f,-2.6).add(new V3(0,1.9,0));look.copy(p).addScaledVector(f,.6).add(new V3(0,1.1,0));}fov=car?56:58;}
+  else if(CAMV_MODE==='face'){if(town){pos.copy(p).addScaledVector(f,car?4+vl*.75:4.2).add(new V3(0,car?2.2+vl*.1:1.7,0));look.copy(p).add(new V3(0,car?1:1.2,0));}else{pos.copy(p).addScaledVector(f,2.4).add(new V3(0,1.65,0));look.copy(p).add(new V3(0,1.1,0));}fov=car?54:56;}
   else if(CAMV_MODE==='iso'){const k=town?(car?1.3+vl*.04:1):.7;pos.copy(p).add(new V3(9*k,9*k,9*k));look.copy(p).add(new V3(0,.9,0));fov=40;}
   else{const h=town?(car?26+vl*.6:20):9;pos.copy(p).add(new V3(0,h,h*.18));look.copy(p);fov=46;}
   if(!town&&I&&CAMV_MODE!=='ciel'&&CAMV_MODE!=='iso'){}
+  const close=(CAMV_MODE==='suivi'||CAMV_MODE==='face')&&!town&&I&&I.closeG;for(const k in INT){const J=INT[k];if(J.closeG)J.closeG.visible=close&&J===I;}
+  if(close){const o=I.origin;pos.x=clamp(pos.x,o.x-I.w/2+.3,o.x+I.w/2-.3);pos.z=clamp(pos.z,o.z-I.d/2+.3,o.z+I.d/2-.3);pos.y=Math.min(pos.y,o.y+I.wallH-.25+(I.gY?I.gY(p.x-o.x,p.z-o.z):0));}
   if(Mc.area==='town')clearCam(look,pos);else if(I&&I.camB)clearTk(I,look,pos);
   D_.pos.copy(pos);D_.look.copy(look);D_.fov=fov;}
 function setCamMode(m){CAMV_MODE=m;try{localStorage.setItem('marcelCam',m);}catch(e){}document.querySelectorAll('#camModes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cm===m?'true':'false'));camSY=null;if(m==='cine'){shot.dur=0;}}
