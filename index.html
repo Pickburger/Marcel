@@ -268,7 +268,7 @@ const PI=Math.PI;
 /* ================= Rendu ================= */
 const R=new THREE.WebGLRenderer({canvas:$('cv'),antialias:true,powerPreference:'high-performance'});
 R.setPixelRatio(Math.min(1.75,window.devicePixelRatio||1));
-R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
+R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;R.shadowMap.autoUpdate=false;
 R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.05;
 const scene=new THREE.Scene();
 scene.fog=new THREE.Fog(0xc9d8e6,80,260);
@@ -5202,7 +5202,11 @@ $('bSave').addEventListener('click',()=>saveGame(true));
   NOSAVE=true;b.textContent='Effacement…';try{localStorage.removeItem(SKEY);}catch(e){}try{if(CLOUD)await CLOUD.delete();}catch(e){}try{location.reload();}catch(e){}});}
 try{document.addEventListener('visibilitychange',()=>{if(document.hidden)saveGame(true);});window.addEventListener('pagehide',()=>saveGame());}catch(e){}
 /* ================= Boucle ================= */
-let last=performance.now(),uiT=0;
+let last=performance.now(),uiT=0,FRN=0;
+const PERF={acc:0,n:0,lvl:0,t:0,good:0};
+function perfAdapt(raw){PERF.acc+=raw;PERF.n++;PERF.t+=raw;if(PERF.t<2.5)return;const avg=PERF.acc/PERF.n;PERF.acc=0;PERF.n=0;PERF.t=0;
+  if(avg>.024&&PERF.lvl<3){PERF.lvl++;PERF.good=0;perfApply();}else if(avg<.0145&&PERF.lvl>0){if(++PERF.good>=4){PERF.lvl--;PERF.good=0;perfApply();}}else PERF.good=0;}
+function perfApply(){const L=PERF.lvl,dpr=window.devicePixelRatio||1;R.setPixelRatio(Math.min([1.75,1.4,1.15,1][L],dpr));const ms=L>=2?1024:2048;if(sun.shadow.mapSize.x!==ms){sun.shadow.mapSize.set(ms,ms);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}R.shadowMap.type=L>=3?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;try{resize();}catch(e){}}
 function visibility(){const a=VIS_AREA=trans?(trans.kind==='in'?(trans.ph<1?'town':trans.I.key):(trans.ph<1?trans.I.key:'town')):Mc.area;
   town.visible=a==='town';for(const k in INT)INT[k].g.visible=k===a;
   for(const ch of ALL){if(ch.area==='none'){ch.m.root.visible=false;continue;}ch.m.root.visible=ch.area===a&&!(ch===Mc&&(Mc.inCar||Mc.inBus));if(ch.dog)ch.dog.visible=a==='town';}}
@@ -5219,10 +5223,10 @@ function step(dt){tReal+=dt;
   snowTick(dm);
   if(outageOn&&powerOn()){outageOn=false;toast('💡 Le courant est revenu!',true);SFX.ping();}
   avoid(dt);updateCars(dt);updateRaccoon(dt);updateFW(dt);
-  for(const ch of ALL){if(ch.area==='none')continue;if(ch.staff){ch.tyaw=ch.yaw;}animate(ch,dt);}
+  FRN++;for(let i=0;i<ALL.length;i++){const ch=ALL[i];if(ch.area==='none')continue;if(ch.staff){ch.tyaw=ch.yaw;}if(ch!==Mc){if(ch.area!==VIS_AREA&&ch._an)continue;ch._an=1;if(ch.area==='town'){const dx=ch.pos.x-cam.position.x,dz=ch.pos.z-cam.position.z;if(dx*dx+dz*dz>3600&&(FRN+i)%3)continue;}}animate(ch,dt);}
   visibility();updateCamera(dt);updateEnv(dt);updateBubbles(dt);updatePhone();updateChoice();mgTick();farmTick(dt);updatePlate();updateVenues();updateHomeFX(dt);dayTick();updateJobHud();updateMusicState();skillTick();updateFishing();SFX.update(dt);updateCat(dt);}
-function tick(now){const dt=Math.min(.05,(now-last)/1000);last=now;try{if(!MG.on&&isPaused())pauseFrame(dt);else step(dt);if(!MG.on)R.render(scene,cam);}catch(e){console.error(e);}try{mgFrame(dt);}catch(e){console.error(e);if(MG.G){MG.G.ph='fin';MG.G.s=.5;mgClose();}}
-  uiT-=dt;if(uiT<=0){uiT=.25;ui();}if(tReal-lastSave>20)saveGame();requestAnimationFrame(tick);}
+function tick(now){const raw=(now-last)/1000;const dt=Math.min(.05,raw);last=now;if(raw<.25&&!document.hidden)perfAdapt(raw);try{if(!MG.on&&isPaused())pauseFrame(dt);else step(dt);if(!MG.on){if(FRN%2===0||PERF.lvl===0)R.shadowMap.needsUpdate=true;R.render(scene,cam);}}catch(e){console.error(e);}try{mgFrame(dt);}catch(e){console.error(e);if(MG.G){MG.G.ph='fin';MG.G.s=.5;mgClose();}}
+  uiT-=dt;if(uiT<=0){uiT=.25;ui();}if(tReal-lastSave>45)saveGame();requestAnimationFrame(tick);}
 /* ================= Mini-jeux « Aider Marcel » ================= */
 const MG={on:false,offer:false,res:null,G:null,id:null,o:null,off:false,lastOffer:-99};
 try{MG.off=localStorage.getItem('marcel_mg_off')==='1';}catch(e){}
