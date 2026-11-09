@@ -669,7 +669,7 @@ function makePerson(o){
    const scan=new THREE.Group();const sc2=new THREE.Mesh(new THREE.BoxGeometry(.06,.14,.05),M('#2a2a2a'));scan.add(sc2);const sl2=new THREE.Mesh(new THREE.BoxGeometry(.05,.01,.04),new THREE.MeshBasicMaterial({color:0xff3a3a,toneMapped:false}));sl2.position.y=-.075;scan.add(sl2);scan.position.set(0,-.36,.06);RA.el.add(scan);items.scan=scan;
    const can=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.18,12),M('#3a6ab8',{m:.4}));can.position.set(0,-.42,.05);LA.el.add(can);items.can=can;
    const crate=new THREE.Group();const cb2=new THREE.Mesh(new THREE.BoxGeometry(.5,.3,.36),M('#c9a46a',{r:1}));crate.add(cb2);for(let i=0;i<4;i++){const it2=new THREE.Mesh(new THREE.BoxGeometry(.1,.14,.1),M(pick(['#c8402f','#e8b53a','#3b6fb6','#5a8f6a']),{r:.6}));it2.position.set(-.18+i*.12,.2,0);crate.add(it2);}crate.position.set(0,1.06,.4);body.add(crate);items.crate=crate;
-   const apron=new THREE.Mesh(new THREE.BoxGeometry(.34,.5,.03),M('#2f6a4a',{r:.9}));apron.position.set(0,.98,.13);body.add(apron);items.apron=apron;
+   const apron=new THREE.Mesh(new THREE.CylinderGeometry(.178,.19,.46,18,1,true,-PI*.36,PI*.72),new THREE.MeshStandardMaterial({color:C('#2f6a4a'),roughness:.9,side:THREE.DoubleSide}));apron.scale.z=.8;apron.position.set(0,.93,0);body.add(apron);items.apron=apron;
    const skis=new THREE.Group();for(const sd of[-1,1]){const s2=new THREE.Mesh(new THREE.BoxGeometry(.09,.025,1.7),M('#c8202a',{r:.4}));s2.position.set(sd*.11,.015,.12);skis.add(s2);}body.add(skis);items.skis=skis;
    const mkPole=()=>{const g=new THREE.Mesh(new THREE.CylinderGeometry(.01,.01,1.15,5),M('#888',{m:.6}));g.position.y=-.6;return g;};const pL=mkPole(),pR=mkPole();LA.el.add(pL);RA.el.add(pR);items.poleL=pL;items.poleR=pR;}
   const pop=new THREE.Group();const pb=mesh(new THREE.CylinderGeometry(.08,.06,.18,8),M('#d82a2a',{r:.6}));pop.add(pb);const pt=new THREE.Mesh(new THREE.SphereGeometry(.085,8,6),M('#f8e8a8',{r:.9}));pt.position.y=.1;pt.scale.y=.6;pop.add(pt);pop.position.set(0,-.36,.05);LA.el.add(pop);items.popcorn=pop;
@@ -704,7 +704,7 @@ function personExtra(r,o){const skin=M(o.skin,{r:.55}),hs=(String(o.skin)+o.hair
   if(rn(1)<.55){const belt=mesh(new THREE.CylinderGeometry(.158,.158,.04,14),M('#2a2420',{r:.6}));belt.scale.z=.72;belt.position.y=.02;r.spine.add(belt);const bk=mesh(new THREE.BoxGeometry(.045,.03,.012),M('#c9a64a',{m:.7,r:.3}));bk.position.set(0,.02,.114);r.spine.add(bk);}
   if(rn(2)<.4){const pk=mesh(new THREE.BoxGeometry(.06,.06,.01),new THREE.MeshStandardMaterial({color:C(o.shirt).multiplyScalar(.82),roughness:.9}));pk.position.set(.07,.38,.105);r.spine.add(pk);}
   F.shortSl=rn(3)<.45;F.shorts=rn(4)<.3;
-  if(F.shorts){F.sh=[r.LL,r.RL].map(L=>{const sh=L.kn.children.find(c=>c.geometry&&c.geometry.type==='CylinderGeometry'&&Math.abs(c.geometry.parameters.height-.44)<.01);if(!sh)return null;const ov=mesh(new THREE.CylinderGeometry(.0645,.0525,.435,10),skin);ov.position.copy(sh.position);ov.visible=false;L.kn.add(ov);return ov;}).filter(Boolean);}
+  if(F.shorts){F.sh=[r.LL,r.RL].map(L=>{const sh=L.kn.children.find(c=>c.geometry&&c.geometry.type==='CylinderGeometry'&&Math.abs(c.geometry.parameters.height-.44)<.01);if(!sh)return null;const ov=mesh(new THREE.CylinderGeometry(.0645,.0525,.435,10),skin);ov.position.copy(sh.position);ov.visible=false;L.kn.add(ov);const out=[ov];for(const c of [...L.kn.children])if(c.geometry&&c.geometry.type==='SphereGeometry'){const k=mesh(c.geometry,skin);k.position.copy(c.position);k.scale.copy(c.scale).multiplyScalar(1.05);k.visible=false;L.kn.add(k);out.push(k);}return out;}).filter(Boolean).flat();}
   F.nb=Math.random()*3;F.bk=0;F.ex='flat';F.hs=hs;r.fx=F;}
 function faceAnim(ch,dt){const r=ch.m,F=r&&r.fx;if(!F)return;if(ch!==Mc&&r.root.position.distanceToSquared(cam.position)>2400)return;const t=tReal,warm=!COLD;
   if(F.sl)for(const x of F.sl)x.visible=warm&&F.shortSl;if(F.sh)for(const x of F.sh)x.visible=warm&&F.shorts;
@@ -3398,7 +3398,7 @@ const FARACTS={
    s.push(...at('parcnat.lac','look',rnd(4,7),{label:'Observe le huard sur le lac',say:'Écoute le huard chanter…'}),...at('parcnat.piquenique','eat',rnd(15,20),{label:'Pique-nique au bord du lac',fx:{food:2}}),
      ...at('parcnat.feu','look',rnd(10,15),{label:'Se réchauffe près du feu de camp',fx:{fun:.5}}),F(()=>{cnt('parc');if(INT.parcnat.moose.visible)say(Mc,'Regarde là-bas! Un orignal!');}));return s;}};
 function quaiOuting(){LIFE.quaiD=Math.floor(gm/1440);const su=SEASON()==='ete',s=[{t:'drive',to:'quai',label:'Part se promener au bord de l\'eau'}];
-  s.push(tr('town.q_prom',{label:'Se promène sur la promenade au bord de la rivière'}),{t:'path',pts:[[150.5,-20],[150.5,-44],[150.5,-20],[150.5,14]],label:'Se promène sur la promenade au bord de la rivière'},
+  s.push(tr('town.q_prom',{label:'Se promène sur la promenade au bord de la rivière'}),{t:'path',pts:[[150.5,-20],[150.5,-23],[149.3,-24.3],[149.3,-35.7],[150.5,-37],[150.5,-44],[150.5,-37],[149.3,-35.7],[149.3,-24.3],[150.5,-23],[150.5,14]],label:'Se promène sur la promenade au bord de la rivière'},
     ...at('town.q_banc1','look',rnd(10,18),{label:'S\'assoit sur un banc et regarde la rivière couler',fx:{fun:.4},say:pick(['Les canards sont tranquilles aujourd\'hui.','C\'est beau, la rivière.','Ça repose.'])}));
   if(su&&tempNow()>16&&hourOf()<18&&Math.random()<.55)s.push(...at('town.q_marina','pay',2,{label:'Loue un kayak à la marina',say:'Un kayak pour une heure, svp!'}),payF(20,'Location de kayak'),tr('town.q_kayak',{label:'Met le kayak à l\'eau'}),D('install',1.5),
     {t:'path',pts:[[160,40],[175,38],[186,52],[188,72],[180,92],[172,90],[170,70],[172,50],[162,40],[155.7,42]],act:'paddle',pose:'sitg',v:1.4,label:'Fait du kayak sur la rivière'},F(()=>cnt('kayak')));
@@ -4679,7 +4679,7 @@ function animate(ch,dt){if(ch.act==='tread'||ch.act==='swim'||ch.act==='paddle')
   const it=m.items,outside=ch.area==='town';
   it.phone.visible=['text','scroll','phonewalk','call','photo'].includes(a);it.vacuum.visible=a==='vacuum';it.bike.visible=p==='bike';it.mow.visible=a==='mow';it.vr.visible=a==='vr';it.roller.visible=a==='paint';it.baguette.visible=ch.carry==='baguette';it.club.visible=a==='golf';it.popcorn.visible=ch.carry==='popcorn';it.box.visible=(ch.carry==='box'||ch.carry==='pizza')&&a!=='give';
   it.coffee.visible=a==='cocoa'||ch.carry==='coffee'&&!it.phone.visible;it.bag.visible=ch.carry==='bag';it.book.visible=a==='read'||(ch.carry==='book'&&!it.phone.visible);
-  it.rod.visible=a==='fish'||a==='reel';it.rag.visible=a==='wipe';it.mop.visible=a==='mop';it.tray.visible=ch.carry==='tray';it.spat.visible=a==='grill';it.scan.visible=a==='scan';it.can.visible=a==='stir';it.crate.visible=ch.carry==='crate'&&a!=='give';it.skis.visible=it.poleL.visible=it.poleR.visible=a==='ski';it.apron.visible=!!ch.apron;if(ch.apron)it.apron.material=M(ch.apron,{r:.9});it.shovel.visible=a==='shovel';it.pint.visible=a==='drink';it.bball.visible=a==='bowl'&&(((tReal+ch.ph*.1)%5)/5)<.27;it.dbL.visible=it.dbR.visible=a==='lift';it.barbell.visible=a==='press';it.fishH.visible=a==='reel';it.cooler.visible=ch.carry==='cooler';it.pad.visible=a==='game';it.rake.visible=a==='rake';it.guitar.visible=a==='guitar';
+  it.rod.visible=a==='fish'||a==='reel';it.rag.visible=a==='wipe';it.mop.visible=a==='mop';it.tray.visible=ch.carry==='tray';it.spat.visible=a==='grill';it.scan.visible=a==='scan';it.can.visible=a==='stir';it.crate.visible=ch.carry==='crate'&&a!=='give';it.skis.visible=it.poleL.visible=it.poleR.visible=a==='ski';it.apron.visible=!!ch.apron;if(ch.apron)it.apron.material.color.set(ch.apron);it.shovel.visible=a==='shovel';it.pint.visible=a==='drink';it.bball.visible=a==='bowl'&&(((tReal+ch.ph*.1)%5)/5)<.27;it.dbL.visible=it.dbR.visible=a==='lift';it.barbell.visible=a==='press';it.fishH.visible=a==='reel';it.cooler.visible=ch.carry==='cooler';it.pad.visible=a==='game';it.rake.visible=a==='rake';it.guitar.visible=a==='guitar';
   it.umbrella.visible=outside&&RAIN()&&(p==='walk')&&!it.phone.visible&&!it.coffee.visible;
   if(ch.look.coat){const coat=outside&&ch.act!=='sleep'&&COLD&&a!=='swim'&&a!=='spa';m.shirtMat.color.copy(C(coat?ch.look.coat:ch.look.shirt));if(!ch.ped)m.hat.visible=coat&&ch!==Julie;}
   if(ch.dog){const f=new V3(Math.sin(ch.yaw),0,Math.cos(ch.yaw));const dp=m.root.position.clone().addScaledVector(f,1.2).add(new V3(Math.cos(ch.yaw)*.5,0,-Math.sin(ch.yaw)*.5));const ox=ch.dog.position.x,oz=ch.dog.position.z;ch.dog.position.lerp(dp,Math.min(1,dt*4));ch.dog.position.y=groundY(dp.x,dp.z);ch.dog.rotation.y=ch.yaw;animQuad(ch.dog,Math.hypot(ch.dog.position.x-ox,ch.dog.position.z-oz),dt);}
@@ -4749,7 +4749,7 @@ let CAMV_MODE='iso';try{CAMV_MODE=localStorage.getItem('marcelCam')||'iso';}catc
 function computeMode(dt){const p=Mc.world(new V3());const car=Mc.inCar||Mc.inBus;let yaw=car&&!Mc.inBus?MCAR.yaw:Mc.yaw;if(camSY==null)camSY=yaw;let d=yaw-camSY;while(d>PI)d-=2*PI;while(d<-PI)d+=2*PI;camSY+=d*(1-Math.exp(-dt*(car?2.2:1.6)));
   const f=new V3(Math.sin(camSY),0,Math.cos(camSY));const town=Mc.area==='town'||!!OUTD[Mc.area];const I=INT[Mc.area];
   const vl=Mc.inBus?12:car?(MCAR.trk!=null?TLEN[MCAR.trk]:4.5):0;let pos=new V3(),look=new V3(),fov=50;
-  if(CAMV_MODE==='suivi'){if(town){pos.copy(p).addScaledVector(f,-(car?4.5+vl*.75:5.2)).add(new V3(0,car?2.6+vl*.12:2.4,0));look.copy(p).addScaledVector(f,car?6:2.5).add(new V3(0,car?1:1.1,0));}else{pos.copy(p).addScaledVector(f,-3.4).add(new V3(0,2.3,0));look.copy(p).addScaledVector(f,1.5).add(new V3(0,1,0));}fov=car?56:52;}
+  if(CAMV_MODE==='suivi'){if(town){pos.copy(p).addScaledVector(f,-(car?4.5+vl*.75:5.2)).add(new V3(0,car?2.6+vl*.12:2.4,0));look.copy(p).addScaledVector(f,car?2.5:.6).add(new V3(0,car?1:1.1,0));}else{pos.copy(p).addScaledVector(f,-3.4).add(new V3(0,2.3,0));look.copy(p).addScaledVector(f,1.5).add(new V3(0,1,0));}fov=car?56:52;}
   else if(CAMV_MODE==='face'){if(town){pos.copy(p).addScaledVector(f,car?4+vl*.75:4.2).add(new V3(0,car?2.2+vl*.1:1.7,0));look.copy(p).add(new V3(0,car?1:1.2,0));}else{pos.copy(p).addScaledVector(f,3).add(new V3(0,1.7,0));look.copy(p).add(new V3(0,1.1,0));}fov=car?54:48;}
   else if(CAMV_MODE==='iso'){const k=town?(car?1.3+vl*.04:1):.7;pos.copy(p).add(new V3(9*k,9*k,9*k));look.copy(p).add(new V3(0,.9,0));fov=40;}
   else{const h=town?(car?26+vl*.6:20):9;pos.copy(p).add(new V3(0,h,h*.18));look.copy(p);fov=46;}
@@ -4759,16 +4759,17 @@ function computeMode(dt){const p=Mc.world(new V3());const car=Mc.inCar||Mc.inBus
 function setCamMode(m){CAMV_MODE=m;try{localStorage.setItem('marcelCam',m);}catch(e){}document.querySelectorAll('#camModes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cm===m?'true':'false'));camSY=null;if(m==='cine'){shot.dur=0;}}
 function updateCamera(dt){
   if(trans){runTrans(dt);return;}
-  if(true){computeMode(dt);const k=1-Math.exp(-dt*3);camPos.lerp(D_.pos,k);camLook.lerp(D_.look,1-Math.exp(-dt*5));camFov=lerp(camFov,D_.fov,k);applyCam();return;}
+  if(true){computeMode(dt);const sp=Math.max(1,speed),k=1-Math.exp(-dt*3*sp);camPos.lerp(D_.pos,k);camLook.lerp(D_.look,1-Math.exp(-dt*7*sp));camFov=lerp(camFov,D_.fov,k);applyCam();return;}
   shot.t+=0;if(shot.t>shot.dur||shot.ctx!==shotCtx())chooseShot();
   computeShot(dt);
   if(shot.cut){camPos.copy(D_.pos);camLook.copy(D_.look);camFov=D_.fov;shot.cut=false;}
   else{const k=1-Math.exp(-dt*2.4);camPos.lerp(D_.pos,k);camLook.lerp(D_.look,1-Math.exp(-dt*4));camFov=lerp(camFov,D_.fov,k);}
   applyCam();}
-const ORB={yaw:0,pitch:0,zoom:1,ty:0,tp:0,tz:1};
+let CAMOCC=null;const ORB={yaw:0,pitch:0,zoom:1,ty:0,tp:0,tz:1};
 function applyCam(){ORB.yaw+=(ORB.ty-ORB.yaw)*.35;ORB.pitch+=(ORB.tp-ORB.pitch)*.35;ORB.zoom+=(ORB.tz-ORB.zoom)*.35;
   if(Math.abs(ORB.yaw)>1e-3||Math.abs(ORB.pitch)>1e-3||Math.abs(ORB.zoom-1)>1e-3){const v=camPos.clone().sub(camLook);const r=v.length()*ORB.zoom;let az=Math.atan2(v.x,v.z)+ORB.yaw;let el=Math.asin(clamp(v.y/(v.length()||1),-1,1))+ORB.pitch;el=clamp(el,.06,1.45);
     cam.position.set(camLook.x+Math.sin(az)*Math.cos(el)*r,camLook.y+Math.sin(el)*r,camLook.z+Math.cos(az)*Math.cos(el)*r);if(cam.position.y<.4)cam.position.y=.4;}else cam.position.copy(camPos);
+  if(!trans){try{const P=cam.position.clone();if(Mc.area==='town')clearCam(camLook,P);else{const I=INT[Mc.area];if(I&&I.camB)clearTk(I,camLook,P);}cam.position.copy(P);}catch(e){}}
   cam.lookAt(camLook);if(Math.abs(cam.fov-camFov)>.01){cam.fov=camFov;cam.updateProjectionMatrix();}
   sceneEl.classList.toggle('cine',['champ','rue'].includes(shot.type)&&!trans);
 }
