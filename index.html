@@ -633,7 +633,7 @@ function makePerson(o){
   if(o.glasses){const gm=M('#222',{r:.3,m:.5});for(const s of[1,-1]){const r=new THREE.Mesh(new THREE.TorusGeometry(.028,.005,6,14),gm);r.position.set(s*.044,.025,.122);head.add(r);}}
   const arm=s=>{const sh=new THREE.Group();sh.position.set(s*.2,.46,0);spine.add(sh);const u=mesh(new THREE.CylinderGeometry(.054,.046,.3,12),shirt);u.position.y=-.15;sh.add(u);{const sj=mesh(new THREE.SphereGeometry(.055,12,8),shirt);sh.add(sj);}
     const el=new THREE.Group();el.position.y=-.3;sh.add(el);const f=mesh(new THREE.CylinderGeometry(.046,.038,.26,12),shirt);f.position.y=-.13;el.add(f);el.add(mesh(new THREE.SphereGeometry(.047,10,8),shirt));
-    const hd=mesh(new THREE.SphereGeometry(.047,12,8),skin);hd.scale.set(.8,1.2,.62);hd.position.y=-.3;el.add(hd);const th2=mesh(new THREE.SphereGeometry(.018,6,5),skin);th2.scale.set(1,1.6,1);th2.position.set(-s*.03,-.285,.03);el.add(th2);return{sh,el};};
+    return{sh,el};};
   const LA=arm(1),RA=arm(-1);
   const hat=new THREE.Group();const hm=M(o.hatc||'#2f6b4f',{r:.95});const cap=mesh(new THREE.SphereGeometry(.131,16,10,0,PI*2,0,PI*.5),hm);cap.scale.y=1.15;hat.add(cap);
   const band=mesh(new THREE.CylinderGeometry(.134,.134,.05,16),M('#e8dcc8',{r:.95}));band.position.y=.02;hat.add(band);
@@ -688,9 +688,9 @@ function makePerson(o){
 /* --- personnages : mains, yeux, paupières, bouche, sourcils, ceinture, manches courtes, shorts --- */
 function personExtra(r,o){const skin=M(o.skin,{r:.55}),hs=(String(o.skin)+o.hair+o.shirt+(o.pants||'')).split('').reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7),rn=i=>((hs>>>(i*2))%100)/100;
   const F={};const mesh=(g,m)=>{const x=new THREE.Mesh(g,m);x.castShadow=true;return x;};
-  for(const A of[r.LA,r.RA]){const s=A===r.LA?1:-1;const hand=new THREE.Group();hand.position.y=-.3;const palm=mesh(new THREE.BoxGeometry(.07,.062,.03),skin);palm.position.set(0,-.03,0);hand.add(palm);
-    for(let i=0;i<4;i++){const f=mesh(new THREE.BoxGeometry(.014,.05,.014),skin);f.position.set(-.025+i*.0167,-.085,.004);hand.add(f);}
-    const th=mesh(new THREE.CylinderGeometry(.0125,.011,.05,5),skin);th.position.set(-s*.04,-.045,.012);th.rotation.z=s*.5;hand.add(th);A.el.add(hand);
+  for(const A of[r.LA,r.RA]){const s=A===r.LA?1:-1;const hand=new THREE.Group();hand.position.y=-.3;const palm=mesh(new THREE.SphereGeometry(.04,12,9),skin);palm.scale.set(.95,1.2,.58);palm.position.set(0,-.03,0);hand.add(palm);
+    const fg=mesh(new THREE.SphereGeometry(.035,12,9),skin);fg.scale.set(1,1.15,.55);fg.position.set(0,-.077,.01);fg.rotation.x=.3;hand.add(fg);
+    const th=mesh(new THREE.SphereGeometry(.014,8,6),skin);th.scale.set(1,2.3,1);th.position.set(-s*.036,-.045,.016);th.rotation.z=s*.5;hand.add(th);A.el.add(hand);
     const fa=A.el.children.find(c=>c.geometry&&c.geometry.type==='CylinderGeometry'&&c.geometry.parameters.height>.25&&c.geometry.parameters.height<.27);
     if(fa){const sl=mesh(new THREE.CylinderGeometry(.0485,.0425,.255,8),skin);sl.position.copy(fa.position);sl.visible=false;A.el.add(sl);(F.sl=F.sl||[]).push(sl);}}
   const dark=M('#f4f4f0',{r:.4});F.lids=[];F.brows=[];
@@ -4682,11 +4682,11 @@ function animate(ch,dt){if(ch.act==='tread'||ch.act==='swim'||ch.act==='paddle')
   if(ch.tyaw!=null){let d=ch.tyaw-ch.yaw;while(d>PI)d-=2*PI;while(d<-PI)d+=2*PI;ch.yaw+=d*Math.min(1,dt*8);}
   const T={ftL:0,ftR:0,hpY:0,hpZ:0,thL:0,thR:0,knL:0,knR:0,shLx:0,shRx:0,shLz:.08,shRz:-.08,elL:-.15,elR:-.15,hipY:.95,spX:0,spY:0,hdX:0,hdY:0,tilt:0};
   const a=ch.act,p=ch.pose,ph=ch.ph;let direct=false;
-  if(p==='walk'||p==='run'){const run=p==='run',amp=run?.9:.42;const gait=(q)=>{const th=-Math.sin(q)*amp+(run?-.15:-.03);const sw=Math.max(0,Math.cos(q+.3));const kn=(run?.25:.05)+sw*(run?1.5:.75)+Math.max(0,Math.sin(q-1))*(run?.2:.12);
+  if(p==='walk'||p==='run'){const run=p==='run',amp=run?.9:.42;const gait=(q)=>{const th=-Math.sin(q)*amp+(run?-.15:-.03);const sw=Math.max(0,Math.cos(q+(run?.3:.55)));const kn=(run?.25:.06)+(run?sw*1.5:sw*sw*1.1)+Math.max(0,Math.sin(q-1.2))*(run?.2:.1);
       const fl=-(th+kn);const toe=Math.max(0,-Math.sin(q+.2))*(run?.6:.45);const heel=Math.max(0,Math.sin(q-.2))*(run?.1:.3);return[th,kn,fl+toe*Math.max(0,th/amp)-heel*Math.max(0,-th/amp)];};
     const[a1,b1,c1]=gait(ph),[a2,b2,c2]=gait(ph+PI);T.thL=a1;T.knL=b1;T.ftL=c1;T.thR=a2;T.knR=b2;T.ftR=c2;
-    T.shLx=Math.sin(ph-.25)*(run?.8:.34);T.shRx=-Math.sin(ph-.25)*(run?.8:.34);T.elL=(run?-1.35:-.28)-Math.max(0,Math.sin(ph-.4))*(run?.1:.3);T.elR=(run?-1.35:-.28)-Math.max(0,-Math.sin(ph-.4))*(run?.1:.3);T.shLz=.1;T.shRz=-.1;
-    T.hipY=.93+Math.abs(Math.cos(ph))*(run?.05:.035)-(run?.05:0);T.hpY=Math.sin(ph)*(run?.12:.09);T.spY=-Math.sin(ph)*(run?.16:.12);T.hpZ=Math.cos(ph)*.035;T.spX=run?.2:.05;T.hdY=Math.sin(ph)*.05;direct=true;}
+    T.shLx=Math.sin(ph-.1)*(run?.8:.3);T.shRx=-Math.sin(ph-.1)*(run?.8:.3);T.elL=(run?-1.35:-.2)-Math.max(0,-Math.sin(ph))*(run?.1:.22);T.elR=(run?-1.35:-.2)-Math.max(0,Math.sin(ph))*(run?.1:.22);T.shLz=.1;T.shRz=-.1;
+    T.hipY=.93+Math.abs(Math.cos(ph))*(run?.05:.035)-(run?.05:0);T.hpY=Math.sin(ph)*(run?.1:.045);T.spY=-Math.sin(ph)*(run?.12:.05);T.hpZ=Math.cos(ph)*.022;T.spX=run?.2:.03;T.hdY=-T.spY*.5;direct=true;}
   if(p==='sit'){T.thL=T.thR=-1.5;T.knL=T.knR=1.5;T.hipY=(ch.seatH||.47)+.06;T.shLx=T.shRx=-.25;T.elL=T.elR=-.6;}
   if(p==='bike'){const q=ph;T.hipY=.97;T.thL=-1.25+Math.sin(q)*.45;T.thR=-1.25-Math.sin(q)*.45;T.knL=1.25+Math.cos(q)*.5;T.knR=1.25-Math.cos(q)*.5;T.spX=.35;T.shLx=T.shRx=-1.15;T.elL=T.elR=-.25;T.shLz=-.15;T.shRz=.15;direct=true;}
   if(p==='sitg'){T.thL=T.thR=-1.45;T.knL=T.knR=.15;T.hipY=.14;T.shLx=T.shRx=.3;T.elL=T.elR=-.2;}
