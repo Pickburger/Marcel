@@ -5019,7 +5019,7 @@ function ui(){renderSkills();lvBox();$('jour').textContent=fmtDay();$('heure').t
 /* ================= Sauvegarde ================= */
 const SKEY='la-vie-de-marcel-v2';let lastSave=0,NOSAVE=false,CLOUD=null,cloudReady=false,cloudBusy=false,lastCloud=-999,LOCALWALL=0;
 const sInfo=t=>{try{$('saveInfo').textContent=t;}catch(e){}};
-function snapState(){return{v:2,wall:Date.now(),gm,money,MLOG,need,flags,OWN,contract,delivery:delivery&&!['repas','epicerie'].includes(delivery.item.id)?{item:delivery.item,at:delivery.at}:null,INV,LIFE,SKX,CATCH,fuel:MCAR.fuel,weather,log:log.slice(0,20),HIST};}
+function snapState(){return{v:2,wall:Date.now(),area:Mc.area,away:!!MCAR.away,gm,money,MLOG,need,flags,OWN,contract,delivery:delivery&&!['repas','epicerie'].includes(delivery.item.id)?{item:delivery.item,at:delivery.at}:null,INV,LIFE,SKX,CATCH,fuel:MCAR.fuel,weather,log:log.slice(0,20),HIST};}
 function saveGame(manual){if(NOSAVE)return;let d;try{d=snapState();}catch(e){return;}const when=fmtDay()+', '+fmt(gm);let localOk=false;
   try{localStorage.setItem(SKEY,JSON.stringify(d));localOk=true;}catch(e){}lastSave=tReal;
   if(CLOUD&&cloudReady&&!cloudBusy&&(manual||tReal-lastCloud>45)){cloudBusy=true;lastCloud=tReal;CLOUD.set({json:JSON.stringify(d),wall:d.wall}).then(()=>{cloudBusy=false;sInfo('Sauvegardé dans ton compte · '+when);if(manual)toast('💾 Partie sauvegardée dans ton compte',true);})
@@ -5031,7 +5031,13 @@ function applySave(d){if(!d||d.v!==2)return false;
   if(flags.wallHex){INT.home.wallMat.map=TX.plaster(flags.wallHex);INT.home.wallMat.needsUpdate=true;}flags.forceOutage=false;flags.morning=false;applyOwned();Mc.job=null;Mc.apron=null;GASCAR.visible=false;log.splice(0,log.length,...(d.log||[]));CHOICE=null;$('choix').classList.toggle('on',false);
   if(trans){trans=null;$('fondu').style.opacity=0;}if(Mc.inCar){Mc.inCar=false;MCAR.driver.visible=false;}MCAR.away=false;MCAR.driving=false;MCAR.at='home';MCAR.x=-59.1;MCAR.z=-42.8;MCAR.yaw=PI;placeMcar();
   setArea(Mc,'home');const e=INT.home.spots.entry;Mc.pos={x:e.x,z:e.z};Mc.back=[];Mc.room='main';Mc.lie=null;Mc.lieFrom=null;Mc.pose='stand';Mc.act=null;Mc.q=[];Mc.carry=null;Mc.bag=null;
-  lastWH=Math.floor(gm/60);seasonDay=-1;if(LIFE.tokyo&&INT.hotel){const sp=INT.hotel.spots.bureau||INT.hotel.spots.lit;setArea(Mc,'hotel');Mc.pos={x:sp.x,z:sp.z};Mc.room=sp.room||'main';if(sp.yaw!=null)Mc.yaw=Mc.tyaw=sp.yaw;MCAR.away=true;flags.trip=true;placeMcar();setTask('Reprend son voyage à Tokyo, à l\'hôtel Sakura');return true;}setTask('Reprend sa journée là où il l\'avait laissée');return true;}
+  lastWH=Math.floor(gm/60);seasonDay=-1;if(LIFE.tokyo&&INT.hotel){const sp=INT.hotel.spots.bureau||INT.hotel.spots.lit;setArea(Mc,'hotel');Mc.pos={x:sp.x,z:sp.z};Mc.room=sp.room||'main';if(sp.yaw!=null)Mc.yaw=Mc.tyaw=sp.yaw;MCAR.away=true;flags.trip=true;placeMcar();setTask('Reprend son voyage à Tokyo, à l\'hôtel Sakura');return true;}
+  if(['plage','campagne','ski','cabane','parcnat'].includes(d.area)&&INT[d.area]&&INT[d.area].spots.car){const dest=d.area,sp=INT[dest].spots.car;setArea(Mc,dest);Mc.pos={x:sp.x,z:sp.z};Mc.room='main';flags.trip=true;
+    const KN={plage:'à la plage',campagne:'à la campagne',ski:'au ski',cabane:'à la cabane à sucre',parcnat:'au parc national'};
+    const acts=[];for(const k of Object.keys(INT[dest].spots).filter(k=>k!=='car'&&INT[dest].spots[k].seat==null&&!INT[dest].spots[k].lie).sort(()=>Math.random()-.5).slice(0,2))acts.push(...at(dest+'.'+k,'look',rnd(6,10),{label:'Profite encore un peu de sa sortie '+(KN[dest]||'')}));
+    if(d.away){MCAR.away=true;placeMcar();Mc.q=[...acts,tr(dest+'.car',{label:'Retourne à son auto'}),{t:'highway',dest:'town',label:'Revient en ville par l\'autoroute'},{t:'cardrive',to:'home',label:'Rentre à la maison en auto'},{t:'getout'},F(()=>{LIFE.lastOuting={kind:KN[dest]||'en sortie'};})];}
+    else Mc.q=[...acts,tr(dest+'.car',{label:'Retourne à la gare'}),{t:'warp',dest:'town',spot:'g_quai',label:'Revient en ville en train'},F(()=>{LIFE.lastOuting={kind:KN[dest]||'en sortie'};})];
+    setTask('Reprend sa sortie '+(KN[dest]||''));return true;}setTask('Reprend sa journée là où il l\'avait laissée');return true;}
 function loadGame(){try{const raw=localStorage.getItem(SKEY);if(!raw)return false;const d=JSON.parse(raw);LOCALWALL=d.wall||1;return applySave(d);}catch(e){return false;}}
 async function initCloud(){try{if(!window.claude||!window.claude.use){sInfo('Sauvegarde sur cet appareil seulement');return;}
   const[db,user]=await Promise.all([window.claude.use('db'),window.claude.use('user')]);if(!db||!user){sInfo('Sauvegarde sur cet appareil seulement (non connecté)');return;}
