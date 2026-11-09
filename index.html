@@ -6104,18 +6104,37 @@ Object.assign(MGD.gacha,{h:'Trois pièces. Touche la manivelle trois fois pour f
 /* migration des anciennes figurines */
 {const _l=loadGame;loadGame=(...a)=>{const r=_l(...a);try{if(LIFE.gacha){LIFE.gacha=LIFE.gacha.filter(n=>GALL.some(x=>x.n===n));}}catch(e){}return r;};}
 
+/* ---- machine gashapon réaliste (partagée Tokyo / Québec) ---- */
+const GU={};
+function gachaUnit(m,S,price){const key=S[0];if(!GU[key]){const col=S[2];GU[key]={body:M(col,{r:.35,m:.15}),dk:M(new THREE.Color(col).multiplyScalar(.55).getStyle(),{r:.5}),
+   card:new THREE.MeshStandardMaterial({map:ctex(256,(g,s)=>{g.fillStyle=col;g.fillRect(0,0,s,s);g.fillStyle='rgba(255,255,255,.92)';g.fillRect(10,46,s-20,s-56);g.fillStyle='#1f2a35';g.font='800 22px "Bricolage Grotesque", sans-serif';g.textAlign='center';g.fillText(S[0].toUpperCase(),s/2,32);
+     g.font='40px serif';S[3].forEach((it,i)=>{g.fillText(it[0],34+(i%5)*47,104+Math.floor(i/5)*70);});g.font='700 15px sans-serif';g.fillStyle=col;g.fillText('10 FIGURINES · 1 DORÉE RARE',s/2,s-18);}),roughness:.5}),
+   caps:[0,1,2,3,4,5].map(k=>M(['#ff6f6f','#5aa0ff','#ffe066','#7be0a0','#d68cf0','#ffb86b'][k],{r:.25,m:.1}))};}
+  const U=GU[key],chrome=M('#d6dbe0',{r:.2,m:.85}),dark=M('#1b1c20',{r:.6}),glass=M('#e6f3fb',{r:.05,m:.2,op:.28}),white=M('#f4f4f2',{r:.4}),clear=M('#f2f6f8',{r:.1,op:.55});
+  bx(m,dark,.66,.32,.56,0,0,0);bx(m,chrome,.66,.03,.56,0,.32,0);
+  bx(m,U.body,.62,.62,.52,0,.35,0);bx(m,U.dk,.5,.5,.02,0,.41,.26);
+  const ring=new THREE.Mesh(new THREE.CylinderGeometry(.12,.12,.04,20),chrome);ring.rotation.x=PI/2;ring.position.set(0,.68,.28);m.add(ring);
+  const hd=new THREE.Mesh(new THREE.BoxGeometry(.2,.04,.05),white);hd.position.set(0,.68,.31);hd.rotation.z=.6;m.add(hd);const kn=new THREE.Mesh(new THREE.SphereGeometry(.035,10,8),white);kn.position.set(0,.68,.33);m.add(kn);
+  bx(m,chrome,.12,.07,.03,0,.84,.265);bx(m,dark,.06,.012,.03,0,.865,.272);
+  const pr=new THREE.Mesh(new THREE.PlaneGeometry(.16,.07),signMat(price,'#ffffff','#c8202a',128,56,'900 40px "Bricolage Grotesque", sans-serif'));pr.position.set(.19,.86,.262);m.add(pr);
+  bx(m,dark,.24,.14,.06,0,.4,.25);bx(m,clear,.22,.11,.02,0,.415,.285);
+  bx(m,chrome,.64,.03,.54,0,.97,0);
+  const gl=bx(m,glass,.58,.56,.5,0,1.0,0);
+  const cd=new THREE.Mesh(new THREE.PlaneGeometry(.54,.52),U.card);cd.position.set(0,1.29,-.23);m.add(cd);
+  for(let k=0;k<18;k++){const x=-.2+(k%5)*.1+(Math.floor(k/5)%2)*.05,z=-.14+((k*7)%4)*.09,y=1.06+Math.floor(k/5)*.085;const c=new THREE.Group();c.position.set(x,y,z);c.rotation.set(k*1.3,k*.7,k*2.1);m.add(c);
+    const top=new THREE.Mesh(new THREE.SphereGeometry(.042,10,6,0,PI*2,0,PI/2),U.caps[(k+key.length)%6]);c.add(top);const bot=new THREE.Mesh(new THREE.SphereGeometry(.042,10,6,0,PI*2,PI/2,PI/2),clear);c.add(bot);}
+  bx(m,U.body,.64,.06,.54,0,1.56,0);bx(m,U.body,.66,.2,.56,0,1.62,0);
+  const hdr=new THREE.Mesh(new THREE.PlaneGeometry(.62,.17),signMat(S[1]+' '+S[0],S[2],'#ffffff',384,104,'800 34px "Bricolage Grotesque", sans-serif'));hdr.position.set(0,1.72,.285);m.add(hdr);}
 /* ---------- Machines dans les rues ---------- */
 const GSPOTS={tokyo:[],harajuku:[],akiba:[],odaiba:[]};
 {const PLACES={tokyo:[[-17.2,8.6,PI,3],[62,8.6,PI,3],[-15,-8.6,0,3],[26,-8.6,0,2],[-38,42.7,PI,3],[16,37.8,0,2]],harajuku:[[-37.2,3.6,PI,2],[-19,-3.6,0,3],[-9.2,3.6,PI,2]],
   akiba:[[1,6.6,PI,3],[1,-6.6,0,3],[-26.5,-6.6,0,2]],odaiba:[[22,6.2,PI,3],[-16,12.5,PI,2],[-40,8.8,PI,2]]};
  const grey=M('#e8e8ea',{r:.4,m:.2}),dark=M('#2a2a30',{r:.6}),glass=M('#d8eef8',{r:.1,m:.1,e:'#5a7a8a',ei:.25}),knob=M('#f4f4f4',{r:.3,m:.4});const capC=['#ff8a80','#82b1ff','#ffff8d','#b9f6ca','#ea80fc','#ffcc80'].map(c=>M(c,{r:.35}));
  let sc=0;for(const area in PLACES){const I=INT[area];if(!I)continue;const tmp=new THREE.Group();PLACES[area].forEach((p,ci)=>{const[x,z,ry,n]=p;const gy=I.gY?I.gY(x,z):0;const G=grp(tmp,x,gy,z,ry);
-   for(let i=0;i<n;i++){const si=(sc+i)%GSER.length;const col=M(GSER[si][2],{r:.5});const m=grp(G,(i-(n-1)/2)*.68,0,0);bx(m,dark,.64,.08,.5,0,0,0);bx(m,col,.62,.5,.5,0,.08,0);bx(m,grey,.6,.04,.48,0,.58,0);
-    bx(m,glass,.56,.62,.06,0,.62,.22);bx(m,col,.62,.08,.5,0,1.24,0);bx(m,col,.64,.24,.52,0,1.32,0);for(let k=0;k<6;k++)sp(m,capC[(k+si)%6],.075,-.16+(k%3)*.16,.74+Math.floor(k/3)*.22,.26,0);
-    cy(m,knob,.1,.1,.06,0,.36,.25,10).rotation.x=PI/2;bx(m,dark,.2,.14,.04,0,.12,.25);const cap=sp(m,capC[si%6],.05,.12,.15,.27,0);m.userData.si=si;}
+   for(let i=0;i<n;i++){const si=(sc+i)%GSER.length;const m=grp(G,(i-(n-1)/2)*.68,0,0);gachaUnit(m,GSER[si],'¥200');m.userData.si=si;}
    sc+=n;const fx=Math.sin(ry),fz=Math.cos(ry),w=n*.68;const k='ga'+ci;spot(I,k,x+fx*.95,z+fz*.95,ry+PI);GSPOTS[area].push({k,si:(sc-n+Math.floor(Math.random()*n))%GSER.length,ser:[...Array(n).keys()].map(i=>(sc-n+i)%GSER.length)});
    const ax=Math.abs(fz)>.5;I.obs.push(ax?[x-w/2,z-.3,x+w/2,z+.3]:[x-.3,z-w/2,x+.3,z+w/2]);
-   const sg=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(1.9,w),.24),signMat('ガチャ GASHAPON','#ff4fa3','#ffffff',256,48,'800 30px "Bricolage Grotesque", sans-serif'));sg.position.set(0,1.62,.27);G.add(sg);});
+   const sg=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(1.9,w),.24),signMat('ガチャ GASHAPON','#ff4fa3','#ffffff',256,48,'800 30px "Bricolage Grotesque", sans-serif'));sg.position.set(0,2.0,.27);G.add(sg);});
   bake(tmp,I.g);I.G=null;}}
 function gachaStop(area,k){const L=GSPOTS[area];if(!L||!L.length)return[];const P=k!=null?L.find(x=>x.k===k):pick(L);const si=pick(P.ser);return[tr(area+'.'+P.k,{label:'S\'arrête devant des machines à gashapon'}),payF(6,'Gashapon (série '+GSER[si][0].toLowerCase()+')'),
  ...mgSteps('gacha',{a:'pay',series:si,label:'Tourne la manivelle d\'une machine à gashapon',q:GSER[si][1]+' Série « '+GSER[si][0]+' »'})];}
@@ -6165,11 +6184,8 @@ const GQSPOTS={};
   if(area==='mall')placed={x:21.3,z:-1,ry:-PI/2};
   else for(const side of[1,-1]){for(let z=I.d/2-1.6;z>-I.d/2+1.2&&!placed;z-=.4){const x=side*(I.w/2-.45);if(free(I,x-.4,z-w/2,x+.4,z+w/2))placed={x,z,ry:-side*PI/2};}if(placed)break;}
   if(!placed)continue;const tmp=new THREE.Group();const G=grp(tmp,placed.x,0,placed.z,placed.ry);
-  sers.forEach((si,i)=>{const col=M(GSERQ[si][2],{r:.5});const m=grp(G,(i-(n-1)/2)*.68,0,0);bx(m,dark,.64,.08,.5,0,0,0);bx(m,col,.62,.5,.5,0,.08,0);bx(m,grey,.6,.04,.48,0,.58,0);
-    bx(m,glass,.56,.62,.06,0,.62,.22);bx(m,col,.62,.08,.5,0,1.24,0);bx(m,col,.64,.24,.52,0,1.32,0);for(let k=0;k<6;k++)sp(m,capC[(k+si)%6],.075,-.16+(k%3)*.16,.74+Math.floor(k/3)*.22,.26,0);
-    cy(m,knob,.1,.1,.06,0,.36,.25,10).rotation.x=PI/2;bx(m,dark,.2,.14,.04,0,.12,.25);
-    const lb=new THREE.Mesh(new THREE.PlaneGeometry(.58,.2),signMat(GSERQ[si][1]+' '+GSERQ[si][0],GSERQ[si][2],'#ffffff',256,88,'800 30px "Bricolage Grotesque", sans-serif'));lb.position.set(0,1.32,.265);m.add(lb);});
-  const sg=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(2.4,w+.4),.26),signMat('🥚 GASHAPON · COLLECTION QUÉBEC','#ff4fa3','#ffffff',512,56,'800 30px "Bricolage Grotesque", sans-serif'));sg.position.set(0,1.75,.27);G.add(sg);
+  sers.forEach((si,i)=>{const m=grp(G,(i-(n-1)/2)*.68,0,0);gachaUnit(m,GSERQ[si],'4 $');});
+  const sg=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(2.4,w+.4),.26),signMat('🥚 GASHAPON · COLLECTION QUÉBEC','#ff4fa3','#ffffff',512,56,'800 30px "Bricolage Grotesque", sans-serif'));sg.position.set(0,2.0,.27);G.add(sg);
   const fx=Math.sin(placed.ry),fz=Math.cos(placed.ry);const k='gq';spot(I,k,placed.x+fx*.95,placed.z+fz*.95,placed.ry+PI);GQSPOTS[area]={k,ser:sers};
   I.obs=I.obs||[];const ax=Math.abs(fz)>.5;I.obs.push(ax?[placed.x-w/2,placed.z-.3,placed.x+w/2,placed.z+.3]:[placed.x-.3,placed.z-w/2,placed.x+.3,placed.z+w/2]);if(I.grid)I.grid=null;bake(tmp,I.g);}}
 function gachaQStop(area){const P=GQSPOTS[area];if(!P)return[];const si=pick(P.ser);return[tr(area+'.'+P.k,{label:'S\'arrête devant les machines à gashapon'}),payF(4,'Gashapon (série '+GSERQ[si][0].toLowerCase()+')'),
