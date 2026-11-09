@@ -6719,9 +6719,10 @@ function frAnswer(id,yes){const c=CBY[id],m=MS(id),p=m.pend;if(!p||p.t!=='inv')r
   else{msgAdd(id,'m',"Pas aujourd'hui, désolé!");msgAdd(id,'e','Pas de souci, une autre fois!');}CELL._bot=1;}
 function frHourly(){const hi=Math.floor(gm/60);if(LIFE.frH==null){LIFE.frH=hi;return;}if(hi===LIFE.frH)return;LIFE.frH=hi;const h=hourOf();
   for(const c of CONTACTS){const m=MS(c.id);if(m.pend&&gm>m.pend.exp)m.pend=null;}
-  if(h<8||h>=22||Math.random()>.45)return;
+  if(h<9||h>=21)return;{const dn=Math.floor(gm/1440);if(LIFE.frQD!==dn){LIFE.frQD=dn;LIFE.frQN=0;LIFE.frQmax=Math.random()<.5?1:2;}if(LIFE.frQN>=LIFE.frQmax||gm-(LIFE.frQT??-9999)<300||Math.random()>.16)return;}
   const pool=CONTACTS.filter(c=>{const m=MS(c.id);return m.un<2&&gm-m.t>240&&!m.pend;});if(!pool.length)return;
   const wts=pool.map(c=>1+frInfo(c.id).l*.15),tw=wts.reduce((a,b)=>a+b,0);let r0=Math.random()*tw,c=pool[0];for(let i=0;i<pool.length;i++){r0-=wts[i];if(r0<=0){c=pool[i];break;}}
+  LIFE.frQN++;LIFE.frQT=gm;
   const m=MS(c.id),l=frInfo(c.id).l,s=frS(c),nm=c.n.split(' ')[0],r=Math.random();LIFE.frGift=LIFE.frGift||{};
   if(c.perk==='cadeau'&&s>0&&gm-(LIFE.frGift[c.id]??-99999)>=7*1440&&r<.55){LIFE.frGift[c.id]=gm;const v=Math.round(rnd(7,13)*s);addMoney(v,'Cadeau de '+nm);msgAdd(c.id,'e',pick(["Je t'ai glissé un petit quelque chose 🎁 (+"+v+" $)","Pour toi, juste parce que t'es toi! 🎁 (+"+v+" $)"]),true);return;}
   if(c.perk==='tuyau'&&s>0&&r<.5){const B=BO(),free=STK.filter(x=>!(B.tips[x[0]]&&gm<B.tips[x[0]].until));if(free.length){const sk=pick(free),dir=Math.random()<.5?1:-1,good=Math.random()<Math.min(.9,.55+.15*frPerk('tuyau'));B.tips[sk[0]]={dir,until:gm+2*1440,good,by:c.id};
