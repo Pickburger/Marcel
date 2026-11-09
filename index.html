@@ -1777,20 +1777,36 @@ function updateArena(dt){const I=INT.arena;if(VIS_AREA!=='arena'||!I)return;cons
  spot(I,'entry',0,3.5,PI);spot(I,'tabouret',-1,-.8,PI,{seat:.7});spot(I,'banquette',4.6,1.7,PI,{seat:.47,via:[[3.6,1.9]]});
  I.staff=[{look:{skin:'#f1c29c',hair:'#5a3b2a',shirt:'#f4f4f2',pants:'#2b2f3a',chef:1,h:1.05},x:-1.5,z:-3.2,yaw:0,act:'cook',name:'Ti-Guy'},{look:{skin:'#c98e66',hair:'#120e0c',shirt:'#3b6fb6',pants:'#2f3442'},x:0,z:-.8,yaw:PI,seat:.7,act:'eat'},{look:{skin:'#f2cfb5',hair:'#a8452a',shirt:'#e8c547',pants:'#3d4252',long:1},x:4.6,z:-1.2,yaw:PI,seat:.47,act:'talk'}];}
 // ---- Les Galeries (intérieur)
-{const I=interior('mall','mall',28,18,0,{name:'Les Galeries du Quartier'});const r=I.root;room(I,M('#ffffff',{map:TX.tile,r:.22}),'#efeae0',{backWins:[],sideWins:[],backH:5});
- const shopsD=[[-10.5,'MODE PLUS','#c8402f'],[-3.5,'LIBRAIRIE','#3a6ab8'],[3.5,'SOULIERS & CIE','#5a8f6a'],[10.5,'BREW CAFÉ','#8a5a3a']];
- for(const[x,nm,col]of shopsD){bx(r,M(col,{r:.5}),6.4,3.6,.3,x,0,-8.8);bx(r,M('#cfe2ee',{e:'#fff4e0',ei:.35,r:.1}),5.2,2.6,.05,x,.3,-8.62);
-   const sg=new THREE.Mesh(new THREE.PlaneGeometry(5.6,.6),signMat(nm,col,'#ffffff',512,64,'800 40px "Bricolage Grotesque", sans-serif'));sg.position.set(x,3.3,-8.62);r.add(sg);
-   for(let k=0;k<3;k++)bx(r,M(pick(['#f2f0ea','#e8c547','#2a2a2a','#d86a8f']),{r:.7}),.5,rnd(.6,1.4),.3,x-1.5+k*1.5,.3,-8.4);}
- cy(r,M('#d9d2c4',{r:.5}),1.7,1.8,.5,0,0,1,24);const wt=new THREE.Mesh(new THREE.CircleGeometry(1.55,24),M('#5ab0d0',{r:.05,m:.3,e:'#3a8ab0',ei:.3}));wt.rotation.x=-PI/2;wt.position.set(0,.46,1);r.add(wt);cy(r,M('#d9d2c4'),.2,.25,1.4,0,.3,1,10);
- for(const[x,z,ry]of[[-4,1,PI/2],[4,1,-PI/2]])bx(r,M('#6b4a35',{r:.7}),.5,.45,2,x,0,z);
- for(const[x,z]of[[-9.5,3],[-9.5,6],[-6.5,4.5]]){table(r,x,z,.9,.9,'#e8e2d0');chair(r,x,z+.8,PI,'#c8402f');chair(r,x,z-.8,0,'#c8402f');}
- bx(r,M('#e8a33a',{r:.5}),5,1.1,.7,-11,0,-1);const fs=new THREE.Mesh(new THREE.PlaneGeometry(4,.5),signMat('AIRE DE RESTAURATION','#e8a33a','#ffffff',512,64,'800 34px "Atkinson Hyperlegible", sans-serif'));fs.position.set(-11,2.2,-1.36);r.add(fs);
- for(const[x,z]of[[-13,7.5],[13,7.5],[13,-6],[-13,-6]])plant(r,x,z,1.5);bake(r,I.g);
- I.obs=[[-14,-9,14,-8.3],[-1.9,-.9,1.9,2.9],[-4.3,0,-3.7,2],[3.7,0,4.3,2],[-10,2.5,-9,3.5],[-10,5.5,-9,6.5],[-7,4,-6,5],[-13.6,-1.4,-8.4,-.6],[-13.3,7.2,-12.7,7.8],[12.7,7.2,13.3,7.8],[12.7,-6.3,13.3,-5.7],[-13.3,-6.3,-12.7,-5.7]];
- spot(I,'entry',0,8,PI);spot(I,'mode',-10.5,-7.3,PI);spot(I,'livres',-3.5,-7.3,PI);spot(I,'souliers',3.5,-7.3,PI);spot(I,'brew',10.5,-7.3,PI);spot(I,'fontaine',0,3.6,PI);spot(I,'comptoir',-11,-.1,PI);spot(I,'table',-9.5,3.8,PI,{seat:.47,via:[[-8.4,4.4]]});
+{const I=interior('mall','mall',44,26,0,{name:'Les Galeries du Quartier'});const r=I.root;room(I,M('#ffffff',{map:TX.tile,r:.22}),'#efeae0',{backWins:[],sideWins:[],backH:5.5,rightH:5.5});
+ const SH=[[-17.5,'MODE PLUS','#c8402f','mode'],[-10.5,'LIBRAIRIE','#3a6ab8','livres'],[-3.5,'SOULIERS & CIE','#5a8f6a','souliers'],[3.5,'ÉLECTRO ÉCLAIR','#2b2f38','electr'],[10.5,'JOUETS & CIE','#e8a33a','jouets'],[17.5,'BREW CAFÉ','#8a5a3a','brew']];
+ I.obs=[];const part=M('#d9d2c4',{r:.6});
+ for(const x of[-21,-14,-7,0,7,14,21]){bx(r,part,.25,3.4,5,x,0,-10.5);I.obs.push([x-.15,-13,x+.15,-8]);}
+ bx(r,M('#2b2f38',{r:.5}),42.2,.7,.4,0,3.3,-8.05);
+ for(const[x,nm,col,k]of SH){bx(r,M(col,{r:.6}),6.6,.18,5,x,0,-10.5).scale.y=1;ns(bx(r,M(col,{r:.7,op:.25}),6.6,.01,5,x,.02,-10.5));
+   const sg=new THREE.Mesh(new THREE.PlaneGeometry(5.6,.55),signMat(nm,col,'#ffffff',512,64,'800 40px "Bricolage Grotesque", sans-serif'));sg.position.set(x,3.32,-7.83);r.add(sg);
+   bx(r,M('#e8e2d0',{r:.4}),3.6,1,.7,x,0,-11.9);bx(r,M('#2b2f38'),.4,.3,.3,x+1.2,1,-11.9);I.obs.push([x-1.9,-12.4,x+1.9,-11.4]);
+   for(const s of[-1,1]){bx(r,M('#7a5236'),.4,2.2,3.2,x+s*3.1,0,-10.6);for(let k=0;k<4;k++)for(let j=0;j<3;j++)bx(r,M(pick(['#c8402f','#2f6fb6','#e8c547','#3fae6c','#e8e2d0','#2b2f38','#e86a9a'])),.3,.35,.5,x+s*2.85,.25+j*.7,-11.8+k*.8);}
+   spot(I,k,x,-10.4,PI);}
+ const FC=[[-4.6,'POUTINE EXPRESS','#c8402f','f_poutine'],[-1,'SUSHI ZEN','#2f6a4a','f_sushi'],[2.6,'PIZZA NAPOLI','#e8a33a','f_pizza'],[6.2,'SMOOTHIE BAR','#e86a9a','f_smooth']];
+ for(const[z,nm,col,k]of FC){bx(r,M(col,{r:.5}),.9,1.1,3,-21.05,0,z);bx(r,M('#e8e2d0'),.95,.06,3.05,-21.05,1.1,z);const sg=new THREE.Mesh(new THREE.PlaneGeometry(3,.5),signMat(nm,col,'#ffffff',512,80,'800 40px "Bricolage Grotesque", sans-serif'));sg.position.set(-21.85,2.5,z);sg.rotation.y=PI/2;r.add(sg);
+   for(let j=0;j<4;j++)bx(r,M(pick(['#e8b04a','#f2e6c8','#c8602f','#3fae6c'])),.25,.15,.25,-21.05,1.16,z-1+j*.6);I.obs.push([-21.6,z-1.6,-20.5,z+1.6]);spot(I,k,-19.8,z,-PI/2);}
+ I.staffX=[];
+ const TB=[[-16,-3],[-16,1],[-16,5],[-12,-3],[-12,1],[-12,5]];for(const[x,z]of TB){table(r,x,z,.9,.9,'#e8e2d0');chair(r,x,z+.8,PI,'#c8402f');chair(r,x,z-.8,0,'#c8402f');I.obs.push([x-.55,z-.55,x+.55,z+.55]);}
+ {const fs=new THREE.Mesh(new THREE.PlaneGeometry(5,.6),signMat('AIRE DE RESTAURATION','#e8a33a','#ffffff',512,64,'800 34px "Atkinson Hyperlegible", sans-serif'));fs.position.set(-14,3.6,-7.7);r.add(fs);}
+ cy(r,M('#d9d2c4',{r:.5}),1.7,1.8,.5,0,0,2,24);const wt=new THREE.Mesh(new THREE.CircleGeometry(1.55,24),M('#5ab0d0',{r:.05,m:.3,e:'#3a8ab0',ei:.3}));wt.rotation.x=-PI/2;wt.position.set(0,.46,2);r.add(wt);cy(r,M('#d9d2c4'),.2,.25,1.4,0,.3,2,10);I.obs.push([-1.9,.1,1.9,3.9]);
+ for(const[x,z]of[[-4,2],[4,2]]){bx(r,M('#6b4a35',{r:.7}),.5,.45,2,x,0,z);I.obs.push([x-.3,z-1,x+.3,z+1]);}
+ // kiosque de loterie
+ {const kx=9,kz=1.5;bx(r,M('#1f5fbf',{r:.4}),2.6,1.05,2.6,kx,0,kz);bx(r,M('#f2f0ea'),2.7,.06,2.7,kx,1.05,kz);for(const[x,z]of[[-1.25,-1.25],[1.25,-1.25],[-1.25,1.25],[1.25,1.25]])cy(r,M('#c9ced4',{m:.7}),.05,.05,1.6,kx+x,1.1,kz+z,8);
+  bx(r,M('#e8c547',{r:.4}),2.9,.5,2.9,kx,2.7,kz);for(const ry of[0,PI/2,PI,-PI/2]){const sg=new THREE.Mesh(new THREE.PlaneGeometry(2.7,.4),signMat('LOTO DU QUARTIER · GRATTEUX · 6/49','#e8c547','#1f2a35',1024,150,'800 50px "Bricolage Grotesque", sans-serif'));sg.position.set(kx+Math.sin(ry)*1.46,2.95,kz+Math.cos(ry)*1.46);sg.rotation.y=ry;r.add(sg);}
+  for(let j=0;j<6;j++)bx(r,M(pick(['#e84a6a','#3fae6c','#f2c21a','#2f6fb6'])),.35,.02,.25,kx-.9+j*.36,1.09,kz+1.1);I.obs.push([kx-1.4,kz-1.4,kx+1.4,kz+1.4]);spot(I,'loto',kx,kz+2.1,PI);}
+ for(const[x,z]of[[-20,10],[20,10],[20,-6],[-6,8],[14,8]])plant(r,x,z,1.6);
+ for(const[x,z,ry]of[[4,8.5,PI],[-4,8.5,PI]]){bx(r,M('#6b4a35',{r:.7}),2,.45,.5,x,0,z);I.obs.push([x-1.05,z-.3,x+1.05,z+.3]);}
+ bake(r,I.g);
+ spot(I,'entry',0,11.8,PI);spot(I,'fontaine',0,4.6,PI);spot(I,'comptoir',-19.8,-4.6,-PI/2);spot(I,'table',-16,1.8,PI,{seat:.47,via:[[-14.9,2.4]]});spot(I,'table2',-12,-2.2,PI,{seat:.47,via:[[-10.9,-1.6]]});spot(I,'banc',4,8.5,0,{seat:.47,via:[[4,9.4]]});
  const sk=['#f1c29c','#c98e66','#8a5a3c','#e8b996','#f2cfb5'];const vis=(x,z,yaw,act,o={})=>({look:{skin:pick(sk),hair:pick(['#2a1d15','#5a3b2a','#a8452a','#120e0c','#d8d4cc']),shirt:pick(SHIRTS0),pants:pick(['#2f3442','#3d4252','#5a4a3a']),long:Math.random()<.5,...o},x,z,yaw,act});
- I.staff=[vis(-10.5,-7.9,0,'work'),vis(3.5,-7.9,0,'work'),vis(10.5,-7.9,0,'work'),vis(-11,-1.8,0,'cook',{chef:1}),{...vis(-6.5,5.3,PI,'eat'),seat:.47},{...vis(-9.5,2.2,0,'eat'),seat:.47},vis(2.2,3.4,PI*.8,'talk'),vis(2.9,4.2,-PI*.3,'talk'),vis(-3.5,-6.6,PI,'browse'),vis(6.5,-2,PI/2,'look')];}
+ I.staff=[...SH.map(([x])=>vis(x,-12.8,0,'work')),...FC.map(([z])=>vis(-21.75,z,PI/2,'cook',{chef:1})),vis(9,1.5,0,'work'),
+   {...vis(-16,4.2,PI,'eat'),seat:.47},{...vis(-12,1.8,PI,'eat'),seat:.47},{...vis(-16,-2.2,PI,'eat'),seat:.47},{...vis(-12,5.8,0,'eat'),seat:.47},
+   vis(2.2,5.4,PI*.8,'talk'),vis(2.9,6.2,-PI*.3,'talk'),vis(-10.5,-9.6,PI,'browse'),vis(10.5,-9.8,PI,'browse'),vis(-17.5,-9.4,PI,'browse'),vis(9,3.6,PI,'look'),vis(12,6.5,PI/2,'scroll'),vis(-6,-4,-PI/2,'look'),{...vis(-4,1.6,PI/2,'scroll'),seat:.47},vis(16,-3,PI,'scroll')];}
 // ---- Électro-Jeux (intérieur)
 {const I=interior('electro','electro',14,10,0,{name:'Électro-Jeux'});const r=I.root;room(I,M('#ffffff',{map:TX.tile,r:.3}),'#dfe3ea',{backWins:[],sideWins:[]});
  bx(r,M('#1a1a1a',{r:.4}),9,2.6,.15,0,.4,-4.85);for(let i=0;i<3;i++)for(let j=0;j<2;j++){const sc=new THREE.Mesh(new THREE.PlaneGeometry(2.6,1.2),j?SCR.demo.mat:SCR.demo2.mat);sc.position.set(-3+i*3,1.2+j*1.3,-4.76);sc.userData.ns=1;r.add(sc);}
@@ -6109,6 +6125,87 @@ TKN.gashapon='🥚 Chasser les gashapon dans les rues';
 for(const k of Object.keys(TK)){if(k==='gashapon')continue;const _f=TK[k];TK[k]=(...a)=>{const s=_f(...a);if(!Array.isArray(s)||Math.random()>.45)return s;const d=s.find(x=>x&&x.t==='warp'&&GSPOTS[x.dest]&&x.dest!=='tokyo');if(!d)return s;
   let wi=-1;for(let i=s.length-1;i>=0;i--)if(s[i]&&s[i].t==='warp'&&s[i].dest==='metro'){wi=i;break;}if(wi<1)return s;const ins=s[wi-1]&&s[wi-1].t==='travel'?wi-1:wi;s.splice(ins,0,...gachaStop(d.dest));return s;};}
 {const _p=tokyoPlan;tokyoPlan=()=>{const T=LIFE.tokyo,h=hourOf(),day=Math.floor(gm/1440);if(T&&!T.ret&&day<T.end&&h>=9&&h<20.5&&T.gaD!==day&&Mc.area!=='hotel'&&Math.random()<.18&&!(T.lunch!==day&&h>=11.5&&h<14)&&!(T.sup!==day&&h>=17.8))return tkGo('gashapon');return _p();};}
+/* ================= Gashapon du Québec : 10 séries × 10 = 100 figurines ================= */
+const GSERQ=[['Animaux du Québec','🦫','#8bc34a',[['🦫','Castor'],['🫎','Orignal'],['🐻','Ours noir'],['🦝','Raton laveur'],['🦆','Huard'],['🦊','Renard roux'],['🦌','Cerf de Virginie'],['🦨','Mouffette'],['🦉','Harfang des neiges'],['🦌','Caribou doré']]],
+ ['Bouffe québécoise','🍟','#ffb74d',[['🍟','Poutine'],['🥧','Tourtière'],['🥘','Pâté chinois'],['🥖','Cretons'],['🥐','Queue de castor'],['🍮','Pouding chômeur'],['🥧','Tarte au sucre'],['🫘','Fèves au lard'],['🥯','Bagel'],['🍁','Sirop d\'érable doré']]],
+ ['Hockey','🏒','#64b5f6',[['⚫','Rondelle'],['🏒','Bâton'],['🥅','Filet'],['⛸️','Patins'],['🪖','Casque'],['🧤','Mitaine de gardien'],['🚜','Zamboni'],['👕','Chandail'],['📣','Sifflet d\'arbitre'],['🏆','Coupe dorée']]],
+ ['Cabane à sucre','🍁','#e57373',[['🪣','Chaudière'],['🍭','Tire sur la neige'],['🎿','Raquettes'],['🐴','Cheval de trait'],['🛖','Cabane'],['🌳','Érable'],['🥓','Oreilles de crisse'],['🎻','Violoneux'],['🧣','Ceinture fléchée'],['🍁','Feuille d\'érable dorée']]],
+ ['Hiver','❄️','#90caf9',[['⛄','Bonhomme de neige'],['🧢','Tuque'],['🧤','Mitaines'],['🚛','Déneigeuse'],['🛷','Traîneau'],['🌲','Sapin enneigé'],['🪏','Pelle'],['🏂','Planche à neige'],['🧊','Glaçon'],['❄️','Flocon doré']]],
+ ['Camping et chalet','🏕️','#81c784',[['🛶','Canot'],['⛺','Tente'],['🔥','Feu de camp'],['🍡','Guimauve'],['🔦','Lampe de poche'],['🪵','Bûche'],['🎣','Canne à pêche'],['🦟','Maringouin'],['🏡','Chalet'],['🐟','Doré doré']]],
+ ['Métiers de la ville','👷','#ffd54f',[['🧑‍🚒','Pompier'],['👮','Policière'],['📮','Facteur'],['🚸','Brigadière'],['🧑‍🍳','Cuisinier'],['🚚','Camionneur'],['🧑‍⚕️','Infirmière'],['🔧','Plombier'],['🥖','Boulanger'],['🎩','Maire doré']]],
+ ['Musique et festivals','🎸','#ba68c8',[['🎸','Guitare'],['🎻','Violon'],['🪗','Accordéon'],['🥄','Cuillères'],['🎤','Micro'],['🥁','Batterie'],['🎷','Saxophone'],['🎆','Feux d\'artifice'],['🎪','Chapiteau'],['💿','Disque d\'or']]],
+ ['Véhicules d\'ici','🚌','#4db6ac',[['🚌','Autobus scolaire'],['⛴️','Traversier'],['🚆','Train'],['🛻','Pick-up'],['🚍','Autobus de ville'],['🏍️','Motoneige'],['🏎️','Quatre-roues'],['🛩️','Hydravion'],['🚑','Ambulance'],['🚇','Métro doré']]],
+ ['Légendes du Québec','👻','#9575cd',[['🛶','Chasse-galerie'],['🐺','Loup-garou'],['🐍','Memphré'],['🐉','Bête à grand\'queue'],['✨','Feu follet'],['😈','Diable danseur'],['🦕','Ponik'],['🦍','Sasquatch'],['💃','Rose Latulipe'],['🕖','Bonhomme Sept-Heures doré']]]];
+const GALLQ=GSERQ.flatMap((S,si)=>S[3].map((it,i)=>({e:it[0],n:it[1],s:si,r:i===9})));
+const gOwnQ=()=>LIFE.gachaQ||(LIFE.gachaQ=[]);
+function gDrawQ(si){const L=GALLQ.filter(x=>x.s===si);const w=L.map(x=>x.r?.3:1);let t=Math.random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<L.length;i++){t-=w[i];if(t<=0)return L[i];}return L[0];}
+const gSerDoneQ=si=>GALLQ.filter(x=>x.s===si).every(x=>gOwnQ().includes(x.n));
+MGD.gachaq=Object.assign({...MGD.gacha,n:'Gashapon du Québec'},{h:'Trois pièces. Touche la manivelle trois fois pour faire tomber une capsule, puis touche la capsule pour l\'ouvrir. Collection du Québec : chaque machine a sa série de 10 figurines (une dorée, plus rare). Il y en a 100 en tout!',
+ init(G){G.c=3;G.rot=0;G.tr=0;G.st='crank';G.got=[];G.own=new Set(gOwnQ());G.k=0;G.si=G.o.series??Math.floor(Math.random()*GSERQ.length);},
+ dn(G){if(G.st==='crank'){G.tr++;mgSnd('tap');if(G.tr>=3){G.st='drop';G.k=0;G.tr=0;}}else if(G.st==='cap'){const it=gDrawQ(G.si);G.it=it;G.nw=!G.own.has(it.n);G.own.add(it.n);G.got.push(it.n);G.st='open';G.k=0;mgSnd(G.nw||it.r?'jackpot':'ping');}},
+ dr(G,g){const w=G.w,h=G.h,cx=w/2,S=GSERQ[G.si];mgT(g,S[1]+' Série : '+S[0],cx,h*.05,15,'#fff');mgR(g,cx-110,h*.09,220,h*.63,24,S[2]);mgC(g,cx,h*.26,86,'rgba(220,240,255,.85)');
+  const cc=['#ff8a80','#82b1ff','#ffff8d','#b9f6ca','#ea80fc'];for(let i=0;i<14;i++)mgC(g,cx+Math.cos(i*2.4)*52*((i%3)/3+.4),h*.26+Math.sin(i*2.4)*48*((i%3)/3+.4),16,cc[i%5]);
+  g.save();g.translate(cx,h*.52);g.rotate(G.rot);mgC(g,0,0,32,'#fafafa');mgR(g,-6,-28,12,56,6,'#9e9e9e');g.restore();mgR(g,cx-40,h*.63,80,32,10,'#2a0d18');
+  if(G.st==='drop'||G.st==='cap'){const y=G.st==='drop'?lerp(h*.62,h*.79,Math.min(1,G.k/.7)):h*.79;mgC(g,cx,y,24,S[2]);g.fillStyle='#fff';g.beginPath();g.arc(cx,y,24,PI,0);g.fill();if(G.st==='cap')mgT(g,'Touche la capsule!',cx,h*.87,15,'#fff');}
+  if(G.st==='open'){const it=G.it;mgR(g,cx-125,h*.28,250,170,20,'rgba(10,15,30,.94)');if(it.r){g.strokeStyle='#ffd54f';g.lineWidth=3;g.strokeRect(cx-119,h*.28+6,238,158);}mgE(g,it.e,cx,h*.28+62,62);mgT(g,it.n,cx,h*.28+120,18,it.r?'#ffd54f':'#fff');mgT(g,G.nw?(it.r?'✨ RARE DORÉE · NOUVEAU!':'NOUVEAU!'):'Déjà dans la collection',cx,h*.28+146,14,G.nw?'#ffd700':'#aab');}
+  if(G.st==='crank')mgT(g,'Touche pour tourner la manivelle ('+G.tr+'/3)',cx,h*.79,15,'#fff');
+  const L=GALLQ.filter(x=>x.s===G.si);L.forEach((it,i)=>{const x=w/2+(i-4.5)*Math.min(34,(w-16)/10),y=h*.95;g.globalAlpha=G.own.has(it.n)?1:.18;mgE(g,it.e,x,y,22);g.globalAlpha=1;});},
+ hud:G=>'Pièces : '+G.c+' · collection '+G.own.size+'/100',
+ fin(G){const nw=G.got.filter((x,i,a)=>a.indexOf(x)===i&&!gOwnQ().includes(x)).length;G.msg=nw?nw+' nouvelle'+(nw>1?'s':'')+' figurine'+(nw>1?'s':'')+' · '+G.own.size+'/100':'Rien de nouveau… la prochaine fois!';return Math.min(1,.4+nw*.3);},
+ ap(s,r,o){const L=gOwnQ();const before=new Set(GSERQ.map((x,i)=>i).filter(gSerDoneQ));const got=r.auto?[gDrawQ(o.series??Math.floor(Math.random()*GSERQ.length)).n]:r.G.got;let nw=0;for(const x of got)if(!L.includes(x)){L.push(x);nw++;}
+  cnt('gacha',got.length);const fresh=GSERQ.map((x,i)=>i).filter(i=>gSerDoneQ(i)&&!before.has(i));toast('🥚 Gashapon : '+(nw?nw+' nouvelle'+(nw>1?'s':'')+' · ':'')+L.length+'/100 figurines',nw>0);
+  if(r.auto&&got.length){const it=GALLQ.find(x=>x.n===got[0]);say(Mc,it?(it.r?'WOW! Le '+it.n.toLowerCase()+'! Le rare!':'Un'+(/^[AEIOUÉ]/i.test(it.n)?'':'')+' '+it.n.toLowerCase()+'! '+(nw?'Je l\'avais pas!':'Encore un double…')):'Une capsule!');}
+  fresh.forEach(i=>setTimeout(()=>toast('🏅 Série « '+GSERQ[i][0]+' » complète!',true),1600));}});
+/* machines dans les commerces de la ville */
+const GQSPOTS={};
+{const PLAN=[['mall',[0,1,2,3,4]],['dep',[5,6]],['arcp',[7,8]],['quilles',[9,0]],['cvb_disques',[7,9]],['electro',[2,3]],['dep',[]]];
+ const grey=M('#e8e8ea',{r:.4,m:.2}),dark=M('#2a2a30',{r:.6}),glass=M('#d8eef8',{r:.1,m:.1,e:'#5a7a8a',ei:.25}),knob=M('#f4f4f4',{r:.3,m:.4});const capC=['#ff8a80','#82b1ff','#ffff8d','#b9f6ca','#ea80fc','#ffcc80'].map(c=>M(c,{r:.35}));
+ const free=(I,x0,z0,x1,z1)=>!(I.obs||[]).some(o=>!(x1<o[0]||x0>o[2]||z1<o[1]||z0>o[3]))&&!Object.values(I.spots).some(s=>s.x>x0-.7&&s.x<x1+.7&&s.z>z0-.7&&s.z<z1+.7);
+ for(const[area,sers]of PLAN){const I=INT[area];if(!I||!sers.length)continue;const n=sers.length,w=n*.68;let placed=null;
+  if(area==='mall')placed={x:21.3,z:-1,ry:-PI/2};
+  else for(const side of[1,-1]){for(let z=I.d/2-1.6;z>-I.d/2+1.2&&!placed;z-=.4){const x=side*(I.w/2-.45);if(free(I,x-.4,z-w/2,x+.4,z+w/2))placed={x,z,ry:-side*PI/2};}if(placed)break;}
+  if(!placed)continue;const tmp=new THREE.Group();const G=grp(tmp,placed.x,0,placed.z,placed.ry);
+  sers.forEach((si,i)=>{const col=M(GSERQ[si][2],{r:.5});const m=grp(G,(i-(n-1)/2)*.68,0,0);bx(m,dark,.64,.08,.5,0,0,0);bx(m,col,.62,.5,.5,0,.08,0);bx(m,grey,.6,.04,.48,0,.58,0);
+    bx(m,glass,.56,.62,.06,0,.62,.22);bx(m,col,.62,.08,.5,0,1.24,0);bx(m,col,.64,.24,.52,0,1.32,0);for(let k=0;k<6;k++)sp(m,capC[(k+si)%6],.075,-.16+(k%3)*.16,.74+Math.floor(k/3)*.22,.26,0);
+    cy(m,knob,.1,.1,.06,0,.36,.25,10).rotation.x=PI/2;bx(m,dark,.2,.14,.04,0,.12,.25);
+    const lb=new THREE.Mesh(new THREE.PlaneGeometry(.58,.2),signMat(GSERQ[si][1]+' '+GSERQ[si][0],GSERQ[si][2],'#ffffff',256,88,'800 30px "Bricolage Grotesque", sans-serif'));lb.position.set(0,1.32,.265);m.add(lb);});
+  const sg=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(2.4,w+.4),.26),signMat('🥚 GASHAPON · COLLECTION QUÉBEC','#ff4fa3','#ffffff',512,56,'800 30px "Bricolage Grotesque", sans-serif'));sg.position.set(0,1.75,.27);G.add(sg);
+  const fx=Math.sin(placed.ry),fz=Math.cos(placed.ry);const k='gq';spot(I,k,placed.x+fx*.95,placed.z+fz*.95,placed.ry+PI);GQSPOTS[area]={k,ser:sers};
+  I.obs=I.obs||[];const ax=Math.abs(fz)>.5;I.obs.push(ax?[placed.x-w/2,placed.z-.3,placed.x+w/2,placed.z+.3]:[placed.x-.3,placed.z-w/2,placed.x+.3,placed.z+w/2]);if(I.grid)I.grid=null;bake(tmp,I.g);}}
+function gachaQStop(area){const P=GQSPOTS[area];if(!P)return[];const si=pick(P.ser);return[tr(area+'.'+P.k,{label:'S\'arrête devant les machines à gashapon'}),payF(4,'Gashapon (série '+GSERQ[si][0].toLowerCase()+')'),
+ ...mgSteps('gachaq',{a:'pay',series:si,label:'Tourne la manivelle d\'une machine à gashapon',q:GSERQ[si][1]+' Série « '+GSERQ[si][0]+' »'})];}
+/* ================= Loterie : gratteux et 6/49 ================= */
+function lotoDrawDay(d){const w=d%7;return w===2||w===5;}
+function nextDraw(){let d=Math.floor(gm/1440);if(hourOf()>=21)d++;while(!lotoDrawDay(d))d++;return d;}
+function lotoPick(){const s=new Set();while(s.size<6)s.add(1+Math.floor(Math.random()*49));return[...s].sort((a,b)=>a-b);}
+function lotoBuy(){LIFE.loto=LIFE.loto||{t:[],res:[]};const d=nextDraw(),nums=lotoPick();LIFE.loto.t.push({nums,d});addMoney(-3,'Billet 6/49');toast('🎟️ Billet 6/49 : '+nums.join(' · ')+' — tirage '+DAYS[((d%7)+7)%7].toLowerCase()+' 21 h',true);}
+const SCR_PR=[[.0015,1000],[.02,50],[.08,10],[.22,2]];
+function scratch(){addMoney(-2,'Gratteux');let r=Math.random(),win=0;for(const[p,v]of SCR_PR){if(r<p){win=v;break;}r-=p;}cnt('gratteux');LIFE.lotoSt=LIFE.lotoSt||{n:0,won:0};LIFE.lotoSt.n++;LIFE.lotoSt.won+=win;
+  if(win){addMoney(win,'Gratteux gagnant');toast((win>=1000?'🤑 GROS LOT! ':win>=50?'🎉 ':'🍀 ')+'Gratteux gagnant : '+win+' $',true);say(Mc,win>=50?'J\'ai gagné '+win+' $!!':'Yé, '+win+' $!',3);}else{toast('🎟️ Gratteux perdant… la prochaine fois!',false);say(Mc,pick(['Rien…','Presque!','Bon, une autre fois.']),2.5);}}
+function lotoTick(){const L=LIFE.loto;if(!L||!L.t.length)return;const d=Math.floor(gm/1440);const due=L.t.filter(t=>t.d<d||(t.d===d&&hourOf()>=21));if(!due.length)return;
+  const days=[...new Set(due.map(t=>t.d))];for(const dd of days){let R=L.res.find(x=>x.d===dd);if(!R){R={d:dd,nums:lotoPick()};L.res.unshift(R);L.res=L.res.slice(0,6);}
+   for(const t of due.filter(t=>t.d===dd)){const k=t.nums.filter(n=>R.nums.includes(n)).length;const pr=k===6?1000000:k===5?2500:k===4?90:k===3?10:k===2?3:0;t.k=k;t.pr=pr;
+    if(pr){addMoney(pr,'Lotto 6/49 ('+k+' bons numéros)');toast('🎟️ 6/49 : '+k+' bons numéros! +'+cNum(pr)+' $',true);}else toast('🎟️ Tirage 6/49 : '+R.nums.join(' · ')+' — '+k+' bon'+(k>1?'s':'')+' numéro'+(k>1?'s':''),false);}}
+  L.old=(L.old||[]).concat(due).slice(-10);L.t=L.t.filter(t=>!due.includes(t));}
+{const _u=ui;ui=()=>{_u();try{lotoTick();}catch(e){console.error(e);}};}
+function lotoStop(){const n=Math.random()<.6?1:2;const s=[...at('mall.loto','pay',2,{label:'Achète des billets au kiosque de loterie',say:pick(['Un 6/49 et un gratteux, svp!','On sait jamais!','Deux gratteux, svp.'])})];
+  if(Math.random()<.65)s.push(F(()=>lotoBuy()));for(let i=0;i<n;i++)s.push(D('install',3,{label:'Gratte son billet'}),F(()=>scratch()));return s;}
+/* ---- nouvelle sortie aux Galeries ---- */
+mallOuting=function(){cnt('mall');LIFE.mallD=Math.floor(gm/1440);const A=[
+  ()=>{const buy=money>200&&Math.random()<.55;return[...at('mall.mode','browse',rnd(8,14),{label:'Magasine des vêtements chez Mode Plus',say:pick(['Ce chandail-là est beau!','Trop cher pour une chemise…'])}),...(buy?[payF(Math.round(rnd(45,90)),'Mode Plus'),F(()=>{const c=pick(['#2a8a8a','#8a2a5a','#e8c547','#3a3a3a','#d8824f']);OUTFITS.push([c,pick(['#2f4a5f','#6b4a35','#3e5a3a'])]);say(Mc,'Un nouveau chandail!');})]:[])];},
+  ()=>at('mall.livres','browse',rnd(6,10),{label:'Feuillette des livres à la librairie',say:'Le nouveau polar est sorti!'}),
+  ()=>at('mall.souliers','browse',rnd(6,10),{label:'Essaie des souliers chez Souliers & Cie'}),
+  ()=>at('mall.electr','browse',rnd(6,10),{label:'Regarde les téléphones chez Électro Éclair',say:'Le nouveau cell est beau…'}),
+  ()=>[...at('mall.jouets','browse',rnd(5,8),{label:'Regarde les jouets chez Jouets & Cie'})],
+  ()=>lotoStop(),()=>lotoStop(),
+  ()=>gachaQStop('mall'),
+  ()=>at('mall.banc','scroll',rnd(6,10),{label:'Se repose sur un banc des Galeries'})];
+ const picks=A.sort(()=>Math.random()-.5).slice(0,3);const food=pick([['f_poutine','Poutine Express','Une poutine régulière, svp!',13],['f_sushi','Sushi Zen','Un combo sushi, svp.',16],['f_pizza','Pizza Napoli','Deux pointes de pizza!',11],['f_smooth','Smoothie Bar','Un smoothie mangue!',7]]);
+ return[...busTo('S2','Attend l\'autobus pour Les Galeries'),...at('mall.fontaine','look',3,{label:'Se promène aux Galeries du Quartier',say:'Il y a du monde aujourd\'hui!'}),...picks[0](),...picks[1](),
+  ...at('mall.'+food[0],'pay',3,{label:'Commande chez '+food[1]+' à l\'aire de restauration',say:food[2]}),payF(food[3],food[1]),...at('mall.'+pick(['table','table2']),'eat',rnd(14,20),{label:'Mange à l\'aire de restauration',fx:{food:2.5,fun:.4}}),
+  ...picks[2](),...at('mall.brew','pay',2,{say:'Un latte glacé pour la route!'}),F(()=>Mc.carry='coffee'),...busHome('S2'),F(()=>{LIFE.lastOuting={kind:'aux Galeries'};})];};
+/* gashapon dans les arrêts en ville (dépanneur, arcade, quilles…) */
+{const _p=planMarcel;planMarcel=()=>{const h=hourOf(),day=Math.floor(gm/1440);if(!(LIFE.todo&&LIFE.todo.length)&&!Mc.job&&!Mc.inCar&&!LIFE.tokyo&&!flags.trip&&Mc.area==='town'&&h>=9&&h<20&&LIFE.gqD!==day&&money>30&&Math.random()<.05){LIFE.gqD=day;const a=pick(Object.keys(GQSPOTS).filter(k=>k!=='mall'));if(a)return gachaQStop(a);}return _p();};}
 /* Collection dans la fiche Tokyo + trophées */
 {const _f=tokyoHTML;tokyoHTML=()=>{const L=new Set(gOwn());const h='<div style="border:1px solid var(--trait);border-radius:12px;padding:10px 12px;margin:12px 0"><b>🥚 Collection gashapon : '+L.size+' / 60</b>'+
   GSER.map((S,si)=>{const it=GALL.filter(x=>x.s===si);const n=it.filter(x=>L.has(x.n)).length;return '<div style="margin-top:8px;font-size:.85rem"><b>'+S[1]+' '+S[0]+'</b> <span class="mut">'+n+'/10'+(n===10?' ✔':'')+'</span><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">'+
@@ -6389,13 +6486,14 @@ TROPHIES.push(['mgtri','♻️','Éco-citoyen','Réussir le tri des déchets à 
 
 /* ================= Cellulaire interactif (pause + Carte) ================= */
 const CELL={on:false,app:null,tab:'lieux',cat:'tous'};const TODO=()=>(LIFE.todo=Array.isArray(LIFE.todo)?LIFE.todo:[]);const todoFind=id=>[...mapDests(),...mapJobs(),...(typeof camMissions==='function'?camMissions():[])].find(x=>x.id===id);const todoHas=id=>TODO().some(t=>t.id===id);
-const MAPCAT={commerces:['cv','dep','boul','pharma','quinc','casse','shop','rprinc','mall','electroO','animal','garage','cafe','micro','kiosk','puces'],
+const MAPCAT={commerces:['loto','cv','dep','boul','pharma','quinc','casse','shop','rprinc','mall','electroO','animal','garage','cafe','micro','kiosk','puces'],
  nature:['walk','bench','ducks','photo','jog','quai','peche','velo','parcnat','ski','cabane','patin','trains','kayak','golf'],
  maison:['semer','arroser','recolte','poules','oeufs','kiosque','chantier','nourrir','coopb','kiob','trash','rake','mow','pelle']};
 const MAPCATS=[['tous','🗺️ Tous'],['commerces','🛍️ Commerces'],['loisirs','🎡 Loisirs'],['nature','🌳 Nature'],['maison','🏡 Maison']];
 const mapCatOf=id=>Object.keys(MAPCAT).find(k=>MAPCAT[k].includes(id))||'loisirs';
 function mapDests(){const L=[];const H=()=>hourOf();
-  const sp=[['cv','🏙️','Centre-ville en métro',()=>H()>=9&&H()<20?(money>40||'Pas assez d\'argent'):'Commerces ouverts de 9 h à 20 h',()=>{flags.outing=true;return cvOuting();}],
+  const sp=[['loto','🎟️','Loto aux Galeries',()=>H()>=9&&H()<21?(money>10||'Pas assez d\'argent'):'Kiosque ouvert de 9 h à 21 h',()=>{flags.outing=true;return[...busTo('S2','Attend l\'autobus pour Les Galeries'),...lotoStop(),...gachaQStop('mall'),...busHome('S2')];}],
+   ['cv','🏙️','Centre-ville en métro',()=>H()>=9&&H()<20?(money>40||'Pas assez d\'argent'):'Commerces ouverts de 9 h à 20 h',()=>{flags.outing=true;return cvOuting();}],
    ['metro','🚇','Balade en métro',()=>H()>=6&&H()<23?true:'Le métro roule de 6 h à 23 h',()=>{const A=nearStation(),B=pick(['erables','parc','marina','cv'].filter(k=>k!==A));return[...metroTrip(A,B),...metroTrip(B,A)];}],
    ['cine','🍿','Cinéma Le Paradis',()=>H()>=13&&H()<21?(money>40||'Pas assez d\'argent'):'Ouvert de 13 h à 21 h',()=>{flags.outing=true;return cinemaOuting();}],
    ['golf','⛳','Club de golf',()=>H()>=9&&H()<16.5?(weather==='pluie'||weather==='orage'?'Il pleut':(money>80||'Pas assez d\'argent')):'De 9 h à 16 h 30',()=>{flags.outing=true;return golfOuting();}],
@@ -7022,6 +7120,18 @@ function camHTML(){const J=jobInfo('camion'),t=Math.min(3,Math.floor(J.l/10));
   for(let i=0;i<4;i++){h+=`<div class="ch2">${CAMV[i]}${J.l>=i*10?'':' 🔒'}</div>`+camMissions().filter(d=>d.cam.tier===i).map(d=>{const ok=mapOk(d),sel=todoHas(d.id);return`<button type="button" class="crow${sel?' sel':''}${ok===true?'':' no'}" data-a="dest:${d.id}"><span>${d.cam.name}<small>${d.cam.n} arrêts · environ ${camPay(d.cam)} $</small>${ok===true?'':'<small>'+ok+'</small>'}</span><em>${sel?'✓ Dans la liste':ok===true?'Ajouter ›':''}</em></button>`;}).join('');}
   return h;}
 CAPPS.push(['camion','🚚','Camionnage','linear-gradient(135deg,#3d8bfd,#1f3a5a)']);
+CAPPS.push(['collect','🥚','Collections','linear-gradient(135deg,#ff6fa8,#c2185b)'],['loto','🎟️','Loto','linear-gradient(135deg,#f2c21a,#c98a0a)']);
+function collHTML(){const LQ=new Set(gOwnQ()),LT=new Set(gOwn());const grid=(SER,ALL,L)=>SER.map((S,si)=>{const it=ALL.filter(x=>x.s===si);const n=it.filter(x=>L.has(x.n)).length;
+   return`<div class="cinfo" style="margin-bottom:6px"><b>${S[1]} ${S[0]}</b> <span class="cmut">${n}/10${n===10?' ✔':''}</span><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">`+it.map(x=>`<span title="${x.n}" style="display:inline-grid;place-items:center;width:30px;height:30px;border-radius:8px;font-size:1.05rem;background:${L.has(x.n)?(x.r?'#ffe9a8':'#e8f0ff'):'#f2f2f2'};border:1px solid ${x.r?'#e0b020':'#d8dbe2'};${L.has(x.n)?'':'filter:grayscale(1);opacity:.3'}">${x.e}</span>`).join('')+`</div></div>`;}).join('');
+  const where=Object.keys(GQSPOTS).map(a=>INT[a]&&INT[a].name).filter(Boolean).join(', ');
+  return`<div class="cinfo"><b>🥚 Collection Québec : ${LQ.size} / 100</b><br><span class="cmut">Machines : ${where}. Chaque série a une figurine dorée plus rare.</span></div>`+grid(GSERQ,GALLQ,LQ)+`<div class="ch2">🗼 Collection Tokyo : ${LT.size} / 60</div>`+grid(GSER,GALL,LT);}
+function lotoHTML(){const L=LIFE.loto||{t:[],res:[],old:[]},St=LIFE.lotoSt||{n:0,won:0};let h=`<div class="cinfo"><b>🎟️ Loto du quartier</b><br><span class="cmut">Kiosque aux Galeries du Quartier · 6/49 à 3 $ (tirages mercredi et samedi à 21 h) · Gratteux à 2 $</span></div>`;
+  h+=`<div class="ch2">Billets 6/49 en attente</div>`+(L.t.length?L.t.map(t=>`<div class="cinfo">${t.nums.map(n=>`<b style="display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#1f5fbf;color:#fff;font-size:.75rem;margin:1px">${n}</b>`).join('')}<br><span class="cmut">Tirage du ${DAYS[((t.d%7)+7)%7].toLowerCase()} (jour ${t.d+1}) à 21 h</span></div>`).join(''):`<div class="cmut">Aucun billet. Marcel en achète parfois aux Galeries.</div>`);
+  if(L.res&&L.res.length)h+=`<div class="ch2">Derniers tirages</div>`+L.res.map(R=>`<div class="cinfo">${R.nums.map(n=>`<b style="display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e8c547;color:#1f2a35;font-size:.75rem;margin:1px">${n}</b>`).join('')}<br><span class="cmut">${DAYS[((R.d%7)+7)%7]} (jour ${R.d+1})</span></div>`).join('');
+  if(L.old&&L.old.length)h+=`<div class="ch2">Résultats de Marcel</div>`+L.old.slice().reverse().map(t=>`<div class="cinfo">${t.nums.join(' · ')} — <b>${t.k||0} bon${(t.k||0)>1?'s':''} numéro${(t.k||0)>1?'s':''}</b>${t.pr?` · <span style="color:#2e7d32">+${cNum(t.pr)} $</span>`:''}</div>`).join('');
+  h+=`<div class="ch2">Gratteux</div><div class="cinfo">${St.n} gratteux grattés · ${St.won} $ gagnés · bilan ${St.won-St.n*2>=0?'+':''}${St.won-St.n*2} $</div>`;return h;}
+{const _cr5=cellRender;cellRender=function(){if(CELL.app!=='collect'&&CELL.app!=='loto')return _cr5();const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent=CELL.app==='loto'?'Loto':'Collections';const keep=B.scrollTop;let h='';try{h=CELL.app==='loto'?lotoHTML():collHTML();}catch(e){console.error(e);}B.innerHTML=h;B.scrollTop=keep;};}
+
 {const _cr4=cellRender;cellRender=function(){if(CELL.app!=='camion')return _cr4();
   const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent='Camionnage';const keep=B.scrollTop;let h='';try{h=camHTML();}catch(e){console.error(e);}B.innerHTML=h;B.scrollTop=keep;};}
 {const _u6=ui;ui=()=>{_u6();try{if(MCAR.trk!=null&&!(Mc.job&&Mc.job.id==='camion'))parkSwap(false);}catch(e){}};}
