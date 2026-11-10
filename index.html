@@ -796,7 +796,7 @@ function regDoor(key,b,lx,dy=.12){const local=new V3(lx,0,b.d/2);const wpos=loca
 function windowSet(p,x,y,z,w,h,lit=true,frame='#f1ece2'){const fm=M(frame,{r:.6});bx(p,fm,w+.16,h+.16,.1,x,y-.08,z);const gl=new THREE.Mesh(new THREE.BoxGeometry(w,h,.06),lit&&Math.random()<.75?winMat:winDark);gl.position.set(x,y+h/2,z+.04);p.add(gl);
   bx(p,fm,.05,h,.08,x,y,z+.06);bx(p,fm,w,.05,.08,x,y+h/2-.025,z+.06);bx(p,fm,w+.3,.06,.18,x,y-.12,z+.08);}
 function bungalow(key,x,z,face,o){const w=o.w||11,d=o.d||9,H=3;const b=placeB(key,x,z,face,w,d,H+2.6);const p=b.g;
-  const sid=M('#ffffff',{map:TX.siding(o.col),r:.85});const fnd=M('#8d8a84',{map:TX.concrete,r:1});
+  const sid=M('#ffffff',{map:TX.siding(o.col),r:.85});b.sidM=sid;const fnd=M('#8d8a84',{map:TX.concrete,r:1});
   bx(p,fnd,w+.2,.5,d+.2,0,0,0,0,2);bx(p,sid,w,H,d,0,.5,0,0,4);
   const rm=M('#ffffff',{map:TX.shingle(o.roof||'#3f3a40','#4a454c'),r:.9});
   const gab=new THREE.Mesh(prism(w,d,2.4),sid);gab.position.y=H+.5;p.add(gab);b.gab=gab;
@@ -1841,7 +1841,7 @@ spot(INT.casse,'comptoir',.5,-.78,PI);
 // ---- Lieux hors de la ville : autoroute, plage, campagne
 const OUTD={route:1,plage:1,campagne:1,ski:1,cabane:1,parcnat:1,aeroport:1,tokyo:1,harajuku:1,akiba:1,odaiba:1};
 function farArea(key,name,z0,w,d){const I=interior(key,null,w,d,0,{name});I.outdoor=true;I.origin.set(0,0,z0);I.g.position.copy(I.origin);I.obs=[];return I;}
-const propMC=[];function propCar(par,x,z,ry){const g=grp(par,x,0,z,ry);carBody(g,'#7d8794','berline');propMC.push(g);return g;}
+const propMC=[];function propCar(par,x,z,ry){const g=grp(par,x,0,z,ry);carBody(g,'#7d8794','berline');g.children.forEach(c=>c.userData.cb=1);propMC.push(g);return g;}
 // autoroute
 // ---- Boutique Pêche & Plein Air
 {const I=interior('peche','peche',10,8,0,{name:'Pêche & Plein Air'});const r=I.root;room(I,M('#ffffff',{map:TX.wood,r:.6}),'#dfe6d4',{backWins:[],sideWins:[]});
@@ -2616,7 +2616,7 @@ function dLamps(I,xs,zs){I.glows=I.glows||[];for(const x of xs)for(const z of zs
    const sgm=new THREE.Mesh(new THREE.PlaneGeometry(7,1.6),signMat(z<0?'AUTOROUTE 40 · SORTIE 42':'PLAGE 18 KM · CAMPAGNE 12 KM','#1f6a3a','#ffffff',1024,224,'800 66px "Atkinson Hyperlegible", sans-serif'));sgm.position.set(-4.2,7,-.2);sgm.rotation.y=PI;gt.add(sgm);gt.position.z=z;add(gt,z);}
  for(let i=0;i<5;i++){const f=new THREE.Mesh(new THREE.BoxGeometry(rnd(20,40),.03,rnd(30,60)),M(pick(['#c9b04a','#8aaa4a','#a8885a']),{r:1}));f.position.set((i%2?1:-1)*rnd(50,80),0,rnd(-200,200));add(f,f.position.z);}
  const others=[];for(let i=0;i<4;i++){const c=new THREE.Group();carBody(c,pick(['#c8473b','#3b6fb6','#e0c35a','#d9dde3']));const opp=i<2;c.position.set(opp?(i?6.4:2.6):-6.4,.04,i*100-150);c.rotation.y=opp?PI:0;g.add(c);others.push({m:c,opp,v:opp?-30:2});}
- const mc=propCar(g,-2.6,0,0);const dh=new THREE.Mesh(new THREE.SphereGeometry(.12,10,8),M('#f0c29e'));dh.position.set(.38,1.18,-.15);mc.add(dh);
+ const mc=propCar(g,-2.6,0,0);I.mc=mc;const dh=new THREE.Mesh(new THREE.SphereGeometry(.12,10,8),M('#f0c29e'));dh.position.set(.38,1.18,-.15);mc.add(dh);
  const hl=new THREE.SpotLight(0xfff0d0,0,45,.5,.6,1.5);hl.position.set(-2.6,.7,2.2);hl.target.position.set(-2.6,0,14);g.add(hl);g.add(hl.target);I.hl=hl;
  I.scen=scen;I.others=others;spot(I,'car',-2.6,0,0);}
 // plage
@@ -3589,9 +3589,9 @@ function tokDebtTick(){if(!LIFE.tokDebt)return;if(money>=0){LIFE.tokDebt=false;s
 function tokCanBook(){const s=LIFE.tokS||0;return s>=TOKPRIX||money-(TOKPRIX-s)>=1200;}
 function tokyoChoice(){const day=Math.floor(gm/1440);LIFE.tokAsk=day+3;LIFE.tokOffD=day;const s=LIFE.tokS||0,manque=Math.max(0,(TOKPRIX-s)-Math.max(0,money));
   return choiceSteps(s>=TOKPRIX?'Marcel a économisé 1500 $! Réserver son voyage de 6 jours à Tokyo?':manque>0?'Offre spéciale : 6 jours à Tokyo pour 1500 $! Il manque '+manque+' $ à Marcel… Partir quand même à crédit?':'Offre spéciale : 6 jours à Tokyo pour 1500 $! Réserver le voyage?',[
-   {t:'✈️ Oui, réserver Tokyo!',sub:manque>0?'Solde négatif : 50 $ d\'intérêts par jour jusqu\'au remboursement':'Avion + Hôtel Sakura · départ dans 2 jours',fn:()=>{const s2=LIFE.tokS||0;if(s2<TOKPRIX)addMoney(-(TOKPRIX-s2),'Voyage à Tokyo (avion + hôtel)');if(money<0){LIFE.tokDebt=true;LIFE.intD=Math.floor(gm/1440);setTask('💳 Voyage payé à crédit : '+(-money)+' $ à rembourser, 50 $ d\'intérêts par jour');}LIFE.tokS=Math.max(0,s2-TOKPRIX);LIFE.tokDep=Math.floor(gm/1440)+2;setTask('✈️ Voyage à Tokyo réservé : départ dans 2 jours!');
+   {t:'✈️ Oui, réserver Tokyo!',sub:manque>0?'Solde négatif : 50 $ d\'intérêts par jour jusqu\'au remboursement':'Avion + Hôtel Sakura · départ dans 2 jours',fn:()=>{const s2=LIFE.tokS||0;if(s2<TOKPRIX)addMoney(-(TOKPRIX-s2),'Voyage à Tokyo (avion + hôtel)');if(money<0){LIFE.tokDebt=true;LIFE.intD=Math.floor(gm/1440);setTask('💳 Voyage payé à crédit : '+(-money)+' $ à rembourser, 50 $ d\'intérêts par jour');}LIFE.tokS=Math.max(0,s2-TOKPRIX);LIFE.tokDep=Math.floor(gm/1440)+2;setTask('✈️ Voyage à Tokyo réservé : départ dans 2 jours!');toast('✈️ Voyage à Tokyo payé : 1500 $ (avion + hôtel)'+(s2>0?' · dont '+Math.min(s2,TOKPRIX)+' $ de l\'épargne':''),true);
      return[D('text',2,{label:'Réserve son voyage à Tokyo sur son cell',say:'C\'est réservé! Tokyo, me voilà!'}),D('call',3,{label:'Appelle Maman pour lui annoncer son voyage',say:'Maman, je pars à Tokyo! Peux-tu nourrir le chat?'})];}},
-   {t:'Plus tard',sub:'Garder ses sous pour l\'instant',none:1}],{a:'scroll',phone:{feed:1},label:'Regarde des vols pour Tokyo sur son cell'});}
+   {t:'Plus tard',sub:'Garder ses sous pour l\'instant',none:1}],{a:'scroll',phone:{feed:1},label:'Regarde des vols pour Tokyo sur son cell',autoNone:true,noneP:1});}
 function exitHotel(){return Mc.area==='hotel'?[{t:'warp',dest:'tokyo',spot:'hotel',label:'Sort de l\'Hôtel Sakura'}]:[];}
 function metroRide(from,to,nom){return[tr('tokyo.'+from,{label:'Descend dans le métro'}),{t:'warp',dest:'metro',spot:'siege',label:'Prend le métro de Tokyo'},...at('metro.siege','look',rnd(6,10),{label:'Voyage en métro jusqu\'à '+nom,warp:2,say:pick(['C\'est tellement propre!','Tout le monde est silencieux…','Le métro est pile à l\'heure!'])}),{t:'warp',dest:'tokyo',spot:to,label:'Remonte à la surface : '+nom}];}
 const TK={
@@ -4622,7 +4622,7 @@ function runChar(ch,dt){
     const B=step.B,p=B.g.position;Mc.pos={x:p.x,z:p.z};Mc.yaw=Mc.tyaw=B.hd||0;ch.pose='sit';ch.act='bus';
     if(B.atStop===step.to&&B.dwell>0){Mc.inBus=false;Mc.pos={x:dst.walk[0],z:dst.walk[1]};Mc.node=nk(dst.walk[0],dst.walk[1]);Mc.back=[];ch.pose='stand';ch.act=null;SFX.door();setTask('Descend de l\'autobus à l\'arrêt '+dst.nom);ch.q.shift();}
     return .5;}
-  if(step.t==='drive'){const arr=[];if(!Mc.inCar){if((LIFE.snowD||0)>.35&&!(OWN.tempo&&MCAR.at==='home')&&!flags.brushed){flags.brushed=true;arr.push(tr('town.car_'+MCAR.at),D('install',4,{label:'Déneige et gratte son auto',say:pick(['Maudit hiver!','Le pare-brise est tout glacé…'])}));}if(OWN.car_demarreur&&[10,11,0,1,2].includes(MON())&&Math.random()<.6)arr.push(D('text',1,{label:'Démarre son auto à distance avec son cell',say:'Elle va être toute réchauffée!'}));arr.push(tr('town.car_'+MCAR.at));if(!flags.flat&&skLv('conduite')<40&&Math.random()<.05){flags.flat=true;arr.push(D('look',1,{label:'Découvre un pneu crevé',say:'Voyons… un pneu à plat!'}),D('install',22,{label:'Change son pneu crevé',warp:3,say:'Bon, la roue de secours…'}));}arr.push({t:'getin'});}arr.push({t:'cardrive',to:step.to});if(!step.keep)arr.push({t:'getout'});ch.q.splice(0,1,...arr);return 1;}
+  if(step.t==='drive'){const arr=[];if(!Mc.inCar){if((LIFE.snowD||0)>.35&&!((OWN.tempo||OWN.r_garage)&&MCAR.at==='home')&&!flags.brushed){flags.brushed=true;arr.push(tr('town.car_'+MCAR.at),D('install',4,{label:'Déneige et gratte son auto',say:pick(['Maudit hiver!','Le pare-brise est tout glacé…'])}));}if(OWN.car_demarreur&&[10,11,0,1,2].includes(MON())&&Math.random()<.6)arr.push(D('text',1,{label:'Démarre son auto à distance avec son cell',say:'Elle va être toute réchauffée!'}));arr.push(tr('town.car_'+MCAR.at));if(!flags.flat&&skLv('conduite')<40&&Math.random()<.05){flags.flat=true;arr.push(D('look',1,{label:'Découvre un pneu crevé',say:'Voyons… un pneu à plat!'}),D('install',22,{label:'Change son pneu crevé',warp:3,say:'Bon, la roue de secours…'}));}arr.push({t:'getin'});}arr.push({t:'cardrive',to:step.to});if(!step.keep)arr.push({t:'getout'});ch.q.splice(0,1,...arr);return 1;}
   if(step.t==='getin'){Mc.inCar=true;RADIO=null;MCAR.driver.visible=true;if(VIS_AREA==='town')SFX.door();ch.act=null;ch.q.shift();return 1;}
   if(step.t==='getout'){Mc.inCar=false;MCAR.driver.visible=false;MCAR.driving=false;const Pk=PARKS[MCAR.at];if(Pk&&Pk.door){Mc.pos={x:Pk.door[0],z:Pk.door[1]};}Mc.node=Pk&&Pk.node&&NODES[nk(Pk.node[0],Pk.node[1])]?nk(Pk.node[0],Pk.node[1]):nearestNode(Mc.pos.x,Mc.pos.z);Mc.back=Pk&&Pk.walk?[...Pk.walk].reverse().slice(1):[];if(VIS_AREA==='town')SFX.door();ch.q.shift();return 1;}
   if(step.t==='cardrive'){if(!step.pts){step.pts=carPath(PARKS[MCAR.at],PARKS[step.to]);MCAR.driving=true;MCAR.v=0;}
@@ -4650,8 +4650,8 @@ function runChar(ch,dt){
         chooseShot();shot.cut=true;}return .5;}
     fade.style.opacity=1-clamp(el/.6,0,1);if(el>.6){fade.style.opacity=0;ch.q.shift();}return .5;}
   if(step.t==='highway'){if(!step.st){step.st=1;step.r0=tReal;}const el=tReal-step.r0;const fade=$('fondu');const D2=step.dest;
-    if(step.ph==null){fade.style.opacity=clamp(el/.6,0,1);if(el>.6){step.ph=1;step.r0=tReal;MCAR.away=true;placeMcar();setArea(Mc,'route');Mc.pos={x:-2.6,z:0};Mc.yaw=Mc.tyaw=0;Mc.inCar=true;shot={type:'auto',t:0,dur:5,seed:.3,cut:true,ctx:''};}return .5;}
-    if(step.ph===1){fade.style.opacity=1-clamp(el/.6,0,1);if(el>13){step.ph=2;step.r0=tReal;}return 3;}
+    if(step.ph==null){fade.style.opacity=clamp(el/.6,0,1);if(el>.6){step.ph=1;step.r0=tReal;MCAR.away=true;placeMcar();try{routeVeh();}catch(e){}setArea(Mc,'route');Mc.pos={x:-2.6,z:0};Mc.yaw=Mc.tyaw=0;Mc.inCar=true;shot={type:'auto',t:0,dur:5,seed:.3,cut:true,ctx:''};}return .5;}
+    if(step.ph===1){fade.style.opacity=1-clamp(el/.6,0,1);if(el>(step.dur||13)){step.ph=2;step.r0=tReal;}return step.rate||3;}
     if(step.ph===2){fade.style.opacity=clamp(el/.6,0,1);if(el>.6&&!(D2==='town'&&VEH.some(o=>o.id!=='m'&&Math.hypot(o.x-146,o.z-28)<16))){fade.style.opacity=1;
         if(D2==='town'){setArea(Mc,'town');MCAR.away=false;MCAR.x=146;MCAR.z=28;MCAR.yaw=-PI/2;MCAR.at='hwIn';placeMcar();Mc.pos={x:MCAR.x,z:MCAR.z};Mc.inCar=true;MCAR.driver.visible=true;}
         else{setArea(Mc,D2);const sp5=INT[D2].spots.car;Mc.pos={x:sp5.x,z:sp5.z};Mc.inCar=false;Mc.room='main';Mc.back=[];Mc.pose='stand';Mc.act=null;}
@@ -6501,7 +6501,7 @@ TROPHIES.push(['mgtri','♻️','Éco-citoyen','Réussir le tri des déchets à 
  ['mggazon','🌱','Pelouse de golf','Tondre la pelouse à la perfection',()=>C_('mg_tondre')>=1]);
 
 /* ================= Cellulaire interactif (pause + Carte) ================= */
-const CELL={on:false,app:null,tab:'lieux',cat:'tous'};const TODO=()=>(LIFE.todo=Array.isArray(LIFE.todo)?LIFE.todo:[]);const todoFind=id=>[...mapDests(),...mapJobs(),...(typeof camMissions==='function'?camMissions():[])].find(x=>x.id===id);const todoHas=id=>TODO().some(t=>t.id===id);
+const CELL={on:false,app:null,tab:'lieux',cat:'tous'};const TODO=()=>(LIFE.todo=Array.isArray(LIFE.todo)?LIFE.todo:[]);const todoFind=id=>[...mapDests(),...mapJobs(),...(typeof camMissions==='function'?camMissions():[]),...(typeof projMissions==='function'?projMissions():[])].find(x=>x.id===id);const todoHas=id=>TODO().some(t=>t.id===id);
 const MAPCAT={commerces:['loto','cv','dep','boul','pharma','quinc','casse','shop','rprinc','mall','electroO','animal','garage','cafe','micro','kiosk','puces'],
  nature:['walk','bench','ducks','photo','jog','quai','peche','velo','parcnat','ski','cabane','patin','trains','kayak','golf'],
  maison:['semer','arroser','recolte','poules','oeufs','kiosque','chantier','nourrir','coopb','kiob','trash','rake','mow','pelle']};
@@ -6550,7 +6550,7 @@ function cellRender(){const scr=document.querySelector('.cscr'),B=$('cBody');$('
     {const L=TODO();h+=L.length?`<div class="cban" style="display:block"><b>📋 À faire (${L.length})</b><span class="cmut"> · dans l'ordre, rien n'est oublié</span>`+L.map((t,i)=>{const d=todoFind(t.id);const r=d?mapOk(d):'Indisponible';return`<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:3px 0"><span>${i+1}. ${d?(d.e||'')+' '+d.n:t.id}${r===true?'':'<small class="cmut"> · attend : '+r+'</small>'}</span><button type="button" data-a="rm:${t.id}">✕</button></div>`;}).join('')+`</div>`:`<div class="cmut" style="margin:4px 0 8px">Touche des lieux pour les ajouter à la liste de Marcel. Il les fait un à un, dès qu'il a fini son activité en cours (<b>${(($('now').textContent)||'').slice(0,60)}</b>).</div>`;}
     h+=list.map(d=>{const ok=mapOk(d);const sel=todoHas(d.id);const sub=d.J?cNum(Math.round(d.J.r*(1+.02*jobInfo(d.J.id).l)))+' $/h · niveau '+jobInfo(d.J.id).l:'';return`<button type="button" class="crow${sel?' sel':''}${ok===true?'':' no'}" data-a="dest:${d.id}"><span>${d.e} ${d.n}${ok===true?(sub?'<small>'+sub+' · quart de 2 à 4 h</small>':''):'<small>'+ok+'</small>'}</span><em>${sel?'✓ Dans la liste':ok===true?'Ajouter ›':''}</em></button>`;}).join('')||'<div class="cmut">Aucun lieu dans cette catégorie.</div>';}
   else if(app==='banque'){const tot=fixTotal();h=`<div class="cmut" style="text-align:center">Solde du compte chèques</div><div class="cgros" style="color:${money<0?'#c0392b':'#1f8a4c'}">${cNum(money)} $</div>
-    <div class="ch2">🧾 Dépenses fixes</div><div class="cmut" style="margin-bottom:6px">Prélevées aux 7 jours. Prochain prélèvement : <b>${nextBillTxt()}</b>.</div><div class="cinfo">`+FIXED.map(x=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0"><span>${x.e} ${x.n}</span><b>−${Math.round(x.v())} $</b></div>`).join('')+`<div style="display:flex;justify-content:space-between;border-top:1px solid #e3dfd2;margin-top:4px;padding-top:5px"><b>Total par semaine</b><b style="color:#c0392b">−${tot} $</b></div></div>`;
+    <div class="ch2">🧾 Dépenses fixes</div><div class="cmut" style="margin-bottom:6px">Prélevées aux 7 jours. Prochain prélèvement : <b>${nextBillTxt()}</b>.</div><div class="cinfo">`+FIXED.filter(x=>Math.round(x.v())>0).map(x=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0"><span>${x.e} ${x.n}</span><b>−${Math.round(x.v())} $</b></div>`).join('')+`<div style="display:flex;justify-content:space-between;border-top:1px solid #e3dfd2;margin-top:4px;padding-top:5px"><b>Total par semaine</b><b style="color:#c0392b">−${tot} $</b></div></div>`;
     const FL=LIFE.fixLog||[];if(FL.length)h+=`<div class="ch2">Derniers prélèvements</div>`+FL.slice(0,4).map(f=>`<div class="crow" style="cursor:default"><span>${f.date.split(' · ')[0]}<small>${f.neg?'Solde négatif après le prélèvement':'Payé'}</small></span><em class="neg">−${f.tot} $</em></div>`).join('');
     h+=`<div class="ch2">Transactions récentes</div>`+(MLOG.length?MLOG.slice(0,8).map(m=>`<div class="crow" style="cursor:default"><span>${m[1]}<small>${m[0]}</small></span><em class="${m[2]<0?'neg':''}">${m[2]>0?'+':''}${cNum(m[2])} $</em></div>`).join(''):'<div class="cmut">Aucune transaction récente</div>');}
   else if(app==='agenda'){agSync();const dn=dayN(),ev={3:'Bingo de la paroisse · 18 h',6:'Souper chez Maman · 17 h'};h=`<div class="cmut" style="margin-bottom:6px">Les 7 prochains jours</div>`;
@@ -7150,6 +7150,275 @@ function lotoHTML(){const L=LIFE.loto||{t:[],res:[],old:[]},St=LIFE.lotoSt||{n:0
 
 {const _cr4=cellRender;cellRender=function(){if(CELL.app!=='camion')return _cr4();
   const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent='Camionnage';const keep=B.scrollTop;let h='';try{h=camHTML();}catch(e){console.error(e);}B.innerHTML=h;B.scrollTop=keep;};}
+/* ================= v105 : permis de camion, contrats spéciaux, gros projets, vitrine gashapon, statistiques ================= */
+const V105={};
+/* ---------- suivi des statistiques ---------- */
+const STT=()=>LIFE.st||(LIFE.st={earn:0,spend:0,kmT:0,kmC:0,best:0,lots:0,since:dayN()});
+{const _am=addMoney;addMoney=function(v,l){const S=STT();const r=Math.round(v);if(r>0){S.earn+=r;if(r>S.best)S.best=r;}else S.spend-=r;return _am(v,l);};}
+{const _cf=chargeFixed;chargeFixed=function(){const tot=fixTotal();STT().spend+=tot;const r=_cf();const Lc=LIFE.carLoan;if(Lc){Lc.left--;Lc.paid=(Lc.paid||0)+Lc.pay;if(Lc.left<=0){LIFE.carLoan=null;cnt('autopayee');setTimeout(()=>toast('🚗 Dernier paiement : l\'auto est entièrement payée!',true),1800);}}return r;};}
+{const _uf=useFuel;useFuel=function(d){if(d>0){const S=STT();if(MCAR.trk==null)S.kmC+=d/1000;else S.kmT+=d/1000;}return _uf(d);};}
+
+/* ---------- 🪪 Permis de conduire (classe 5 → 3 → 1) ---------- */
+const PERMS=[{c:5,n:'Classe 5',d:'Auto et camions légers : fourgonnette et camion 16 pieds'},
+ {c:3,n:'Classe 3',d:'Camions porteurs lourds : le camion 10 roues',lv:15,prix:1900,les:3,ex:120,veh:2},
+ {c:1,n:'Classe 1',d:'Tracteur avec semi-remorque',lv:25,prix:4200,les:4,ex:150,veh:3,need:3}];
+const permLegacy=()=>{const l=jobInfo('camion').l,P={5:{ok:1}};if(l>=20)P[3]={ok:1,paid:1,les:3,mig:1};if(l>=30)P[1]={ok:1,paid:1,les:4,mig:1};return P;};
+const PERM=()=>LIFE.perm||(LIFE.perm={5:{ok:1}});
+const PST=c=>PERM()[c]||(PERM()[c]={ok:0,paid:0,les:0,fail:0});
+const hasPerm=c=>c===5||!!(PERM()[c]&&PERM()[c].ok);
+const tierPerm=t=>t>=3?1:t>=2?3:5;
+const camMaxTier=()=>{const l=jobInfo('camion').l;let t=0;for(let i=1;i<4;i++)if(l>=i*10&&hasPerm(tierPerm(i)))t=i;return t;};
+function permLesson(P){const tier=P.veh,S=PST(P.c),k=S.les+1;const s=[];s.dyn=1;
+  s.push({t:'drive',to:'deppark',label:'Se rend au centre de formation de Transport Boréal'});
+  s.push(tr('town.dep_office',{label:'Rencontre son instructeur'}),D('talk',4,{label:'Cours '+k+'/'+P.les+' · '+P.n+' : écoute les consignes de l\'instructeur',say:pick(['Bonjour! Je suis prêt pour mon cours.','On travaille quoi aujourd\'hui?','J\'ai révisé mes angles morts!'])}));
+  s.push(D('scan',3,{label:pick(['Révise la vérification avant départ','Apprend à lire la fiche de ronde de sécurité','Révise les freins à air et les signaux'])}));
+  s.push(F(()=>{parkSwap(true,tier);}),tr('town.car_depot',{label:'Monte dans le camion-école avec l\'instructeur'}),D('look',3,{label:'Ajuste ses miroirs et boucle sa ceinture',say:'Miroirs… ceinture… frein de stationnement.'}));
+  const pool=['usine','quai','gas','hopital','ecole','garage','rprinc','eglise'].sort(()=>Math.random()-.5).slice(0,2);
+  pool.forEach((k2,i)=>s.push({t:'drive',to:k2,keep:1,label:'Cours pratique : conduit le '+CAMV[tier].toLowerCase()+' jusqu\'à '+CAMD[k2][0]},D('look',2,{label:i?'Pratique un virage serré avec l\'instructeur':'Pratique une marche arrière avec l\'instructeur',say:pick(['Doucement…','Je surveille mes miroirs.','Ouf, ça passe!'])})));
+  s.push({t:'drive',to:'depot',label:'Revient au dépôt avec l\'instructeur'});
+  s.push(F(()=>{parkSwap(false);}),tr('town.dep_office',{label:'Fait le bilan du cours'}),D('talk',3,{label:'Écoute les commentaires de l\'instructeur',say:pick(['Merci pour les conseils!','Je m\'améliore!','La prochaine fois, je vais mieux faire mes virages.'])}));
+  s.push(F(()=>{const S2=PST(P.c);S2.les=Math.min(P.les,S2.les+1);S2.lesD=dayN();addJobXP('camion',6);cnt('coursPermis');toast('🪪 '+P.n+' · cours '+S2.les+'/'+P.les+' terminé'+(S2.les>=P.les?' : prêt pour l\'examen!':''),true);}));
+  s.push({t:'drive',to:'home',label:'Rentre à la maison en auto'});return s;}
+function permExam(P){const tier=P.veh;const s=[];s.dyn=1;
+  s.push({t:'drive',to:'deppark',label:'Se rend à son examen de conduite '+P.n});
+  s.push(tr('town.dep_office',{label:'Se présente à l\'évaluateur de la SAAQ'}),payF(P.ex,'Examen SAAQ · '+P.n),D('type',6,{label:'Examen théorique à l\'ordinateur ('+P.n+')',say:'Concentre-toi, Marcel…'}));
+  s.push(F(()=>{parkSwap(true,tier);}),tr('town.car_depot',{label:'Fait la ronde de sécurité devant l\'évaluateur'}),D('squat',3,{label:'Vérifie pneus, freins et feux devant l\'évaluateur'}));
+  const pool=['usine','quai','hopital','ecole','eglise'].sort(()=>Math.random()-.5).slice(0,2);
+  pool.forEach(k2=>s.push({t:'drive',to:k2,keep:1,label:'Examen pratique : conduit le '+CAMV[tier].toLowerCase()+' jusqu\'à '+CAMD[k2][0]}));
+  s.push({t:'drive',to:'depot',label:'Revient au dépôt pour le verdict'});
+  const res={};
+  s.push(F(()=>{parkSwap(false);const S=PST(P.c);const l=jobInfo('camion').l;const p=Math.min(.95,.62+.12*(S.fail||0)+.015*Math.max(0,l-P.lv)+(skLv('conduite')>=20?.08:0));res.ok=Math.random()<p;}));
+  s.push(tr('town.dep_office',{label:'Attend le verdict de l\'évaluateur'}),D('talk',3,{label:'Écoute le verdict de l\'évaluateur'}));
+  s.push(F(()=>{const S=PST(P.c);if(res.ok){S.ok=1;S.okD=fmtDay();cnt('permis');addJobXP('camion',20);toast('🎉 Permis '+P.n+' obtenu! Nouveau véhicule : '+CAMV[P.veh],true);say(Mc,'YES! J\'ai mon permis '+P.n.toLowerCase()+'!',4);try{SFX.cash();}catch(e){}}
+    else{S.fail=(S.fail||0)+1;toast('😕 Examen '+P.n+' échoué. Il peut le reprendre (frais de '+P.ex+' $).',false);say(Mc,pick(['Ah non… j\'ai raté un arrêt obligatoire.','Maudit! Mon virage à droite était trop large.','La prochaine fois, c\'est la bonne.']),4);}}));
+  s.push({t:'drive',to:'home',label:'Rentre à la maison en auto'});return s;}
+function permMissions(){const L=[],l=jobInfo('camion').l,h=hourOf();
+  for(const P of PERMS){if(!P.les||hasPerm(P.c))continue;const S=PERM()[P.c]||{};
+    const pre=()=>{if(P.need&&!hasPerm(P.need))return'Permis classe '+P.need+' requis d\'abord';if(l<P.lv)return'Niveau '+P.lv+' requis en camionnage';return true;};
+    if(!S.paid)L.push({id:'perm_'+P.c+'_ins',e:'🪪',n:'Inscription · formation '+P.n,perm:P,step:'ins',sub:P.prix+' $ · '+P.les+' cours pratiques inclus',ok:()=>{const r=pre();if(r!==true)return r;if(h<8||h>=17)return'Le centre de formation est ouvert de 8 h à 17 h';if(money<P.prix)return'Il manque '+cNum(P.prix-money)+' $';return true;},
+      go:()=>[{t:'drive',to:'deppark',label:'Se rend au centre de formation de Transport Boréal'},tr('town.dep_office',{label:'S\'inscrit à la formation '+P.n}),D('text',4,{label:'Remplit le formulaire d\'inscription '+P.n,say:'Allez, on monte d\'un cran!'}),payF(P.prix,'Formation '+P.n),F(()=>{PST(P.c).paid=1;cnt('formation');toast('🪪 Inscrit à la formation '+P.n+' : '+P.les+' cours pratiques à faire',true);}),{t:'drive',to:'home',label:'Rentre à la maison en auto'}]});
+    else if((S.les||0)<P.les)L.push({id:'perm_'+P.c+'_les',e:'🧑‍🏫',n:'Cours de conduite '+P.n+' ('+((S.les||0)+1)+'/'+P.les+')',perm:P,step:'les',sub:'Avec un instructeur, dans le '+CAMV[P.veh].toLowerCase(),ok:()=>{const r=pre();if(r!==true)return r;if(h<7||h>=16)return'Cours donnés de 7 h à 16 h';if(PST(P.c).lesD===dayN())return'Un cours par jour : demain!';return true;},go:()=>{flags.jobOff=true;return permLesson(P);}});
+    else L.push({id:'perm_'+P.c+'_ex',e:'📝',n:'Examen SAAQ · '+P.n,perm:P,step:'ex',sub:'Théorique et pratique · '+P.ex+' $'+(S.fail?' · tentative '+(S.fail+1):''),ok:()=>{const r=pre();if(r!==true)return r;if(h<8||h>=15)return'Examens de 8 h à 15 h';if(money<P.ex)return'Il manque '+cNum(P.ex-money)+' $';return true;},go:()=>{flags.jobOff=true;return permExam(P);}});}
+  return L;}
+
+/* ---------- 🚚 Contrats spéciaux ---------- */
+const CAMSP=[{k:'dem',tier:1,e:'📦',name:'Déménagement résidentiel',kind:'dem',trips:3,base:240,h:[7,14],sub:'Une famille déménage dans le quartier'},
+ {k:'demb',tier:2,e:'🏢',name:'Déménagement de bureaux',kind:'demb',trips:4,base:380,h:[7,14],sub:'Des bureaux de l\'est vers le centre'},
+ {k:'nuit',tier:1,e:'🌙',name:'Livraison de nuit',kind:'nuit',n:4,h:[20,22.5],sub:'Commerces livrés quand les rues sont vides · prime de nuit'},
+ {k:'sher',tier:2,e:'⛰️',name:'Longue route : Sherbrooke',kind:'long',dest:'Sherbrooke',km:160,base:470,h:[6,12],sub:'Environ 2 h de route chaque sens'},
+ {k:'qc',tier:2,e:'🏰',name:'Longue route : Québec',kind:'long',dest:'Québec',km:250,base:640,h:[6,11],sub:'Environ 3 h de route chaque sens'},
+ {k:'qc1',tier:3,e:'🚛',name:'Semi-remorque : Québec',kind:'long',dest:'Québec',km:250,base:900,h:[6,11],sub:'Une remorque pleine pour le centre de distribution'}];
+const julyMove=()=>{const D0=DATE(),m=D0.getMonth(),d=D0.getDate();return(m===5&&d>=26)||(m===6&&d<=3);};
+const spPay=m=>Math.round((m.kind==='nuit'?(45+16*m.n)*CAMX[m.tier]*1.5:m.base)*(1+.02*jobInfo('camion').l)*((m.kind==='dem'||m.kind==='demb')&&julyMove()?1.6:1));
+function jobShell(name,pay){const JOB={t:'Camionnage',id:'camion',pay,start:0,end:0,done:[],cur:'Arrive au dépôt',hrs:0,st:-1,stages:0};return JOB;}
+function spGo(m){const tier=m.tier,L=TLEN[tier],pay0=spPay(m);if(m.kind==='nuit'){const s=camGo({k:'sp_nuit',tier,name:m.name,n:m.n,pool:['sud','gas','centre','rprinc','quai','poste','animal','quilles']});s.splice(s.length-1,0,F(()=>{addMoney(pay0-camPay({tier,n:m.n}),'Prime de nuit (camionnage)');cnt('camNuit');}));return s;}
+  const s=[];s.dyn=1;let NS=0;const JOB=jobShell(m.name,pay0);const cur=t=>{NS++;return F(()=>{if(Mc.job){Mc.job.cur=t;Mc.job.st++;}});};
+  const setSpots=()=>{const xr=50-L/2,xf=50+L/2;townSpot('dep_front',[35.5,188.5],[[37.6,188.5],[37.6,187.4],[xf-1.3,188.0]],0);townSpot('dep_rear',[35.5,188.5],[[37.6,188.5],[37.6,187.4],[xr-1.1,187.4],[xr-1.1,190]],PI/2);};
+  s.push({t:'drive',to:'deppark',label:'Se rend au dépôt Transport Boréal'});
+  s.push(F(()=>{JOB.start=gm;JOB.end=gm+(m.kind==='long'?900:600);Mc.job=JOB;}));
+  s.push(tr('town.dep_office',{label:'Va chercher son contrat spécial'}),D('scan',4,{label:'Lit son contrat : '+m.name.toLowerCase(),say:m.kind==='long'?'Grosse journée de route aujourd\'hui!':'Un contrat spécial, ça paye bien!'}));
+  s.push(F(()=>{parkSwap(true,tier);setSpots();}),cur('Inspection avant départ'),tr('town.dep_front',{label:'Fait le tour du véhicule'}),D('squat',3,{label:'Vérifie les pneus et les freins'}),tr('town.dep_rear',{label:'Va à l\'arrière du véhicule'}),D('look',2,{label:'Vérifie les feux et les portes'}));
+  if(getFuel(tier)<.85)s.push(cur('Plein de carburant'),{t:'drive',to:'dpump',label:'Va à la pompe du dépôt'},tr('town.dep_pompe',{label:'Va à la pompe'}),D('fuel',5,{label:'Fait le plein (carte de l\'entreprise)'}),F(()=>{setFuel(1,tier);}));
+  if(m.kind==='long'){
+    for(let i=0;i<2;i++)s.push(cur('Charge la remorque ('+(i+1)+'/2)'),tr('town.dep_dock',{label:'Va chercher des palettes au quai'}),D('stock',3,{label:'Prépare les palettes au quai',carry:'crate'}),F(()=>{Mc.carry='crate';}),tr('town.dep_rear',{label:'Apporte les palettes au camion'}),D('give',3,{label:'Charge les palettes'}),F(()=>{Mc.carry=null;}));
+    s.push(D('install',3,{label:'Attache les sangles et scelle les portes'}),tr('town.car_depot',{label:'Monte dans la cabine'}),D('text',2,{label:'Remplit son carnet de route (heures de conduite)'}));
+    s.push(cur('Route vers '+m.dest),{t:'drive',to:'hwOut',keep:1,label:'Prend l\'autoroute vers '+m.dest},F(()=>{cdqPrep(m.dest,tier);}),{t:'highway',dest:'cdq',dur:24,rate:7.5,label:'Roule vers '+m.dest+' ('+m.km+' km)'});
+    s.push(F(()=>{STT().kmT+=m.km;setFuel(Math.max(.2,getFuel(tier)-.32),tier);}),cur('Livraison à '+m.dest),tr('cdq.quai',{label:'Ouvre les portes au quai de déchargement'}),D('give',4,{label:'Décharge les palettes au quai de '+m.dest,carry:'crate',say:'Ça arrive de chez Transport Boréal!'}),
+      tr('cdq.bureau',{label:'Va à la réception du centre de distribution'}),D('text',3,{label:'Fait signer le connaissement',say:'Signez ici, svp!'}),D('eat',8,{label:'Pause repas réglementaire au resto routier',fx:{food:1}}),
+      tr('cdq.car',{label:'Remonte dans la cabine'}),cur('Retour de '+m.dest),{t:'highway',dest:'town',dur:22,rate:7.5,label:'Revient de '+m.dest+' par l\'autoroute'},F(()=>{STT().kmT+=m.km;setFuel(Math.max(.15,getFuel(tier)-.3),tier);}),{t:'cardrive',to:'depot'},{t:'getout'});}
+  else{const res=m.kind==='dem';const HS=HOUSES.filter(H=>PARKS['d_'+H.k]).sort(()=>Math.random()-.5);const A=res?'d_'+HS[0].k:'est',B=res?'d_'+HS[1].k:'centre';const nA=res?HS[0].addr:'aux Bureaux de l\'est',nB=res?HS[1].addr:'aux Commerces du centre';const fam=pick(['Tremblay','Gagnon','Roy','Côté','Bouchard','Gauthier','Morin','Lavoie','Fortin','Pelletier']);
+    const door=(k)=>res&&TOWN_SPOTS['b_'+k.slice(2)]?'town.b_'+k.slice(2):null;
+    const trips=(k,dir)=>{for(let i=0;i<m.trips;i++){const dr=door(k);const what=pick(res?['des boîtes','une commode','des chaises','un matelas','la table de cuisine','des boîtes de vaisselle']:['des classeurs','des bureaux','des chaises de bureau','des boîtes d\'archives','une photocopieuse']);
+      if(dir==='in'){s.push(cur('Charge le camion ('+(i+1)+'/'+m.trips+')'));if(dr)s.push(tr(dr,{label:'Va chercher '+what}));s.push(D('stock',2,{label:'Soulève '+what+' (avec les genoux!)',carry:'box'}),F(()=>{Mc.carry='box';}));if(dr)s.push(tr('town.car_'+k,{label:'Apporte '+what+' au camion'}));s.push(D('give',2,{label:'Place '+what+' dans le camion'}),F(()=>{Mc.carry=null;}));}
+      else{s.push(cur('Décharge le camion ('+(i+1)+'/'+m.trips+')'),D('stock',2,{label:'Sort '+what+' du camion',carry:'box'}),F(()=>{Mc.carry='box';}));if(dr)s.push(tr(dr,{label:'Entre '+what+' à la nouvelle adresse'}));s.push(D('give',2,{label:'Dépose '+what+' où le client le veut'}),F(()=>{Mc.carry=null;}));if(dr&&i<m.trips-1)s.push(tr('town.car_'+k,{label:'Retourne au camion'}));}}};
+    s.push(cur('En route vers le client'),{t:'drive',to:A,label:'Se rend '+(res?'chez la famille '+fam+', ':'')+nA});
+    s.push(D('talk',3,{label:res?'Salue la famille '+fam+' et fait le tour des boîtes':'Rencontre le gérant des bureaux',say:pick(['Bonjour! Transport Boréal, pour le déménagement!','On va faire ça vite et bien!'])}));
+    trips(A,'in');s.push(D('install',3,{label:'Attache les meubles avec des sangles et des couvertures',say:'Rien ne va bouger.'}));
+    if(res)s.push(tr('town.car_'+A,{label:'Retourne à la cabine'}));
+    s.push(cur('Transport vers la nouvelle adresse'),{t:'drive',to:B,label:'Transporte tout '+nB});trips(B,'out');
+    if(res&&door(B))s.push(tr('town.car_'+B,{label:'Retourne au camion'}));
+    s.push(D('talk',2,{label:'Fait signer le bon de déménagement',say:res?'Bonne installation dans votre nouvelle maison!':'Bon succès dans vos nouveaux bureaux!'}));
+    s.push(cur('Retourne au dépôt'),{t:'drive',to:'depot',label:'Retourne au dépôt'});}
+  s.push(F(()=>{parkSwap(false);}),cur('Remet son contrat signé'),tr('town.dep_office',{label:'Remet son contrat signé'}),D('give',3,{label:'Remet les papiers au répartiteur',say:'Contrat terminé!'}));
+  s.push(F(()=>{Mc.job=null;Mc.carry=null;const jb=(m.kind==='dem'||m.kind==='demb')&&julyMove();addMoney(pay0,'Contrat spécial : '+m.name+(jb?' (prime du 1er juillet)':''));addJobXP('camion',m.kind==='long'?30:18);LIFE.jobs=(LIFE.jobs||0)+1;cnt('camion');cnt('camSp');cnt('camSp_'+m.kind);toast('🚚 Contrat spécial terminé : '+m.name,true);say(Mc,pick(['Toute une journée!','Mission accomplie!','Le patron va être content!']),3);}));
+  s.push({t:'drive',to:'home',label:'Rentre à la maison en auto'});JOB.stages=NS;return s;}
+function spMissions(){const l=jobInfo('camion').l,h=hourOf(),day=dayN();LIFE.spD=LIFE.spD||{};
+  return CAMSP.map(m=>({id:'camsp_'+m.k,e:m.e,n:'Contrat spécial · '+m.name,sp:m,ok:()=>{if(l<m.tier*10)return'Niveau '+m.tier*10+' requis en camionnage';if(!hasPerm(tierPerm(m.tier)))return'Permis classe '+tierPerm(m.tier)+' requis';if(LIFE.spD[m.k]===day)return'Déjà fait aujourd\'hui : revient demain';if(h<m.h[0]||h>=m.h[1])return'Départs de '+m.h[0]+' h à '+(m.h[1]%1?Math.floor(m.h[1])+' h 30':m.h[1]+' h');return true;},
+    go:()=>{flags.jobOff=true;LIFE.jobAskD=dayN();LIFE.spD[m.k]=dayN();return spGo(m);}}));}
+{const _cm=camMissions;camMissions=function(){const L=_cm();L.forEach(d=>{const o=d.ok,t=d.cam.tier;d.ok=()=>{const r=o();if(r!==true)return r;if(t>=2&&!hasPerm(tierPerm(t)))return'Permis classe '+tierPerm(t)+' requis';return true;};});return[...L,...spMissions(),...permMissions()];};}
+
+/* ---------- centre de distribution (longues routes) ---------- */
+{const I=farArea('cdq','Centre de distribution',10600,60,40);const r=I.root;const asph=M('#ffffff',{map:TX.asphalt,r:.9});
+ ns(bx(r,asph,80,.02,60,0,-.02,0,0,8));ns(bx(r,M('#ffffff',{map:TX.grass,r:1}),80,.01,20,0,-.03,28,0,6));
+ const wh=M('#c3c8cd',{r:.65,m:.15}),blu=M('#2f5f8a',{r:.5});
+ bx(r,wh,44,8,14,0,0,-14);bx(r,blu,44.4,.7,14.4,0,8,-14);
+ for(let i=0;i<6;i++){const x=-17.5+i*7;bx(r,M('#4a4e55',{r:.5,m:.3}),3.4,3.6,.08,x,1.1,-6.97);for(let k=0;k<6;k++)bx(r,M('#5a5f66',{r:.5,m:.3}),3.4,.04,.1,x,1.4+k*.55,-6.93);bx(r,M('#1d1e20',{r:.9}),3.8,1.1,.5,x,0,-6.75);for(const sd of[-1,1])bx(r,M('#1a1a1a'),.3,.5,.25,x+sd*1.5,.6,-6.5);
+   ns(bx(r,M('#f2c21a',{r:.6}),.14,.012,14,x-2.2,.01,0));}
+ ns(bx(r,M('#f2c21a',{r:.6}),.14,.012,14,24.5-4.7,.01,0));
+ const sg=new THREE.Mesh(new THREE.PlaneGeometry(14,1.6),signMat('CENTRE DE DISTRIBUTION','#2f5f8a','#ffffff',1400,160,'800 92px "Atkinson Hyperlegible", sans-serif'));sg.position.set(0,6.3,-6.9);r.add(sg);
+ bx(r,M('#e9e4da',{r:.8}),6,3.2,4,17,0,-5);bx(r,M('#2a3647',{r:.1,m:.5}),1.1,2.1,.05,17,0,-2.98);bx(r,blu,6.3,.3,4.3,17,3.2,-5);
+ const sr=new THREE.Mesh(new THREE.PlaneGeometry(3.2,.55),signMat('RÉCEPTION','#2f5f8a','#ffffff',512,90,'800 56px "Atkinson Hyperlegible", sans-serif'));sr.position.set(17,2.6,-2.96);r.add(sr);
+ for(let i=0;i<14;i++){const t=grp(r,-30+i*4.6+rnd(-1,1),0,24+rnd(-2,3));cy(t,TRUNK,.15,.22,2,0,0,0,6);const c=new THREE.Mesh(new THREE.ConeGeometry(rnd(1.2,1.8),rnd(3.5,5),7),M(pick(['#2f5a32','#3a6a3a','#2a4a2e']),{flat:1}));c.position.y=3.6;t.add(c);}
+ for(let i=0;i<7;i++){const x=-28+i*3.4;const pc=new THREE.Group();carBody(pc,pick(['#c8473b','#3b6fb6','#e0c35a','#d9dde3','#5a6a7a','#2a2a2c']),pick(['berline','compacte','vus']));pc.position.set(x,.04,12);pc.rotation.y=PI;r.add(pc);}
+ for(let i=0;i<2;i++){const tk=mkTruck(3);tk.position.set(-17.5+i*7+7*3,.04,-6.6+TLEN[3]/2);r.add(tk);}
+ bake(r,I.g);I.obs.push([-22.2,-21.2,22.2,-6.4],[13.8,-7.2,20.2,-2.8]);
+ I.trks=[0,1,2,3].map(t=>{const g=mkTruck(t);g.visible=false;const d=mkDriver('#3d6bb0','#f0c29e','#5a3b2a');const P=DRVP[t];d.position.set(P[0],P[1],P[2]);d.scale.setScalar(P[3]);d.visible=false;g.add(d);g.traverse(o=>{if(o.isMesh)o.castShadow=true;});I.dyn.add(g);return g;});
+ spot(I,'car',1.9,0,0);spot(I,'quai',1.9,-6,PI);spot(I,'bureau',17,-2.2,PI);OUTD.cdq=1;}
+function cdqPrep(dest,tier){const I=INT.cdq;I.name='Centre de distribution · '+dest;const L=TLEN[tier],cz=-6.55+L/2;I.trks.forEach((g,i)=>{g.visible=i===tier;g.position.set(-3.5,.04,cz);});const P=DRVP[tier];I.spots.car.x=-3.5+1.55;I.spots.car.z=cz+P[2]-.2;I.spots.car.yaw=-PI/2;I.spots.quai.x=-3.5+1.9;I.spots.quai.z=-5.6;I.obs=I.obs.filter(o=>!o.trk);const ob=[-3.5-1.35,-6.6,-3.5+1.35,-6.6+L];ob.trk=1;I.obs.push(ob);I.G=null;}
+function routeVeh(){const R=INT.route;if(!R)return;if(!R.trks){R.trks=[0,1,2,3].map(t=>{const g=mkTruck(t);g.visible=false;const d=mkDriver('#3d6bb0','#f0c29e','#5a3b2a');const P=DRVP[t];d.position.set(P[0],P[1],P[2]);d.scale.setScalar(P[3]);g.add(d);g.position.set(-2.6,.04,0);g.traverse(o=>{if(o.isMesh)o.castShadow=true;});R.dyn.add(g);return g;});}
+  const t=MCAR.trk;if(R.mc)R.mc.visible=t==null;R.trks.forEach((g,i)=>g.visible=i===t);}
+
+/* ---------- 🚗 Changer d'auto ---------- */
+const CARMODS=[{k:'usagee',type:'berline',n:'Berline usagée',e:'🚗',prix:0,val:2800,d:'L\'auto de départ de Marcel'},
+ {k:'compacte',type:'compacte',n:'Compacte neuve',e:'🚙',prix:24500,d:'Petite, économique et facile à stationner'},
+ {k:'berline',type:'berline',n:'Berline neuve',e:'🚘',prix:31000,d:'Confortable, avec sièges chauffants'},
+ {k:'vus',type:'vus',n:'VUS 4 roues motrices',e:'🚙',prix:42000,d:'Haut sur roues, parfait pour l\'hiver'},
+ {k:'pickup',type:'pickup',n:'Camionnette pick-up',e:'🛻',prix:52000,d:'Une boîte pour tout transporter'}];
+const carMod=()=>CARMODS.find(c=>c.k===(LIFE.carMod||'usagee'))||CARMODS[0];
+const carVal=()=>{const c=carMod();return c.k==='usagee'?c.val:Math.round(c.prix*.58);};
+let CURTYPE='berline';
+function rebuildCarGroup(g){const old=g.children.filter(c=>c.userData.cb);old.forEach(c=>g.remove(c));const t=new THREE.Group();carBody(t,LIFE.carCol||'#7d8794',carMod().type);[...t.children].forEach(c=>{c.userData.cb=1;c.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});g.add(c);});g.userData.car=t.userData.car;}
+function ensureCarModel(){const ty=carMod().type;if(ty===CURTYPE)return;CURTYPE=ty;try{if(!CARG.userData.flag){CARG.children.forEach(c=>c.userData.cb=1);CARG.userData.flag=1;}rebuildCarGroup(CARG);MCAR.g.userData.car=CARG.userData.car;for(const g of propMC)rebuildCarGroup(g);if(MCAR.trk==null)setTruck(null);}catch(e){console.error(e);}}
+{const _ac=applyCar;applyCar=function(){ensureCarModel();return _ac();};}
+const carLoanPay=amt=>Math.round(amt*1.18/156);
+function carBuy(c){const s=[];const res={};
+  s.push({t:'drive',to:'garage',label:'Se rend chez Réjean, qui vend aussi des autos neuves'});
+  s.push(D('look',4,{label:'Fait le tour de la '+c.n.toLowerCase()+' en exposition',say:pick(['Wow… regarde-moi ça!','Elle est belle en titi!','Ça sent le neuf!'])}),D('talk',5,{label:'Négocie le prix et la reprise avec Réjean',say:pick(['Pis, combien pour mon vieux bazou?','Tu me fais un bon prix, Réjean?'])}));
+  s.push(F(()=>{const val=carVal(),net=Math.max(0,c.prix-val);res.val=val;res.net=net;if(money>=net+300){res.cash=1;}else{res.cash=0;res.down=Math.round(net*.15);res.loan=net-res.down;}}));
+  s.push(D('text',4,{label:'Signe le contrat de vente',say:'Une signature ici… et ici.'}));
+  s.push(F(()=>{if(!res.cash&&money<res.down){toast('🚗 Achat annulé : pas assez d\'argent pour la mise de fonds',false);return;}if(res.cash)addMoney(-res.net,'Achat : '+c.n+' (reprise '+cNum(res.val)+' $)');else{addMoney(-res.down,'Mise de fonds : '+c.n+' (reprise '+cNum(res.val)+' $)');LIFE.carLoan={left:156,pay:carLoanPay(res.loan),tot:res.loan,n:c.n};}
+    const cols=CARPAL.filter(x=>x[0]!==LIFE.carCol);const col=pick(cols);LIFE.carCol=col[0];LIFE.carMod=c.k;LIFE.carD=fmtDay();for(const u of['car_peinture','car_jantes','car_teintes','car_aileron','car_moteur'])delete OWN[u];applyCar();cnt('autoNeuve');
+    toast('🔑 Nouvelle auto : '+c.n+' '+col[1]+(res.cash?' · payée comptant':' · financée : '+LIFE.carLoan.pay+' $/semaine pendant 3 ans'),true);try{SFX.cash();}catch(e){}}));
+  s.push(D('look',3,{label:'Admire sa nouvelle auto',say:pick(['Elle est à moi!','J\'ai hâte de l\'essayer!','Bye bye, mon vieux bazou!'])}));
+  s.push({t:'drive',to:'home',label:'Rentre à la maison avec sa nouvelle auto'});return s;}
+
+/* ---------- 🏡 Rénovations majeures ---------- */
+const RENOS=[{id:'r_thermo',e:'🌡️',n:'Thermopompe murale',prix:5200,d:'Chauffe l\'hiver, climatise l\'été · Hydro −8 $/semaine',c:8,lab:'Les installateurs posent la thermopompe'},
+ {id:'r_fen',e:'🪟',n:'Fenêtres écoénergétiques',prix:7800,d:'Moins de courants d\'air · Hydro −5 $/semaine',c:8,lab:'Les entrepreneurs changent toutes les fenêtres'},
+ {id:'r_plancher',e:'🪵',n:'Planchers de bois franc',prix:6400,d:'Érable verni dans toute la maison',c:12,lab:'Les poseurs installent le bois franc',inside:1},
+ {id:'r_toit',e:'🏠',n:'Toiture neuve',prix:9600,d:'Bardeaux neufs couleur ardoise',c:6,lab:'Les couvreurs refont la toiture'},
+ {id:'r_rev',e:'🎨',n:'Revêtement extérieur neuf',prix:14500,d:'Nouveau revêtement de la couleur choisie par Marcel',c:10,lab:'Les entrepreneurs posent le nouveau revêtement'},
+ {id:'r_garage',e:'🚗',n:'Garage détaché',prix:28000,d:'L\'auto à l\'abri : fini le déneigement le matin',c:15,lab:'Les charpentiers construisent le garage'}];
+const REVCOL=[['#e9e2d2','crème'],['#8a9a8a','vert sauge'],['#5b6573','gris ardoise'],['#9a4a3a','rouge brique'],['#f2f0ea','blanc']];
+{const H=FIXED.find(x=>x.n==='Hydro-Québec');if(H){const o=H.v;H.v=()=>Math.max(6,o()-(OWN.r_thermo?8:0)-(OWN.r_fen?5:0));}}
+FIXED.push({e:'🚗',n:'Paiement de l\'auto',v:()=>LIFE.carLoan?LIFE.carLoan.pay:0});
+{const _co=comfort;comfort=function(){let c=_co();for(const R of RENOS)if(OWN[R.id])c+=R.c;c+=4*gSerAll().filter(x=>x.done).length;return c;};}
+const HWOOD=ctex(512,(g,s)=>{const rows=8,h=s/rows;for(let r=0;r<rows;r++){let x=-(r*97)%160;while(x<s){const w=rnd(140,260);const t=rnd(0,1);g.fillStyle=`rgb(${Math.round(196+t*22)},${Math.round(148+t*20)},${Math.round(98+t*16)})`;g.fillRect(x,r*h,w,h);g.globalAlpha=.18;for(let k=0;k<6;k++){g.strokeStyle='#7a5230';g.lineWidth=rnd(.5,1.5);g.beginPath();const y=r*h+rnd(4,h-4);g.moveTo(x,y);g.bezierCurveTo(x+w*.3,y+rnd(-4,4),x+w*.6,y+rnd(-4,4),x+w,y+rnd(-3,3));g.stroke();}g.globalAlpha=1;g.fillStyle='rgba(70,45,25,.55)';g.fillRect(x,r*h,1.5,h);x+=w;}g.fillStyle='rgba(70,45,25,.6)';g.fillRect(0,r*h,s,1.5);}});
+let GARG=null,THERMG=null;
+function buildRenoProps(){if(GARG)return;GARG=new THREE.Group();const sid=M('#ffffff',{map:TX.siding('#e9e2d2'),r:.85}),trim=M('#f4f1ea',{r:.7}),rfm=M('#ffffff',{map:TX.shingle('#2c2f36','#3a3e46'),r:.9}),dr=M('#dfe1e3',{r:.5,m:.2});
+  const x0=-59.1,z0=-42.6,W=5.4,Dd=7.2,Hh=2.9;bx(GARG,M('#8d8a84',{map:TX.concrete,r:1}),W+.3,.12,Dd+.3,x0,0,z0);
+  bx(GARG,sid,.15,Hh,Dd,x0-W/2,.1,z0);bx(GARG,sid,.15,Hh,Dd,x0+W/2,.1,z0);bx(GARG,sid,W,Hh,.15,x0,.1,z0-Dd/2);
+  bx(GARG,sid,1.05,Hh,.15,x0-W/2+.52,.1,z0+Dd/2);bx(GARG,sid,1.05,Hh,.15,x0+W/2-.52,.1,z0+Dd/2);bx(GARG,sid,W,.5,.15,x0,Hh-.4,z0+Dd/2);
+  bx(GARG,dr,W-2.1,.45,.08,x0,Hh-.45,z0+Dd/2-.15);for(let k=0;k<4;k++)bx(GARG,dr,W-2.1,.04,.06,x0,Hh-.62+k*.12,z0+Dd/2-.12);
+  const rf=new THREE.Mesh(prism(W+.6,Dd+.6,1.3),rfm);rf.position.set(x0,Hh+.1,z0);GARG.add(rf);
+  for(const sd of[-1,1])bx(GARG,trim,.12,Hh,.18,x0+sd*(W/2-1.05),.1,z0+Dd/2+.02);
+  const lp=bx(GARG,M('#fff6d8',{e:'#ffe2a0',ei:.6}),.18,.25,.08,x0+W/2-.6,2.2,z0+Dd/2+.1);
+  GARG.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});GARG.visible=false;town.add(GARG);
+  THERMG=new THREE.Group();const B=HOMEB;const tm=M('#f2f2ee',{r:.4,m:.1});bx(THERMG,tm,.95,.7,.38,0,.12,0);const fan=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,.02,18),M('#2a2c30',{r:.6}));fan.rotation.x=PI/2;fan.position.set(-.15,.47,.2);THERMG.add(fan);for(let k=0;k<5;k++)bx(THERMG,M('#9aa0a6'),.5,.012,.012,-.15,.27+k*.1,.205);bx(THERMG,M('#8d8a84',{map:TX.concrete}),1.1,.12,.5,0,0,0);
+  if(B){const p=new V3(B.w/2+.35,0,1.5).applyAxisAngle(new V3(0,1,0),B.ry).add(new V3(B.x,0,B.z));THERMG.position.copy(p);THERMG.rotation.y=B.ry+PI/2;}
+  THERMG.traverse(o=>{if(o.isMesh)o.castShadow=true;});THERMG.visible=false;town.add(THERMG);}
+function applyRenos(){try{buildRenoProps();GARG.visible=!!OWN.r_garage;THERMG.visible=!!OWN.r_thermo;if(OWN.r_garage&&OWNM.tempo)OWNM.tempo.visible=false;
+  const B=HOMEB;if(B){if(OWN.r_toit&&!B.roof.userData.neuf){B.roof.userData.neuf=1;B.roof.material=new THREE.MeshStandardMaterial({map:TX.shingle('#2c2f36','#3a3e46'),roughness:.88});}
+    if(OWN.r_rev&&LIFE.revCol&&B.sidM&&B.sidM.userData.col!==LIFE.revCol){B.sidM.userData.col=LIFE.revCol;B.sidM.map=TX.siding(LIFE.revCol);B.sidM.needsUpdate=true;}}
+  const I=INT.home;if(OWN.r_plancher&&I&&!I.hw){const fm=M('#ffffff',{map:TX.wood,r:.6});I.g.traverse(o=>{if(o.isMesh&&o.material===fm){if(!I.hwM)I.hwM=new THREE.MeshStandardMaterial({map:HWOOD,roughness:.42,metalness:.02});o.material=I.hwM;}});I.hw=1;}}catch(e){console.error(e);}}
+function renoGo(R){const s=[];const out=!R.inside;
+  s.push(...at('home.desk','call',4,{label:'Appelle l\'entrepreneur pour : '+R.n.toLowerCase(),say:pick(['Bonjour, c\'est pour une soumission…','On peut commencer quand?'])}));
+  if(R.id==='r_rev')s.push(F(()=>{const c=pick(REVCOL.filter(x=>x[0]!==LIFE.revCol));LIFE.revColN=c;}),D('look',3,{label:'Choisit la couleur du nouveau revêtement'}));
+  s.push(payF(Math.round(R.prix*.3),'Dépôt · '+R.n));
+  if(out)s.push(tr('town.car_home',{label:'Sort accueillir les entrepreneurs'}));
+  s.push(D('look',rnd(40,60),{label:R.lab,warp:4,say:pick(['Ça avance vite!','Wow, ils sont bons!','Hâte de voir le résultat!'])}),D('talk',3,{label:'Discute des finitions avec le contremaître'}));
+  s.push(D('look',rnd(30,45),{label:R.lab+' (finition)',warp:4}));
+  s.push(payF(R.prix-Math.round(R.prix*.3),'Solde · '+R.n),F(()=>{OWN[R.id]=true;if(R.id==='r_rev'&&LIFE.revColN){LIFE.revCol=LIFE.revColN[0];}applyRenos();cnt('reno');INT.home.G=null;toast('🏡 Projet terminé : '+R.n+(R.id==='r_rev'&&LIFE.revColN?' ('+LIFE.revColN[1]+')':''),true);say(Mc,pick(['La maison a pris de la valeur!','C\'est magnifique!','Ça valait la peine!']),3.5);}));
+  return s;}
+function projMissions(){const L=[];const busy=()=>Mc.job?'Marcel est au travail':true;
+  for(const c of CARMODS){if(!c.prix)continue;L.push({id:'proj_car_'+c.k,e:c.e,n:'Acheter : '+c.n,car:c,ok:()=>{if(carMod().k===c.k)return'C\'est déjà son auto';const h=hourOf();if(h<9||h>=17)return'Le concessionnaire est ouvert de 9 h à 17 h';if(LIFE.carLoan)return'Il doit finir de payer son auto actuelle';const net=Math.max(0,c.prix-carVal());const need=money>=net+300?0:Math.round(net*.15)+300-money;if(need>0)return'Il manque '+cNum(need)+' $ pour la mise de fonds';return true;},go:()=>carBuy(c)});}
+  for(const R of RENOS)L.push({id:'proj_'+R.id,e:R.e,n:'Rénovation : '+R.n,reno:R,ok:()=>{if(OWN[R.id])return'Déjà fait';const h=hourOf();if(h<8||h>=15)return'Les entrepreneurs travaillent de 8 h à 15 h';if(!R.inside&&(RAIN()||weather==='tempete'))return'Il pleut : les travaux attendent le beau temps';if(money<R.prix)return'Il manque '+cNum(R.prix-money)+' $';return busy();},go:()=>renoGo(R)});
+  return L;}
+
+/* ---------- 🏆 Vitrine des séries gashapon ---------- */
+function gSerAll(){const A=[];GSER.forEach((S,i)=>A.push({e:S[1],n:S[0],col:S[2],done:!!LIFE.gacha&&gSerDone(i),own:GALL.filter(x=>x.s===i&&gOwn().includes(x.n)).length,jp:1}));GSERQ.forEach((S,i)=>A.push({e:S[1],n:S[0],col:S[2],done:!!LIFE.gachaQ&&gSerDoneQ(i),own:GALLQ.filter(x=>x.s===i&&gOwnQ().includes(x.n)).length}));return A;}
+let VITG=null,VITsig='';const VITC={};
+const emoTex=e=>VITC[e]||(VITC[e]=ctex(128,(g,s)=>{g.clearRect(0,0,s,s);g.font='92px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(e,s/2,s/2+6);}));
+function vitrUpdate(){const I=INT.home;if(!I)return;const A=gSerAll(),done=A.filter(x=>x.done);const sig=A.map(x=>x.done?1:0).join('');if(sig===VITsig)return;VITsig=sig;
+  if(!done.length){if(VITG)VITG.visible=false;return;}
+  if(!VITG){VITG=new THREE.Group();I.dyn.add(VITG);const wd=M('#5a3a26',{r:.5}),gl=M('#cfe6f2',{r:.05,m:.2,op:.18});const X0=4.5,Z0=5.62;
+    bx(VITG,wd,2.1,.12,.46,X0,0,Z0);bx(VITG,wd,2.1,.1,.46,X0,1.92,Z0);bx(VITG,wd,2.1,1.92,.04,X0,.1,Z0+.21);for(const sd of[-1,1])bx(VITG,wd,.06,1.92,.46,X0+sd*1.02,.1,Z0);
+    for(const y of[.62,1.18])bx(VITG,M('#e8eef2',{r:.1,m:.1,op:.55}),1.98,.025,.4,X0,y,Z0);bx(VITG,M('#e8eef2',{r:.1,m:.1,op:.55}),1.98,.025,.4,X0,.14,Z0);
+    const gp=bx(VITG,gl,2.0,1.78,.02,X0,.13,Z0-.22);gp.castShadow=false;
+    const lt=bx(VITG,M('#fff6d8',{e:'#fff0c0',ei:.8}),1.8,.02,.05,X0,1.89,Z0);
+    const pl=new THREE.Mesh(new THREE.PlaneGeometry(1.4,.2),signMat('MA COLLECTION','#5a3a26','#f1c84b',512,74,'800 44px "Bricolage Grotesque", sans-serif'));pl.position.set(X0,1.72,Z0-.235);pl.rotation.y=PI;VITG.add(pl);
+    VITG.add(VITG.slots=new THREE.Group());VITG.userData={X0,Z0};I.obs.push([X0-1.08,Z0-.26,X0+1.08,Z0+.26]);I.G=null;}
+  VITG.visible=true;const S=VITG.slots;S.children.slice().forEach(c=>S.remove(c));const{X0,Z0}=VITG.userData;
+  A.forEach((x,i)=>{if(!x.done)return;const row=Math.floor(i/6)%3,col=i%6;const px=X0-.8+col*.32,py=[.165,.645,1.205][row],pz=Z0-.02;
+    const gold=M('#d9a520',{m:.85,r:.25});const ped=new THREE.Mesh(new THREE.CylinderGeometry(.09,.11,.07,14),gold);ped.position.set(px,py+.035,pz);S.add(ped);
+    const ball=new THREE.Mesh(new THREE.SphereGeometry(.075,14,10),M(x.col,{r:.3}));ball.position.set(px+.09,py+.07,pz+.06);ball.scale.y=.9;S.add(ball);
+    const sp2=new THREE.Sprite(new THREE.SpriteMaterial({map:emoTex(x.e),transparent:true}));sp2.scale.set(.26,.26,1);sp2.position.set(px,py+.2,pz);S.add(sp2);});}
+{const _ao=applyOwned;applyOwned=function(){const r=_ao();applyRenos();try{vitrUpdate();}catch(e){console.error(e);}return r;};}
+for(const K of['gacha','gachaq'])if(MGD[K]){const _ap=MGD[K].ap;MGD[K].ap=function(s,r,o){const b=gSerAll().filter(x=>x.done).length;const res=_ap.call(this,s,r,o);const a=gSerAll().filter(x=>x.done).length;if(a>b){vitrUpdate();setTimeout(()=>toast(b===0?'🏆 Récompense : une vitrine est installée dans le salon pour exposer tes séries complètes!':'🏆 Nouvelle figurine dorée exposée dans la vitrine du salon!',true),3200);}return res;};}
+TROPHIES.push(['vitrine1','🏆','Collectionneur exposé','Exposer une première série complète dans la vitrine',()=>gSerAll().some(x=>x.done)],['vitrine16','👑','Vitrine pleine','Compléter les 16 séries de gashapon',()=>gSerAll().every(x=>x.done)],
+ ['permis3','🪪','Poids lourd','Obtenir le permis classe 3',()=>hasPerm(3)&&!(PERM()[3]||{}).mig],['permis1','🚛','Roi de la route','Obtenir le permis classe 1',()=>hasPerm(1)&&!(PERM()[1]||{}).mig],
+ ['camsp1','📦','Gros bras','Faire un déménagement',()=>C_('camSp_dem')+C_('camSp_demb')>=1],['camlong','🛣️','Grand routier','Faire une longue route',()=>C_('camSp_long')>=1],['camnuit','🌙','Oiseau de nuit','Faire une livraison de nuit',()=>C_('camNuit')>=1],
+ ['auto_neuve','🔑','Ça sent le neuf','Acheter une auto neuve',()=>C_('autoNeuve')>=1],['reno1','🏡','Proprio fier','Terminer une rénovation majeure',()=>C_('reno')>=1],['reno6','🏰','Maison de rêve','Terminer les 6 rénovations majeures',()=>RENOS.every(R=>OWN[R.id])]);
+/* sauvegardes existantes : permis reconnus selon le niveau déjà atteint */
+{const _as=applySave;applySave=function(d){const r=_as(d);if(r){try{if(!(d.LIFE&&d.LIFE.perm))LIFE.perm=permLegacy();if(!(d.LIFE&&d.LIFE.st))LIFE.st=null;if(!(d.LIFE&&d.LIFE.carMod))LIFE.carMod=null;if(!(d.LIFE&&d.LIFE.carLoan))LIFE.carLoan=null;VITsig='';applyCar();applyRenos();vitrUpdate();}catch(e){console.error(e);}}return r;};}
+
+/* ---------- 📱 App Camionnage (refaite) ---------- */
+function camRow(d,sub){const ok=mapOk(d),sel=todoHas(d.id);return`<button type="button" class="crow${sel?' sel':''}${ok===true?'':' no'}" data-a="dest:${d.id}"><span>${d.e&&!d.cam?d.e+' ':''}${d.cam?d.cam.name:d.sp?d.sp.name:d.n}<small>${sub}</small>${ok===true?'':'<small>'+ok+'</small>'}</span><em>${sel?'✓ Dans la liste':ok===true?'Ajouter ›':''}</em></button>`;}
+camHTML=function(){const J=jobInfo('camion'),t=camMaxTier();const ALL=camMissions();
+  let h=`<div class="cinfo"><b>🚚 Transport Boréal</b><br>Niveau ${J.l} · ${J.title}<div class="cbar"><i style="width:${Math.round(J.x/J.need*100)}%;background:#3d8bfd"></i></div><span class="cmut">⛽ Réservoir : <b>${Math.round(getFuel(t)*FUELV[t].tank)} / ${FUELV[t].tank} L</b> (${FUELV[t].nm.toLowerCase()}, carte de l'entreprise)<br>Meilleur véhicule permis : <b>${CAMV[t]}</b></span></div>`;
+  if(Mc.job&&Mc.job.id==='camion')h+=`<div class="cban" style="display:block"><b>🚚 Mission en cours</b><br><span class="cmut">${Mc.job.cur} · ${Mc.job.pay} $</span></div>`;
+  h+=`<div class="ch2">🪪 Mes permis</div><div class="cinfo">`+PERMS.map(P=>{const S=PERM()[P.c]||{};const st=hasPerm(P.c)?'<b style="color:#1f8a4c">✓ Obtenu</b>':S.paid?`Formation : ${S.les||0}/${P.les} cours${(S.les||0)>=P.les?' · examen à passer':''}${S.fail?' · '+S.fail+' échec'+(S.fail>1?'s':''):''}`:`<span class="cmut">Formation ${cNum(P.prix)} $ · dès le niveau ${P.lv}</span>`;return`<div style="padding:3px 0"><b>${P.n}</b> · ${st}<br><span class="cmut">${P.d}</span></div>`;}).join('')+`</div>`;
+  const PM=ALL.filter(d=>d.perm);if(PM.length)h+=PM.map(d=>camRow(d,d.sub)).join('');
+  h+=`<div class="ch2">⭐ Contrats spéciaux${julyMove()?' · 📦 semaine du 1er juillet : déménagements payés +60 %':''}</div><div class="cmut" style="margin-bottom:4px">Un contrat de chaque sorte par jour. Mieux payés que les tournées.</div>`+ALL.filter(d=>d.sp).map(d=>camRow(d,d.sp.sub+' · '+CAMV[d.sp.tier].toLowerCase()+' · environ '+cNum(spPay(d.sp))+' $')).join('');
+  h+=`<div class="cmut" style="margin:8px 0 6px">Tournées régulières : touche une mission pour l'ajouter à la liste de Marcel. Dépôt ouvert de 6 h à 17 h, au bout de la rue du Camionnage (sud).</div>`;
+  for(let i=0;i<4;i++){const lk=J.l<i*10||!hasPerm(tierPerm(i));h+=`<div class="ch2">${CAMV[i]}${lk?' 🔒':''}${i>=2?' · permis classe '+tierPerm(i):''}</div>`+ALL.filter(d=>d.cam&&d.cam.tier===i).map(d=>camRow(d,d.cam.n+' arrêts · environ '+camPay(d.cam)+' $')).join('');}
+  return h;};
+
+/* ---------- 📱 App Projets ---------- */
+CAPPS.push(['projets','🏡','Projets','linear-gradient(135deg,#e0a04a,#8a5a2a)'],['stats','📊','Statistiques','linear-gradient(135deg,#5a6bd6,#2a3a8a)']);
+function projHTML(){const P=projMissions();const c=carMod();let h=`<div class="cinfo"><b>🏡 Grands projets de Marcel</b><br><span class="cmut">Les gros achats à long terme. Touche un projet pour l'ajouter à sa liste : il s'en occupe quand il a l'argent et le temps.</span><br>Solde : <b>${cNum(money)} $</b></div>`;
+  h+=`<div class="ch2">🚗 Son auto</div><div class="cinfo"><b>${c.e} ${c.n}</b>${LIFE.carD?'<br><span class="cmut">Achetée le '+LIFE.carD+'</span>':''}<br>Valeur de reprise : <b>${cNum(carVal())} $</b>${LIFE.carLoan?`<br>Prêt auto : <b>${LIFE.carLoan.pay} $/semaine</b> · ${LIFE.carLoan.left} paiements restants<br><span class="cmut">Solde du prêt : environ ${cNum(LIFE.carLoan.pay*LIFE.carLoan.left)} $</span>`:''}</div>`;
+  if(LIFE.carLoan){const bal=Math.round(LIFE.carLoan.pay*LIFE.carLoan.left*.9);h+=`<button type="button" class="crow${money>=bal?'':' no'}" data-a="loanpay"><span>💳 Rembourser le prêt d'un coup<small>${cNum(bal)} $ (rabais de 10 % sur les intérêts)</small></span><em>${money>=bal?'Payer ›':'Pas assez d\'argent'}</em></button>`;}
+  h+=P.filter(d=>d.car).map(d=>{const net=Math.max(0,d.car.prix-carVal());return camRow(d,d.car.d+' · '+cNum(d.car.prix)+' $ · '+cNum(net)+' $ après reprise · comptant ou financé (15 % de mise de fonds)');}).join('');
+  h+=`<div class="ch2">🔨 Rénovations majeures (${RENOS.filter(R=>OWN[R.id]).length}/${RENOS.length})</div>`+RENOS.map(R=>{const d=P.find(x=>x.reno===R);return OWN[R.id]?`<div class="crow" style="cursor:default"><span>${R.e} ${R.n}<small>${R.d}</small></span><em>✓ Fait</em></div>`:camRow(d,R.d+' · '+cNum(R.prix)+' $');}).join('');
+  {const s=ETG();h+=`<div class="ch2">🏗️ Agrandissement</div><div class="cinfo"><b>2e étage</b> · ${s>=6?'terminé! 🎉':'étape '+s+'/6'}<br><span class="cmut">${s>=6?'Bureau, salle de jeux et chambre d\'amis.':'Marcel y travaille lui-même les jours de beau temps quand il a l\'argent'+(s<6?' (prochaine étape : '+ETGSTEPS[s][1]+' $)':'')+'.'}</span></div>`;}
+  {const A=gSerAll(),n=A.filter(x=>x.done).length;h+=`<div class="ch2">🏆 Vitrine du salon</div><div class="cinfo">${n?n+' série'+(n>1?'s':'')+' complète'+(n>1?'s':'')+' exposée'+(n>1?'s':'')+' sur '+A.length:'Complète une série de gashapon pour recevoir une vitrine dans le salon.'}<br><span class="cmut">Chaque série complète ajoute +4 de confort.</span></div>`;}
+  return h;}
+
+/* ---------- 📱 App Statistiques ---------- */
+function statCats(){const A=gSerAll();const T=LIFE.tro||{};const sk=SKILLS.map(S=>Math.min(50,skLv(S.k)));const camL=Math.min(40,jobInfo('camion').l);
+  const homeIt=[...HITEMS,...SHOP].filter((x,i,a)=>a.findIndex(y=>y.id===x.id)===i);const C=CARDST();
+  return[{e:'🏆',n:'Trophées',v:Object.keys(T).length,m:TROPHIES.length},
+   {e:'🥚',n:'Figurines gashapon',v:gOwn().length+gOwnQ().length,m:GALL.length+GALLQ.length},
+   {e:'🎌',n:'Séries complètes',v:A.filter(x=>x.done).length,m:A.length},
+   {e:'🃏',n:'Cartes de hockey',v:cardCount(),m:CARDS.length},
+   {e:'🎯',n:'Compétences (niveau 50)',v:sk.reduce((a,b)=>a+b,0),m:SKILLS.length*50,f:v=>Math.round(v/SKILLS.length)+' de moyenne'},
+   {e:'🚚',n:'Camionnage (niveau 40)',v:camL,m:40},
+   {e:'🪪',n:'Permis de conduire',v:PERMS.filter(P=>hasPerm(P.c)).length,m:PERMS.length},
+   {e:'⭐',n:'Contrats spéciaux essayés',v:['dem','demb','nuit','long'].filter(k=>C_('camSp_'+k)>=1).length,m:4},
+   {e:'🛋️',n:'Achats pour la maison',v:homeIt.filter(x=>OWN[x.id]).length,m:homeIt.length},
+   {e:'🔧',n:'Améliorations de l\'auto',v:CARUP.filter(u=>OWN[u.id]).length,m:CARUP.length},
+   {e:'🔨',n:'Rénovations majeures',v:RENOS.filter(R=>OWN[R.id]).length,m:RENOS.length},
+   {e:'🏗️',n:'2e étage',v:Math.min(6,ETG()),m:6},
+   {e:'🐟',n:'Espèces de poissons',v:FISH.filter(f=>C_('f_'+f.k)>=1).length,m:FISH.length},
+   {e:'🗺️',n:'Endroits visités',v:Math.min(30,(LIFE.placesAll||[]).length),m:30}];}
+function statsHTML(){const cats=statCats();const pct=cats.reduce((s2,c)=>s2+Math.min(1,c.v/c.m),0)/cats.length*100;const S=STT();const dn=dayN();const q=SDAY();
+  const bar=(p,col)=>`<div class="cbar"><i style="width:${Math.max(0,Math.min(100,p)).toFixed(1)}%;background:${col}"></i></div>`;
+  let h=`<div class="cinfo" style="text-align:center"><span class="cmut">Partie complétée</span><div class="cgros" style="color:#3a4ac8">${pct.toFixed(1)} %</div>${bar(pct,'linear-gradient(90deg,#5a6bd6,#9a6bd6)')}<span class="cmut">Moyenne des ${cats.length} catégories ci-dessous</span></div>`;
+  h+=`<div class="ch2">📈 Progression</div>`+cats.map(c=>{const p=Math.min(100,c.v/c.m*100);return`<div class="cinfo" style="padding:6px 9px"><div style="display:flex;justify-content:space-between;gap:6px"><span>${c.e} ${c.n}</span><b>${p>=100?'✓ ':''}${Math.round(p)} %</b></div>${bar(p,p>=100?'#2f9d62':'#5a6bd6')}<span class="cmut">${c.f?c.f(c.v):cNum(c.v)+' / '+cNum(c.m)}</span></div>`;}).join('');
+  const row=(a,b)=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0"><span>${a}</span><b>${b}</b></div>`;
+  h+=`<div class="ch2">📅 Sa vie</div><div class="cinfo">`+row('Jours vécus',cNum(dn+1))+row('Date',fmtDay())+row('Solde actuel',cNum(money)+' $')+row('Confort de la maison',cNum(comfort()))+row('Auto',carMod().n)+`</div>`;
+  h+=`<div class="ch2">💵 Argent <span class="cmut" style="font-weight:400">(depuis le jour ${(S.since||0)+1})</span></div><div class="cinfo">`+row('Total gagné',cNum(S.earn)+' $')+row('Total dépensé',cNum(S.spend)+' $')+row('Plus gros revenu d\'un coup',cNum(S.best)+' $')+row('Semaines de dépenses fixes payées',cNum(C_('fixes')))+row('Gratteux achetés',cNum(C_('gratteux')))+`</div>`;
+  const JB=[...JOBS,...JOBS2].map(j=>({j,l:jobInfo(j.id).l})).filter(o=>o.l>0).sort((a,b)=>b.l-a.l);
+  h+=`<div class="ch2">💼 Travail</div><div class="cinfo">`+row('Quarts et missions terminés',cNum(LIFE.jobs||0))+row('Tournées de camionnage',cNum(C_('camion')))+row('Contrats spéciaux',cNum(C_('camSp')))+row('Distance en camion',cNum(Math.round(S.kmT))+' km')+row('Distance en auto',cNum(Math.round(S.kmC*10)/10)+' km')+(JB.length?row('Meilleur emploi',JB[0].j.t.replace(/^\S+\s/,'')+' · niv. '+JB[0].l):'')+`</div>`;
+  const best=SKILLS.map(s2=>({s:s2,l:skLv(s2.k)})).sort((a,b)=>b.l-a.l).slice(0,3);
+  h+=`<div class="ch2">🎯 Meilleures compétences</div><div class="cinfo">`+best.map(o=>row(o.s.e+' '+o.s.n,'niveau '+o.l)).join('')+`</div>`;
+  const AC=[['🎮','Mini-jeux joués','mg'],['🐟','Poissons pêchés','fish'],['🥚','Capsules de gashapon','gacha'],['🃏','Paquets de cartes','paquet'],['🏋️','Séances de gym','gym'],['🏃','Joggings','jog'],['🎤','Soirées karaoké','karaoke'],['🎱','Bingos gagnés','bingoW'],['🚆','Voyages en train','train'],['⛷️','Journées de ski','ski'],['✈️','Voyages à Tokyo','tokyo'],['🏙️','Sorties au centre-ville','centreville'],['🛍️','Visites aux Galeries','mall'],['🏗️','Journées de chantier','chantier'],['🌱','Récoltes au potager','recolte'],['📚','Bénévolat','benev']].filter(x=>C_(x[2])>0);
+  h+=`<div class="ch2">🎉 Activités</div><div class="cinfo">`+(AC.length?AC.map(x=>row(x[0]+' '+x[1],cNum(C_(x[2])))).join(''):'<span class="cmut">Rien encore : la vie de Marcel commence!</span>')+(LIFE.bigFish?row('🐋 Plus gros poisson',LIFE.bigFish.n+' · '+kgs(LIFE.bigFish.kg)+' kg'):'')+`</div>`;
+  return h;}
+{const _cr6=cellRender;cellRender=function(){if(CELL.app!=='projets'&&CELL.app!=='stats')return _cr6();const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent=CELL.app==='stats'?'Statistiques':'Projets';const keep=B.scrollTop;let h='';try{h=CELL.app==='stats'?statsHTML():projHTML();}catch(e){console.error(e);h='<div class="cmut">Erreur d\'affichage</div>';}B.innerHTML=h;B.scrollTop=keep;};}
+$('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-a]');if(!t||t.dataset.a!=='loanpay')return;const Lc=LIFE.carLoan;if(!Lc)return;const bal=Math.round(Lc.pay*Lc.left*.9);if(money<bal){toast('Pas assez d\'argent pour rembourser le prêt',false);return;}addMoney(-bal,'Remboursement du prêt auto');LIFE.carLoan=null;cnt('autopayee');toast('🚗 Prêt auto remboursé : l\'auto est à lui!',true);cellRender();});
+
 {const _u6=ui;ui=()=>{_u6();try{if(MCAR.trk!=null&&!(Mc.job&&Mc.job.id==='camion'))parkSwap(false);}catch(e){}};}
 {const _cr3=cellRender;cellRender=function(){if(CELL.app!=='notes')return _cr3();
   const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent='Notes et rappels';
