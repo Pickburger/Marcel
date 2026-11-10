@@ -3938,9 +3938,9 @@ function fishSession(n){const s=[];for(let i=0;i<n;i++){s.push(D('fish',rnd(6,13
     if(!LIFE.bigFish||r.kg>LIFE.bigFish.kg){LIFE.bigFish={n:r.f.n,kg:r.kg};}Mc.q.unshift(D('reel',2.6,{label:'Remonte '+(['perchaude','truite'].includes(r.f.k)?'une':'un')+' '+r.f.n.toLowerCase()+' de '+kgs(r.kg)+' kg',say:r.kg>3?'WOW! Un monstre!':pick(['Je l\'ai!','Belle prise!','Hé, regarde-moi ça!'])}));}));}
   return s;}
 function fishingOuting(){if(!pondFrozen()&&SEASON()!=='hiver'&&OWN.canne&&Math.random()<.3)return marinaFish();flags.peche=true;LIFE.pecheD=Math.floor(gm/1440);const bus=Math.random()<.25;const s=bus?[...busTo('S5','Attend l\'autobus pour le parc des Saules')]:[{t:'drive',to:'etang',label:'Prend son auto pour aller pêcher au parc des Saules'}];
-  const gear=!OWN.canne?GEAR[0]:(Math.random()<.5?GEAR.find(g=>!OWN[g.id]&&money>g.prix+300):null);
+  const gear=!OWN.canne?GEAR[0]:(Math.random()<.5?GEAR.find(g=>!OWN[g.id]&&money>g.prix+300&&skLv('peche')>=(g.lv||0)&&(!g.fly||OWN.canne_mouche)):null);const FB0=pickBait(pondFrozen()?'glace':'etang');FISHNEXT=FB0;const FBn=FB0.nat?FB0.n:'Hameçons et plombs',FBp=FB0.nat?FB0.prix:4;
   if(Math.random()<.55)s.push(...at('peche.cannes','browse',rnd(3,6),{label:'Regarde les cannes chez Pêche & Plein Air',say:pick(['Wow, celle-là est belle!','Un jour, je vais m\'acheter un bateau.'])}));
-  s.push(...at('peche.comptoir','pay',3,{label:gear?'Achète : '+gear.nom.toLowerCase():'Achète des vers de terre',say:gear?'Je vais prendre ça, Réal!':'Une boîte de vers, Réal!'}),payF(gear?gear.prix:6,gear?gear.nom:'Vers de terre'),F(()=>{if(gear){OWN[gear.id]=true;say(Mc,'Hâte de l\'essayer!');}}));
+  s.push(...at('peche.comptoir','pay',3,{label:gear?'Achète : '+gear.nom.toLowerCase():'Achète : '+FBn.toLowerCase(),say:gear?'Je vais prendre ça, Réal!':FB0.nat?FBn+', s\'il vous plaît, Réal!':'Des hameçons et des plombs, Réal!'}),payF(gear?gear.prix:FBp,gear?gear.nom:FBn),F(()=>{if(gear){OWN[gear.id]=true;say(Mc,'Hâte de l\'essayer!');}}));
   const sp=pondFrozen()?'e_glace':pick(['e_dock','e_dock','e_rive']);s.push(tr('town.'+sp,{label:sp==='e_glace'?'Va pêcher sur la glace (pêche blanche)':'Va pêcher '+(sp==='e_dock'?'au bout du quai':'sur la rive de l\'étang')}),...fishSession(5+Math.floor(Math.random()*4)));
   s.push(F(()=>{const n=CATCH.length;say(Mc,n?n+' poisson'+(n>1?'s':'')+' dans la glacière!':'Bredouille… c\'est ça, la pêche.');if(n)Mc.carry='cooler';}),...(bus?busHome('S5'):[{t:'drive',to:'home',label:'Rentre à la maison avec sa pêche'}]),F(()=>{LIFE.lastOuting={kind:'pêcher au parc des Saules'};}));return s;}
 function sellFish(){const keep=Math.random()<.6?2:1;const n=CATCH.length-keep;const lv=skLv('peche');const mult=lv>=50?2:lv>=20?1.25:1;
@@ -7418,6 +7418,107 @@ function statsHTML(){const cats=statCats();const pct=cats.reduce((s2,c)=>s2+Math
   return h;}
 {const _cr6=cellRender;cellRender=function(){if(CELL.app!=='projets'&&CELL.app!=='stats')return _cr6();const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent=CELL.app==='stats'?'Statistiques':'Projets';const keep=B.scrollTop;let h='';try{h=CELL.app==='stats'?statsHTML():projHTML();}catch(e){console.error(e);h='<div class="cmut">Erreur d\'affichage</div>';}B.innerHTML=h;B.scrollTop=keep;};}
 $('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-a]');if(!t||t.dataset.a!=='loanpay')return;const Lc=LIFE.carLoan;if(!Lc)return;const bal=Math.round(Lc.pay*Lc.left*.9);if(money<bal){toast('Pas assez d\'argent pour rembourser le prêt',false);return;}addMoney(-bal,'Remboursement du prêt auto');LIFE.carLoan=null;cnt('autopayee');toast('🚗 Prêt auto remboursé : l\'auto est à lui!',true);cellRender();});
+/* ================= v106 : 37 espèces de poissons, cannes et appâts ================= */
+let FISHLOC='etang',FISHB=null,FISHNEXT=null;
+const LOCN={etang:'Étang du parc des Saules',riviere:'Rivière (marina)',glace:'Pêche blanche'},LOCE={etang:'🌿',riviere:'🌊',glace:'🧊'};
+Object.assign(FISH.find(f=>f.k==='perchaude'),{e:'🐟',g:'f',h:['etang','riviere','glace'],b:['vers','menes','jig','cuiller']});
+Object.assign(FISH.find(f=>f.k==='truite'),{e:'🐟',g:'f',h:['etang','riviere'],b:['vers','oeufs','cuiller','mouche','mais']});
+Object.assign(FISH.find(f=>f.k==='achigan'),{n:'Achigan à petite bouche',e:'🐟',h:['etang','riviere'],b:['vplast','nageur','menes','sangsues']});
+Object.assign(FISH.find(f=>f.k==='dore'),{e:'🐟',h:['etang','riviere','glace'],b:['menes','sangsues','nageur','jig','vers']});
+Object.assign(FISH.find(f=>f.k==='brochet'),{e:'🐊',h:['etang','riviere','glace'],b:['menes','cuiller','nageur','surface']});
+Object.assign(FISH.find(f=>f.k==='maskinonge'),{e:'🐊',h:['riviere','etang'],b:['musky','nageur','menes']});
+// [clé, nom, féminin, kg, $/kg, niveau, fréquence, habitats, appâts, extras]
+const NEWF=[['crapet','Crapet-soleil',0,[.05,.3],6,0,5,'er','vers mais',{e:'🐠'}],['crapetr','Crapet de roche',0,[.1,.5],8,0,3,'re','vers menes cuiller',{e:'🐠'}],
+ ['barbotte','Barbotte brune',1,[.2,1.2],7,0,3,'er','vers mais',{nt:1,e:'🐡'}],['meunier','Meunier noir',0,[.4,2],4,0,4,'r','vers mais'],['mene','Méné jaune',0,[.02,.12],5,0,3,'e','mais vers',{e:'🐠'}],
+ ['eperlan','Éperlan arc-en-ciel',0,[.02,.1],12,0,4,'gr','vers jig'],['baret','Baret',0,[.1,.6],9,5,3,'r','vers menes'],['marigane','Marigane noire',1,[.2,1.1],11,5,3,'e','menes jig',{e:'🐠'}],
+ ['omble','Omble de fontaine',0,[.2,1.6],24,5,2.5,'re','vers mouche cuiller'],['poulamon','Poulamon atlantique',0,[.04,.2],10,5,4,'g','vers jig'],
+ ['carpe','Carpe commune',1,[2,12],3,10,2,'er','mais'],['achiganb','Achigan à grande bouche',0,[.5,4.5],12,10,2.5,'e','vplast surface nageur menes'],['chevalier','Chevalier rouge',0,[.8,3],5,10,2.5,'r','vers sangsues'],
+ ['dorenoir','Doré noir',0,[.4,1.8],18,15,2.5,'r','menes sangsues jig'],['truiteb','Truite brune',1,[.5,4.5],18,15,2,'r','cuiller mouche nageur'],['lotte','Lotte',1,[.5,3.5],9,15,2,'gr','menes jig',{nt:1,e:'🐍'}],
+ ['coregone','Grand corégone',0,[.5,2.8],16,15,2,'g','jig oeufs'],['laquaiche','Laquaiche argentée',1,[.3,1],8,15,2,'r','mouche vers'],['malachigan','Malachigan',0,[1,6],5,15,2,'r','vers sangsues'],
+ ['anguille','Anguille d\'Amérique',1,[.5,2.5],20,20,1.5,'r','vers menes',{nt:1,e:'🐍'}],['alose','Alose savoureuse',1,[1,3.5],10,20,2,'r','mouche cuiller',{mo:[4,5]}],['poiscastor','Poisson-castor',0,[.8,4.5],6,20,1.5,'e','menes nageur',{e:'🐊'}],
+ ['moulac','Truite moulac',1,[.5,3.5],20,20,1.5,'g','jig cuiller'],['lepisoste','Lépisosté osseux',0,[1,5.5],4,25,1.2,'e','surface menes',{mo:[5,6,7],e:'🐊'}],['barbue','Barbue de rivière',1,[2,11],8,25,1.2,'r','vers menes oeufs',{nt:1,e:'🐡'}],
+ ['touladi','Touladi',0,[2,12],20,25,1,'g','jig cuiller nageur'],['ouananiche','Ouananiche',1,[1,4.5],26,30,1,'r','mouche cuiller nageur'],['omblech','Omble chevalier',0,[1,6],30,35,.6,'g','jig cuiller'],
+ ['saumonatl','Saumon atlantique',0,[3,13],30,40,.5,'r','mouche',{mo:[5,6,7,8]}],['esturgeon','Esturgeon jaune',0,[6,45],8,45,.4,'r','vers oeufs',{e:'🦈'}],['esturgeonn','Esturgeon noir',0,[40,150],6,50,.08,'r','oeufs',{lg:1,e:'🦈'}]];
+const HMAP={e:'etang',r:'riviere',g:'glace'};
+for(const[k,n,fem,kg,p,lv,w,h,b,x]of NEWF){const f={k,n,kg,p,lv,w,g:fem?'f':'m',e:'🐟',h:[...h].map(c=>HMAP[c]),b:b.split(' '),...(x||{})};FISH.push(f);FISHK.add(k);if(!GROC[k])GROC[k]=[n+(fem?' pêchée':' pêché'),'f',0,'🐟',1];}
+FISH.forEach(f=>{if(!f.e)f.e='🐟';if(!f.g)f.g='m';});
+const unUne=f=>f.g==='f'?'une':'un';
+/* ---- cannes ---- */
+const RODS=[{id:'canne',n:'Canne et moulinet de base',prix:60,lv:0,max:4,bite:0,big:0,d:'Pour débuter · retient jusqu\'à 4 kg'},
+ {id:'canne_glace',n:'Canne à pêche blanche',prix:75,lv:0,max:6,bite:.1,big:.05,ice:1,d:'Courte et sensible, pour la glace · 6 kg'},
+ {id:'canne2',n:'Canne pro en carbone',prix:260,lv:10,max:8,bite:.1,big:.1,d:'Légère et précise · 8 kg'},
+ {id:'canne_mouche',n:'Canne à mouche',prix:650,lv:25,max:10,bite:.1,big:.08,fly:1,d:'Obligatoire pour les mouches · saumon et truites · 10 kg'},
+ {id:'canne_lancer',n:'Canne à lancer lourd',prix:480,lv:20,max:25,bite:.12,big:.15,d:'Moulinet à tambour tournant · gros brochets · 25 kg'},
+ {id:'canne_elite',n:'Canne de compétition',prix:1400,lv:40,max:200,bite:.18,big:.25,d:'Graphite haut de gamme · retient même un esturgeon'}];
+/* ---- appâts (naturels : achetés à chaque sortie) et leurres (achetés une fois) ---- */
+const BAITS=[{k:'vers',n:'Vers de terre',e:'🪱',prix:6,lv:0,nat:1},{k:'mais',n:'Maïs et pâte à carpe',e:'🌽',prix:5,lv:5,nat:1},{k:'menes',n:'Ménés vivants',e:'🐟',prix:10,lv:10,nat:1,big:.05},
+ {k:'sangsues',n:'Sangsues',e:'🪱',prix:9,lv:15,nat:1},{k:'oeufs',n:'Œufs de saumon',e:'🟠',prix:12,lv:20,nat:1},
+ {k:'cuiller',n:'Cuillère tournante',e:'🥄',prix:15,lv:5},{k:'vplast',n:'Ver de plastique',e:'🪱',prix:18,lv:10},{k:'jig',n:'Jig de pêche blanche',e:'🪝',prix:20,lv:10},
+ {k:'nageur',n:'Poisson-nageur',e:'🐠',prix:28,lv:15,big:.08},{k:'surface',n:'Leurre de surface',e:'🦗',prix:24,lv:20,bite:.03},{k:'mouche',n:'Mouches artificielles',e:'🪰',prix:45,lv:25,fly:1},
+ {k:'musky',n:'Gros leurre à maskinongé',e:'🎣',prix:60,lv:35,big:.15}];
+const baitOK=B=>skLv('peche')>=B.lv&&(B.nat||OWN['l_'+B.k])&&(!B.fly||OWN.canne_mouche);
+const locPool=loc=>{const lv=skLv('peche'),m=MON();return FISH.filter(f=>lv>=f.lv&&f.h.includes(loc)&&(!f.mo||f.mo.includes(m)));};
+function autoBait(loc){const L=BAITS.filter(baitOK);if(!L.length)return BAITS[0];const pool=locPool(loc);let best=null,bs=-1;
+  for(const B of L){let sc=0;for(const f of pool)if(f.b.includes(B.k))sc+=(C_('f_'+f.k)?1:4)*f.w;sc*=rnd(.7,1.3);if(sc>bs){bs=sc;best=B;}}return best||L[0];}
+function pickBait(loc){const ch=LIFE.fishB;const B=ch&&ch!=='auto'?BAITS.find(x=>x.k===ch):null;return B&&baitOK(B)?B:autoBait(loc);}
+function curRod(loc,B){const own=RODS.filter(R=>OWN[R.id]);if(!own.length)return RODS[0];if(B&&B.fly){const f=own.find(R=>R.fly);if(f)return f;}
+  if(loc==='glace'){const g=own.find(R=>R.ice);const top=own.filter(R=>!R.fly).sort((a,b)=>b.max-a.max)[0];return g&&(!top||top.max<=8)?g:top||g;}
+  return own.filter(R=>!R.fly&&!R.ice).sort((a,b)=>b.max-a.max)[0]||own[0];}
+fishTry=function(){const lv=skLv('peche'),loc=FISHLOC||'etang';const B=FISHB||pickBait(loc),R=curRod(loc,B);
+  const ch=.26+Math.min(lv,50)*.006+R.bite+(B.bite||0)+(lv>=30?.06:0)+(OWN.leurres?.03:0);if(Math.random()>ch)return null;if(Math.random()<.04)return{junk:1};
+  const pool=locPool(loc);if(!pool.length)return null;const h=hourOf(),night=h<6||h>=20;
+  const wt=f=>f.w*(f.b.includes(B.k)?1:.12)*(f.nt?(night?2.4:.35):1);let tw=pool.reduce((s2,f)=>s2+wt(f),0),q=Math.random()*tw,f=pool[0];for(const x of pool){q-=wt(x);if(q<=0){f=x;break;}}
+  const big=R.big+(B.big||0)+(lv>=30?.12:0)+lv*.004;const u=Math.min(1,Math.pow(Math.random(),1.4)+big*Math.random());return{f,kg:f.kg[0]+(f.kg[1]-f.kg[0])*u,rod:R,bait:B};};
+const FREC=()=>LIFE.fishRec||(LIFE.fishRec={});
+function landFish(r){const cap=OWN.glaciere?8:3;const f=r.f;const first=!C_('f_'+f.k);const Rc=FREC();const rec=!Rc[f.k]||r.kg>Rc[f.k];if(rec)Rc[f.k]=+r.kg.toFixed(2);
+  cnt('fish');cnt('f_'+f.k);if(FISHLOC==='glace')cnt('glace');if(DS)DS.fish++;addXP('peche',4+Math.min(r.kg,40)*2.5+(first?15:0));
+  if(first)setTimeout(()=>toast('🆕 Nouvelle espèce : '+f.n+'! ('+FISH.filter(x=>C_('f_'+x.k)).length+'/'+FISH.length+')',true),900);
+  if(!LIFE.bigFish||r.kg>LIFE.bigFish.kg)LIFE.bigFish={n:f.n,kg:r.kg};
+  if(CATCH.length>=cap||r.kg>30){return'rel';}CATCH.push({k:f.k,kg:+r.kg.toFixed(2)});INV[f.k]=(INV[f.k]||0)+1;return'keep';}
+fishSession=function(n){const s=[];s.push(F(()=>{FISHB=FISHNEXT&&baitOK(FISHNEXT)?FISHNEXT:pickBait(FISHLOC);FISHNEXT=null;const R=curRod(FISHLOC,FISHB);say(Mc,pick(['Aujourd\'hui : ','Je vais essayer ','Allez, ']).toString()+FISHB.n.toLowerCase()+' et '+R.n.toLowerCase()+'!',3);}));
+  for(let i=0;i<n;i++){s.push(D('fish',rnd(6,13),{warp:3,label:i===0?'Lance sa ligne à l\'eau':undefined,say:i===0?pick(['Allez les poissons, venez voir papa!','Un beau doré, s\'il vous plaît…','Le calme de l\'eau…']):undefined}),
+  F(()=>{const r=fishTry();if(!r){if(Math.random()<.35)say(Mc,pick(['Rien… encore.','Ça mord pas aujourd\'hui.','Patience, Marcel…','Je sens que ça s\'en vient.']));return;}
+    if(r.junk){Mc.q.unshift(D('reel',2,{say:pick(['Une vieille botte! Hahaha.','Une branche… super.','Un vieux pneu de vélo?!'])}));return;}FISHFX.t=tReal;SFX.splash();const f=r.f;
+    if(r.kg>r.rod.max&&Math.random()<.75){cnt('casse');addXP('peche',5);Mc.q.unshift(D('reel',3,{label:'Se bat avec un énorme poisson… la ligne casse!',say:pick(['NON! La ligne a cassé! C\'était un monstre!','Ma canne est pas assez forte pour ça…','Il m\'a eu… il me faut une plus grosse canne!'])}));toast('💥 Ligne cassée : un poisson trop gros pour la '+r.rod.n.toLowerCase()+' (max '+r.rod.max+' kg)',false);return;}
+    const res=landFish(r);toast('🎣 '+f.n+' de '+kgs(r.kg)+' kg!'+(res==='rel'?' (remis à l\'eau)':''),true);
+    Mc.q.unshift(D('reel',r.kg>10?4:2.6,{label:'Remonte '+unUne(f)+' '+f.n.toLowerCase()+' de '+kgs(r.kg)+' kg'+(res==='rel'?' et le remet à l\'eau':''),say:r.kg>20?'C\'EST UN MONSTRE! Je vais avoir mal aux bras!':r.kg>3?'WOW! '+(f.g==='f'?'Toute une':'Tout un')+' '+f.n.toLowerCase()+'!':res==='rel'?'Ma glacière est pleine, je le relâche.':pick(['Je l\'ai!','Belle prise!','Hé, regarde-moi ça!'])}));}));}
+  s.push(F(()=>{FISHB=null;}));return s;};
+mgFish=function(n){for(let i=0;i<n;i++){let r=null;for(let k=0;k<8&&!r;k++){const x=fishTry();if(x&&!x.junk)r=x;}if(!r)continue;if(r.kg>r.rod.max)r.kg=r.rod.max*.95;const res=landFish(r);toast('🎣 '+r.f.n+' de '+kgs(r.kg)+' kg!'+(res==='rel'?' (remis à l\'eau)':''),true);}};
+/* les sorties fixent l'endroit de pêche */
+{const _fo=fishingOuting;fishingOuting=function(){const s=_fo();const i=s.findIndex(x=>x&&x.t==='do'&&x.a==='fish');if(i>=0)s.splice(Math.max(0,i-1),0,F(()=>{FISHLOC=pondFrozen()?'glace':'etang';}));return s;};}
+{const _mf=marinaFish;marinaFish=function(){const s=_mf();const B=pickBait('riviere');s.splice(1,0,F(()=>{FISHLOC='riviere';FISHNEXT=B;if(B.nat)addMoney(-B.prix,'Appâts à la marina : '+B.n.toLowerCase());}));return s;};}
+/* matériel : achats automatiques de Marcel */
+GEAR.splice(0,GEAR.length,{id:'canne',nom:'Canne et moulinet de base',prix:60,lv:0},{id:'glaciere',nom:'Glacière de pêche',prix:55,lv:0},{id:'leurres',nom:'Coffre de leurres',prix:90,lv:0},
+ ...RODS.filter(R=>R.id!=='canne').map(R=>({id:R.id,nom:R.n,prix:R.prix,lv:R.lv})),{id:'veste',nom:'Veste et bottes de pêche',prix:140,lv:0},...BAITS.filter(B=>!B.nat).map(B=>({id:'l_'+B.k,nom:B.n,prix:B.prix,lv:B.lv,fly:B.fly})));
+/* achats dans l'app (liste de Marcel) */
+function fishBuy(it){return[{t:'drive',to:'etang',label:'Va chez Pêche & Plein Air'},...at('peche.cannes','browse',rnd(3,5),{label:'Regarde le matériel chez Pêche & Plein Air'}),...at('peche.comptoir','pay',3,{label:'Achète : '+it.nom.toLowerCase(),say:'Je vais prendre ça, Réal!'}),
+  F(()=>{if(OWN[it.id])return;if(money<it.prix){toast('Pas assez d\'argent pour : '+it.nom,false);return;}addMoney(-it.prix,'Pêche & Plein Air · '+it.nom);OWN[it.id]=true;cnt('fgear');toast('🎣 Nouveau matériel : '+it.nom,true);say(Mc,'Hâte de l\'essayer!');}),{t:'drive',to:'home',label:'Rentre à la maison'}];}
+function fishMissions(){return GEAR.map(it=>({id:'fbuy_'+it.id,e:'🎣',n:'Acheter : '+it.nom,fg:it,ok:()=>{if(OWN[it.id])return'Déjà acheté';if(skLv('peche')<it.lv)return'Niveau '+it.lv+' requis en pêche';if(it.fly&&!OWN.canne_mouche)return'Il faut une canne à mouche';const h=hourOf();if(h<8||h>=20)return'La boutique est ouverte de 8 h à 20 h';if(money<it.prix)return'Il manque '+cNum(it.prix-money)+' $';return true;},go:()=>fishBuy(it)}));}
+{const _pm=projMissions;projMissions=function(){return[..._pm(),...fishMissions()];};}
+/* compétence : nouveaux paliers */
+{const S=SKILLS.find(x=>x.k==='peche');if(S)S.u=['Ménés, jig et ver de plastique · canne pro en carbone · carpe et achigan à grande bouche','Œufs de saumon et leurre de surface · canne à lancer lourd · poissons vendus 25 % plus cher','Prises plus fréquentes et plus grosses · canne à mouche (niv. 25) · ouananiche','Canne de compétition · saumon atlantique · le légendaire maskinongé','Maître pêcheur : poissons vendus 2× plus cher · esturgeon noir légendaire'];}
+TROPHIES.push(['esp10','🐠','Naturaliste','Pêcher 10 espèces de poissons différentes',()=>FISH.filter(f=>C_('f_'+f.k)).length>=10],['esp25','🐡','Encyclopédie vivante','Pêcher 25 espèces différentes',()=>FISH.filter(f=>C_('f_'+f.k)).length>=25],
+ ['esptout','🏅','Toutes les espèces!','Pêcher les '+FISH.length+' espèces du Québec',()=>FISH.every(f=>C_('f_'+f.k))],['esturg','🦈','Le monstre du fleuve','Pêcher un esturgeon noir',()=>C_('f_esturgeonn')>=1],
+ ['saumon1','🪰','Moucheur','Pêcher un saumon atlantique à la mouche',()=>C_('f_saumonatl')>=1],['cannes','🎣','Coffre complet','Posséder toutes les cannes à pêche',()=>RODS.every(R=>OWN[R.id])]);
+/* ---------- 📱 App Pêche ---------- */
+CAPPS.push(['peche','🎣','Pêche','linear-gradient(135deg,#3aa0c8,#1a5a7a)']);
+const seasonTxt=f=>f.mo?f.mo.map(m=>MOIS[m]).join(', '):f.h.length===1&&f.h[0]==='glace'?'hiver (sur la glace)':'toute la saison';
+function pecheHTML(){const lv=skLv('peche'),I=skInfo('peche');const caught=FISH.filter(f=>C_('f_'+f.k)).length;const Rc=FREC();
+  const loc=pondFrozen()?'glace':'etang';const B=pickBait(loc),R=curRod(loc,B);
+  let h=`<div class="cinfo"><b>🎣 Pêche · niveau ${lv}</b><div class="cbar"><i style="width:${Math.round(I.x/I.need*100)}%;background:#3aa0c8"></i></div><span class="cmut">Espèces pêchées : <b>${caught}/${FISH.length}</b> · prises : ${cNum(C_('fish'))}${C_('casse')?' · lignes cassées : '+C_('casse'):''}${LIFE.bigFish?'<br>Record : '+LIFE.bigFish.n+' de '+kgs(LIFE.bigFish.kg)+' kg':''}</span></div>`;
+  h+=`<div class="cinfo"><b>Équipement de la prochaine sortie</b><br>🎣 ${OWN.canne?R.n+' <span class="cmut">(max '+R.max+' kg)</span>':'<span class="cmut">Pas encore de canne : il en achètera une à sa première sortie</span>'}<br>${B.e} ${B.n}${B.nat?' <span class="cmut">('+B.prix+' $ par sortie)</span>':''}${LIFE.fishB&&LIFE.fishB!=='auto'?'':' <span class="cmut">· choisi par Marcel</span>'}</div>`;
+  h+=`<div class="ch2">🪱 Appât à utiliser</div><div class="cchips" style="flex-wrap:wrap"><button type="button" data-a="fbait:auto" class="${!LIFE.fishB||LIFE.fishB==='auto'?'on':''}">🤖 Marcel choisit</button>`+BAITS.map(b=>{const ok=baitOK(b);return`<button type="button" data-a="fbait:${b.k}" class="${LIFE.fishB===b.k?'on':''}"${ok?'':' style="opacity:.45"'}>${b.e} ${b.n}${ok?'':' 🔒'}</button>`;}).join('')+`</div>
+   <div class="cmut" style="margin-bottom:6px">« Marcel choisit » vise les espèces qu'il n'a pas encore. Appâts naturels achetés à chaque sortie; leurres achetés une fois.</div>`;
+  h+=`<div class="ch2">🛒 Matériel (Pêche & Plein Air)</div>`+fishMissions().map(d=>{const it=d.fg,R2=RODS.find(x=>x.id===it.id),B2=BAITS.find(x=>'l_'+x.k===it.id);const sub=(R2?R2.d:B2?'Leurre réutilisable · niveau '+B2.lv:it.id==='glaciere'?'Garde jusqu\'à 8 poissons':it.id==='leurres'?'Un peu plus de touches':'Confort et chaleur au bord de l\'eau')+' · '+cNum(it.prix)+' $';
+    if(OWN[it.id])return`<div class="crow" style="cursor:default"><span>${it.nom}<small>${sub}</small></span><em>✓ Possédé</em></div>`;return camRow(d,sub);}).join('');
+  h+=`<div class="ch2">📖 Guide des espèces (${caught}/${FISH.length})</div>`+[...FISH].sort((a,b)=>a.lv-b.lv||a.n.localeCompare(b.n,'fr')).map(f=>{const n=C_('f_'+f.k);const lock=lv<f.lv;
+    const bt=f.b.map(k=>{const b=BAITS.find(x=>x.k===k);return b?b.e+' '+b.n.toLowerCase():k;}).join(', ');
+    return`<div class="cinfo" style="padding:6px 9px;${n?'':'opacity:.8'}"><div style="display:flex;justify-content:space-between;gap:6px"><span>${n?f.e:'❔'} <b>${n||!lock?f.n:'Espèce inconnue'}</b>${f.lg?' ✨':''}</span><span class="cmut">${lock?'🔒 niveau '+f.lv:n?'× '+n+' · record '+kgs(Rc[f.k]||0)+' kg':'pas encore pêché'}</span></div>
+     <span class="cmut">${f.h.map(x=>LOCE[x]+' '+LOCN[x]).join(' · ')} · ${seasonTxt(f)}${f.nt?' · 🌙 surtout la nuit':''}<br>${lock?'Taille : '+kgs(f.kg[0])+' à '+kgs(f.kg[1])+' kg':'Appâts : '+bt+' · '+kgs(f.kg[0])+' à '+kgs(f.kg[1])+' kg · '+f.p+' $/kg'}</span></div>`;}).join('');
+  return h;}
+{const _cr7=cellRender;cellRender=function(){if(CELL.app!=='peche')return _cr7();const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent='Pêche';const keep=B.scrollTop;let h='';try{h=pecheHTML();}catch(e){console.error(e);h='<div class="cmut">Erreur d\'affichage</div>';}B.innerHTML=h;B.scrollTop=keep;};}
+$('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-a]');if(!t||!t.dataset.a.startsWith('fbait:'))return;const k=t.dataset.a.slice(6);if(k!=='auto'){const b=BAITS.find(x=>x.k===k);if(!b)return;if(!baitOK(b)){toast(skLv('peche')<b.lv?'🔒 '+b.n+' : niveau '+b.lv+' requis en pêche':b.fly&&!OWN.canne_mouche?'Il faut une canne à mouche pour les mouches':'Achète d\'abord ce leurre (liste ci-dessous)',false);return;}}LIFE.fishB=k;toast(k==='auto'?'🤖 Marcel choisira son appât':'🪱 Appât choisi : '+BAITS.find(x=>x.k===k).n,true);cellRender();});
+
 
 {const _u6=ui;ui=()=>{_u6();try{if(MCAR.trk!=null&&!(Mc.job&&Mc.job.id==='camion'))parkSwap(false);}catch(e){}};}
 {const _cr3=cellRender;cellRender=function(){if(CELL.app!=='notes')return _cr3();
