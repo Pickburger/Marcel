@@ -571,9 +571,12 @@ function cy(p,mat,r1,r2,h,x,y,z,seg=14){const m=new THREE.Mesh(new THREE.Cylinde
 function sp(p,mat,r,x,y,z,det=1){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r,det),mat);m.position.set(x,y,z);p.add(m);return m;}
 function grp(p,x=0,y=0,z=0,ry=0){const g=new THREE.Group();g.position.set(x,y,z);g.rotation.y=ry;p.add(g);return g;}
 function prism(len,width,height){const g=new THREE.CylinderGeometry(1,1,len,3);g.rotateZ(-PI/2);g.rotateX(-PI/2);g.scale(1,height/1.5,width/(2*.866));g.translate(0,height*.5/1.5,0);return g;}
+const OCCG=new Map();function occAdd(x0,y0,z0,x1,y1,z1){const B=[x0,y0,z0,x1,y1,z1];for(let ix=Math.floor(x0/8);ix<=Math.floor(x1/8);ix++)for(let iz=Math.floor(z0/8);iz<=Math.floor(z1/8);iz++){const k=ix*1000+iz;let L=OCCG.get(k);if(!L)OCCG.set(k,L=[]);L.push(B);}}
+function occAt(x,y,z){const L=OCCG.get(Math.floor(x/8)*1000+Math.floor(z/8));if(!L)return false;for(const b of L)if(x>b[0]&&x<b[3]&&y>b[1]&&y<b[4]&&z>b[2]&&z<b[5])return true;return false;}
 function bake(root,parent){
   root.updateMatrixWorld(true);const groups=new Map();
   root.traverse(o=>{if(!o.isMesh)return;let g=o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone();g.applyMatrix4(o.matrixWorld);
+    if(typeof town!=='undefined'&&parent===town&&!o.userData.ns){g.computeBoundingBox();const b=g.boundingBox;if(b.max.y>2.4&&b.max.x-b.min.x<24&&b.max.z-b.min.z<24)occAdd(b.min.x,b.min.y,b.min.z,b.max.x,b.max.y,b.max.z);}
     for(const k of Object.keys(g.attributes))if(k!=='position'&&k!=='normal'&&k!=='uv')g.deleteAttribute(k);
     if(!g.attributes.uv)g.setAttribute('uv',new THREE.BufferAttribute(new Float32Array(g.attributes.position.count*2),2));
     g.clearGroups();const cs=!o.userData.ns;const key=o.material.uuid+(cs?'1':'0');
@@ -724,7 +727,7 @@ const town=new THREE.Group();scene.add(town);
 const TR=new THREE.Group();
 const BLD={},AABB=[],CHIMS=[];
 const RD=[-105,-30,30,105],EX=150;const TLIT=(cx,cz)=>Math.abs(cx)===30&&Math.abs(cz)===30;
-const TL={t:0,cyc:37,st(ax){const t=this.t%this.cyc;const o=ax==='x'?0:18.5;const u=((t-o)%this.cyc+this.cyc)%this.cyc;return u<14?'g':u<17?'y':'r';}};let VBL=null;
+const TL={t:0,cyc:27,st(ax){const t=this.t%this.cyc;const o=ax==='x'?0:13.5;const u=((t-o)%this.cyc+this.cyc)%this.cyc;return u<10?'g':u<12.5?'y':'r';}};let VBL=null;
 const L=[-110.5,-99.5,-35.5,-24.5,24.5,35.5,99.5,110.5];
 function groundY(x,z){if(x<-160.9&&x>-165.7&&z>19&&z<71)return .4;if(x>154.3&&x<166.4&&z>47.6&&z<86.6)return .27;if(x>154.3&&x<157.2&&z>40.6&&z<43.4)return .27;if(x>145.7&&x<156.3&&z>-67.3&&z<-52.7)return .27;if(x>146.3&&x<154.7&&Math.abs(z)<99.1&&!RD.some(c=>Math.abs(z-c)<6.4))return .12;if(x>83.6&&x<85.4&&z>-89.8&&z<-84.4)return .42;if(x>-59&&x<-51&&z>-60.1&&z<-56.7)return .2;const onRoad=v=>RD.some(c=>Math.abs(v-c)<4);const sw=v=>RD.some(c=>{const a=Math.abs(v-c);return a>=4&&a<=7.2;});
   if((onRoad(x)&&Math.abs(z)<EX)||(onRoad(z)&&Math.abs(x)<EX))return .045;if(sw(x)||sw(z))return .15;return .02;}
@@ -768,7 +771,7 @@ function fxUnder(p,s,seed){if(fxHash(p.position.x,p.position.z)>.58)return;const
 
 
 const treeSpots=[];
-function tree(x,z,s=1,par=TR){const p=grp(par,x,0,z,rnd(0,6));p.scale.setScalar(s);cy(p,TRUNK,.16,.24,3,0,0,0,7);
+const TREEP=[];function tree(x,z,s=1,par=TR){if(par===TR)TREEP.push([x,z,s]);const p=grp(par,x,0,z,rnd(0,6));p.scale.setScalar(s);cy(p,TRUNK,.16,.24,3,0,0,0,7);
   const m=pick(LEAF),m2=pick(LEAF);[[0,4.3,0,1.6],[.9,3.6,.3,1.1],[-.8,3.7,-.4,1.15],[.2,3.5,-.9,1],[-.3,5.1,.4,1.05]].forEach(([a,b,c,r],i)=>sp(p,i%2?m:m2,r,a,b,c,1));
   {const ex=3+Math.floor(Math.random()*3);for(let i=0;i<ex;i++){const a=rnd(0,PI*2),r2=rnd(.7,1.5);sp(p,i%2?m:m2,rnd(.55,.9),Math.cos(a)*r2,rnd(3.3,5),Math.sin(a)*r2,1);}}
   try{fxUnder(p,s,x*3.1+z);}catch(e){}
@@ -1694,6 +1697,7 @@ function frame(p,x,y,z,ry,w,h,col){const g=grp(p,x,y,z,ry);bx(g,M('#3a2a20'),w+.
  for(const x of[-7,-3,1,5])cy(r,lampMat,.08,.12,.15,x,2.6,-5.75,8);
  bake(r,I.g);
  I.obs=[[-5.35,-1.3,3.85,-.7],[-5.35,0,3.85,.6],[-5.35,1.3,3.85,1.9],[-5.35,2.6,3.85,3.2],[6.9,-.55,7.55,2.95],[7.55,-.55,8,2.95],[-6.1,-6,-5.1,-5.5],[4.1,-6,5.1,-5.5]];
+ {const gl=new THREE.SpotLight(0xbcd2ff,1.1,18,1.05,.7,1.2);gl.position.set(-.5,2.6,-5.4);gl.target.position.set(-.5,.4,2.4);I.dyn.add(gl);I.dyn.add(gl.target);const fl=new THREE.PointLight(0xffd8a8,.35,10,1.5);fl.position.set(6,2.6,1.2);I.dyn.add(fl);for(const z of[-.35,.95,2.25])for(const x of[-5.3,3.95]){const st=new THREE.Mesh(new THREE.BoxGeometry(.12,.03,.05),new THREE.MeshBasicMaterial({color:0xffc870}));st.position.set(x,.05,z);I.dyn.add(st);}}
  spot(I,'entry',5,5,PI);spot(I,'popcorn',6.3,1.2,PI/2);spot(I,'seat',-.6,.3,PI,{seat:.45,via:[[4.4,-.35],[-.6,-.35]]});spot(I,'seat2',.1,.3,PI,{seat:.45,via:[[4.4,-.35],[.1,-.35]]});
  const sp3=(x,z,lk)=>({look:lk,x,z,yaw:PI,seat:.45,act:'movie'});
  I.staff=[{look:{skin:'#e8b996',hair:'#3a2a1a',shirt:'#8a1a2a',pants:'#2b2b2b'},x:7.7,z:1.2,yaw:-PI/2,act:'work',name:'Caissier'},sp3(-3.6,-1,{skin:'#f1c29c',hair:'#8a6a4a',shirt:'#4fb3a9',pants:'#3d4252'}),sp3(-2.9,-1,{skin:'#c98e66',hair:'#222',shirt:'#d86a8f',pants:'#2f3442',long:1}),
@@ -4897,10 +4901,19 @@ function updateCamera(dt){
   else{const k=1-Math.exp(-dt*2.4);camPos.lerp(D_.pos,k);camLook.lerp(D_.look,1-Math.exp(-dt*4));camFov=lerp(camFov,D_.fov,k);}
   applyCam();}
 let CAMOCC=null;const ORB={yaw:0,pitch:0,zoom:1,ty:0,tp:0,tz:1};
+const OCC={v:0,t:-9,lv:0},_orc=new THREE.Raycaster();
+function occLift(look,pos,a){const v=pos.clone().sub(look),r=v.length()||1;const az=Math.atan2(v.x,v.z);const el=Math.min(1.45,Math.asin(clamp(v.y/r,-1,1))+a);const r2=r*(1-Math.min(.3,a*.22));return new V3(look.x+Math.sin(az)*Math.cos(el)*r2,look.y+Math.sin(el)*r2,look.z+Math.cos(az)*Math.cos(el)*r2);}
+function occBlocked(look,pos){if(Mc.inCar||Mc.inBus)return false;if(Mc.area==='town'){for(let i=2;i<=16;i++){const u=i/16,x=lerp(look.x,pos.x,u),y=lerp(look.y,pos.y,u),z=lerp(look.z,pos.z,u);if(y>1.6&&occAt(x,y,z))return true;if(occDyn(x,y,z))return true;for(const t of TREEP){const s2=t[2];if(y<2.3*s2||y>6.6*s2)continue;const dx=x-t[0],dz=z-t[1];if(dx*dx+dz*dz<(2.3*s2)*(2.3*s2))return true;}}return false;}
+  const I=INT[Mc.area];if(!I||I.outdoor)return false;const dir=pos.clone().sub(look);const d=dir.length();if(d<1)return false;dir.normalize();const st=look.clone().addScaledVector(dir,.7);_orc.set(st,dir);_orc.near=0;_orc.far=d-.9;_orc.camera=cam;
+  const hs=_orc.intersectObject(I.g,true);for(const h of hs){const o=h.object;if(o.isSprite||o.isLine||o.isPoints)continue;const m=o.material;if(m&&m.transparent&&m.opacity<.5)continue;let ok=true;for(let a=o;a&&a!==I.g;a=a.parent){if(!a.visible||a.userData&&a.userData.chr){ok=false;break;}}if(!ok)continue;if(ALL.some(c=>{for(let a=o;a;a=a.parent)if(a===c.m.root)return true;return false;}))continue;return true;}return false;}
+let OCCD=[],OCCDt=-9;function occDyn(x,y,z){if(tReal-OCCDt>4){OCCDt=tReal;OCCD=[];const gs=[];if(typeof HOMEB!=='undefined'&&HOMEB&&HOMEB.HR)gs.push(HOMEB.HR);if(typeof ETGG!=='undefined')gs.push(ETGG);for(const g of gs){if(!g.visible)continue;const b=new THREE.Box3().setFromObject(g);if(!b.isEmpty())OCCD.push(b);}}for(const b of OCCD)if(x>b.min.x&&x<b.max.x&&y>Math.max(1.6,b.min.y)&&y<b.max.y&&z>b.min.z&&z<b.max.z)return true;return false;}
+function occCam(){if(tReal-OCC.t>.3){OCC.t=tReal;let lv=0;for(;lv<4;lv++){if(!occBlocked(camLook,lv?occLift(camLook,cam.position,lv*.32):cam.position))break;}OCC.lv=lv;}
+  OCC.v+=(OCC.lv*.32-OCC.v)*.08;if(OCC.v>.01)cam.position.copy(occLift(camLook,cam.position,OCC.v));}
 function applyCam(){ORB.yaw+=(ORB.ty-ORB.yaw)*.35;ORB.pitch+=(ORB.tp-ORB.pitch)*.35;ORB.zoom+=(ORB.tz-ORB.zoom)*.35;
   if(Math.abs(ORB.yaw)>1e-3||Math.abs(ORB.pitch)>1e-3||Math.abs(ORB.zoom-1)>1e-3){const v=camPos.clone().sub(camLook);const r=v.length()*ORB.zoom;let az=Math.atan2(v.x,v.z)+ORB.yaw;let el=Math.asin(clamp(v.y/(v.length()||1),-1,1))+ORB.pitch;el=clamp(el,.06,1.45);
     cam.position.set(camLook.x+Math.sin(az)*Math.cos(el)*r,camLook.y+Math.sin(el)*r,camLook.z+Math.cos(az)*Math.cos(el)*r);if(cam.position.y<.4)cam.position.y=.4;}else cam.position.copy(camPos);
-  if(!trans){try{const P=cam.position.clone();if(Mc.area==='town')clearCam(camLook,P);else{const I=INT[Mc.area];if(I&&I.camB)clearTk(I,camLook,P);}cam.position.copy(P);}catch(e){}}
+  if(!trans){try{const P=cam.position.clone();if(Mc.area==='town')clearCam(camLook,P);else{const I=INT[Mc.area];if(I&&I.camB)clearTk(I,camLook,P);}cam.position.copy(P);}catch(e){}
+    try{occCam();}catch(e){}}
   cam.lookAt(camLook);if(Math.abs(cam.fov-camFov)>.01){cam.fov=camFov;cam.updateProjectionMatrix();}
   sceneEl.classList.toggle('cine',['champ','rue'].includes(shot.type)&&!trans);
 }
