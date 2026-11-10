@@ -565,7 +565,20 @@ const signMats=[];
 function signMat(text,bg,fg,w,h,font){const t=textTex(text,bg,fg,w,h,font);const m=new THREE.MeshStandardMaterial({map:t,emissiveMap:t,emissive:new THREE.Color(1,1,1),emissiveIntensity:0,roughness:.6});signMats.push(m);return m;}
 
 /* ================= Géométrie & cuisson ================= */
-function boxGeo(w,h,d,ts){const g=new THREE.BoxGeometry(w,h,d);if(ts){const uv=g.attributes.uv;const dm=[[d,h],[d,h],[w,d],[w,d],[w,h],[w,h]];for(let f=0;f<6;f++)for(let i=0;i<4;i++){const k=f*4+i;uv.setXY(k,uv.getX(k)*dm[f][0]/ts,uv.getY(k)*dm[f][1]/ts);}}return g;}
+const RB={max:3.2,r:.05,on:true};
+function chamferGeo(w,h,d,r,ts){const H=[w/2,h/2,d/2],pos=[],nor=[],uv=[];
+  const V=(a,sa,b,sb,c,sc,ia,ib,ic)=>{const v=[0,0,0];v[a]=sa*(H[a]-ia);v[b]=sb*(H[b]-ib);v[c]=sc*(H[c]-ic);return v;};
+  const uvOf=(v,ax)=>{const o=[0,1,2].filter(k=>k!==ax);const i1=ax===0?2:0,i2=ax===1?2:1;const u=(v[i1]+H[i1])/(2*H[i1]||1),t=(v[i2]+H[i2])/(2*H[i2]||1);return ts?[u*2*H[i1]/ts,t*2*H[i2]/ts]:[u,t];};
+  const tri=(A,B,C,nA,nB,nC,axA,axB,axC)=>{const e1=[B[0]-A[0],B[1]-A[1],B[2]-A[2]],e2=[C[0]-A[0],C[1]-A[1],C[2]-A[2]];const n=[e1[1]*e2[2]-e1[2]*e2[1],e1[2]*e2[0]-e1[0]*e2[2],e1[0]*e2[1]-e1[1]*e2[0]];const m=[(A[0]+B[0]+C[0])/3,(A[1]+B[1]+C[1])/3,(A[2]+B[2]+C[2])/3];
+    let L=[[A,nA,axA],[B,nB,axB],[C,nC,axC]];if(n[0]*m[0]+n[1]*m[1]+n[2]*m[2]<0)L=[L[0],L[2],L[1]];for(const[v,nn,ax]of L){pos.push(...v);nor.push(...nn);uv.push(...uvOf(v,ax));}};
+  const N=(ax,s)=>{const n=[0,0,0];n[ax]=s;return n;};
+  for(let a=0;a<3;a++)for(const sa of[-1,1]){const b=(a+1)%3,c=(a+2)%3;const P=(sb,sc)=>V(a,sa,b,sb,c,sc,0,r,r);const n=N(a,sa);tri(P(-1,-1),P(1,-1),P(1,1),n,n,n,a,a,a);tri(P(-1,-1),P(1,1),P(-1,1),n,n,n,a,a,a);}
+  for(let a=0;a<3;a++){const b=(a+1)%3,c=(a+2)%3;for(const sa of[-1,1])for(const sb of[-1,1]){const A1=V(a,sa,b,sb,c,-1,0,r,r),A2=V(a,sa,b,sb,c,1,0,r,r),B1=V(a,sa,b,sb,c,-1,r,0,r),B2=V(a,sa,b,sb,c,1,r,0,r);const na=N(a,sa),nb=N(b,sb);tri(A1,A2,B2,na,na,nb,a,a,b);tri(A1,B2,B1,na,nb,nb,a,b,b);}}
+  for(const sx of[-1,1])for(const sy of[-1,1])for(const sz of[-1,1]){const S=[sx,sy,sz];const p=ax=>{const v=[0,0,0];for(let k=0;k<3;k++)v[k]=S[k]*(H[k]-(k===ax?0:r));return v;};tri(p(0),p(1),p(2),N(0,sx),N(1,sy),N(2,sz),0,1,2);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));return g;}
+const _rgC=new Map();function rGeo(w,h,d,rr){const mn=Math.min(w,h,d);const r=Math.min(rr,mn*.25);if(r<.009||mn<.04)return new THREE.BoxGeometry(w,h,d);const k=w.toFixed(3)+'|'+h.toFixed(3)+'|'+d.toFixed(3)+'|'+r.toFixed(3);let g=_rgC.get(k);if(!g){g=chamferGeo(w,h,d,r,0);_rgC.set(k,g);}return g;}
+function boxGeo(w,h,d,ts){const mn=Math.min(w,h,d),mx=Math.max(w,h,d);if(RB.on&&mx<=RB.max&&mn>=.05&&mx>=.12){const r=Math.min(RB.r,mn*.25);if(r>=.009)return chamferGeo(w,h,d,r,ts);}
+  const g=new THREE.BoxGeometry(w,h,d);if(ts){const uv=g.attributes.uv;const dm=[[d,h],[d,h],[w,d],[w,d],[w,h],[w,h]];for(let f=0;f<6;f++)for(let i=0;i<4;i++){const k=f*4+i;uv.setXY(k,uv.getX(k)*dm[f][0]/ts,uv.getY(k)*dm[f][1]/ts);}}return g;}
 function bx(p,mat,w,h,d,x,y,z,ry=0,ts=0){const m=new THREE.Mesh(boxGeo(w,h,d,ts),mat);m.position.set(x,y+h/2,z);m.rotation.y=ry;p.add(m);return m;}
 function cy(p,mat,r1,r2,h,x,y,z,seg=14){const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,seg),mat);m.position.set(x,y+h/2,z);p.add(m);return m;}
 function sp(p,mat,r,x,y,z,det=1){const m=new THREE.Mesh(new THREE.IcosahedronGeometry(r,det),mat);m.position.set(x,y,z);p.add(m);return m;}
@@ -1277,7 +1290,7 @@ function updateFair(dt){if(VIS_AREA!=='town')return;const sp2=dt*speed;FAIR.roue
 const TLEN=[5.9,8.8,11.8,19.2];
 function mkTruck(tier){const TG=new THREE.Group();
   const mat=(c,o)=>M(c,o||{r:.45,m:.25});
-  const B=(m,w,h,d,x,y,z,rx=0,ry=0,rz=0)=>{const q=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);q.position.set(x,y,z);if(rx||ry||rz)q.rotation.set(rx,ry,rz);q.castShadow=true;TG.add(q);return q;};
+  const B=(m,w,h,d,x,y,z,rx=0,ry=0,rz=0)=>{const q=new THREE.Mesh(rGeo(w,h,d,.07),m);q.position.set(x,y,z);if(rx||ry||rz)q.rotation.set(rx,ry,rz);q.castShadow=true;TG.add(q);return q;};
   const C=(m,r,h,x,y,z,ax,seg=12)=>{const q=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,seg),m);q.position.set(x,y,z);if(ax==='x')q.rotation.z=PI/2;else if(ax==='z')q.rotation.x=PI/2;q.castShadow=true;TG.add(q);return q;};
   const gl=M('#2a3644',{r:.06,m:.7,op:.42}),tire=M('#141416',{r:.9}),rim=M('#b8bec6',{r:.3,m:.8}),dk=M('#1d1f23',{r:.7}),chr=M('#cdd2d8',{r:.2,m:.9}),tail=new THREE.MeshBasicMaterial({color:0xb5121b,toneMapped:false}),head=lampMat,wht=M('#ffffff',{r:.5}),grey=M('#b9c0c6',{r:.5,m:.3}),dgrey=M('#8d949b',{r:.5,m:.3});
   const wheel=(x,z,r,dual)=>{const s=x>0?1:-1;C(tire,r,.3,x,r,z,'x',16);C(rim,r*.62,.34,x+s*.01,r,z,'x',14);C(dk,r*.22,.38,x+s*.02,r,z,'x',8);if(dual)C(tire,r,.3,x-s*.33,r,z,'x',16);};
@@ -1417,7 +1430,7 @@ function addDriver(g){const U=g.userData.car;if(!U||!U.drv)return null;const d=m
 function carBody(g,col,type){type=type||pick(CARTYPES);const T={berline:{L:4.4,H:.3,cL:2.15,cZ:-.3,cH:.52},compacte:{L:3.9,H:.3,cL:2.2,cZ:-.4,cH:.56},vus:{L:4.6,H:.42,cL:2.75,cZ:-.45,cH:.62},pickup:{L:4.8,H:.46,cL:1.6,cZ:.5,cH:.6}}[type];
   const{L,H,cL,cZ,cH}=T;const body=new THREE.MeshStandardMaterial({color:C(col),roughness:.28,metalness:.55});const glass=M('#1c2633',{r:.06,m:.7,op:.38}),blk=M('#16171a',{r:.85}),trim=M('#2a2c30',{r:.6}),chrome=M('#c9ced2',{m:.9,r:.18}),plate=M('#f2f2ee',{r:.5});
   const U={bodyMat:body,rims:[],glass:[],type};g.userData.car=U;
-  const B=(m,w,h,d,x,y,z,rx=0)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.rotation.x=rx;g.add(o);if(m===glass)U.glass.push(o);return o;};
+  const B=(m,w,h,d,x,y,z,rx=0)=>{const o=new THREE.Mesh(m===glass?new THREE.BoxGeometry(w,h,d):rGeo(w,h,d,.09),m);o.position.set(x,y,z);o.rotation.x=rx;g.add(o);if(m===glass)U.glass.push(o);return o;};
   const by=H+.25,top=H+.5;
   B(body,1.8,.5,L,0,by,0);B(trim,1.84,.12,L-1.9,0,H+.06,0);
   B(blk,1.88,.22,.24,0,H+.1,L/2-.04);B(blk,1.88,.22,.24,0,H+.1,-L/2+.04);
