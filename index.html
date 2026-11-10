@@ -4987,8 +4987,9 @@ function interGate(me,x,z,f){let wait=false;
     if(al>0&&al<13&&lat<4.5){const occ=VEH.some(o=>o.id!==me&&inBoxC(o.x,o.z,C)&&o.id!==S.o);if(!occ&&(S.o===null||S.o===me||(!S.inn&&al<S.al-.2))){S.o=me;S.t=tReal;S.al=al;S.inn=false;}else wait=true;}
     else if(S.o===me)S.o=null;}
   return wait;}
-function vehBlocked(me,x,z,f,len){const gw=onRoadPt(x,z)?interGate(me,x,z,f):false;if(gw)return true;
-  for(const o of VEH){if(o.id===me)continue;const dx=o.x-x,dz=o.z-z;const al=dx*f[0]+dz*f[1],lat=-dx*f[1]+dz*f[0];const dot=o.f[0]*f[0]+o.f[1]*f[1];if(dot<-.2&&Math.hypot(dx,dz)>3.2)continue;const gap=(len+o.len)/2+1.8;if(al>0&&al<gap+1.2&&Math.abs(lat)<1.8)return al<(len+o.len)/2+.9?2:1;}
+function vehBlocked(me,x,z,f,len){const gw=onRoadPt(x,z)?interGate(me,x,z,f):false;if(gw)return true;const MB=ICEN.find(C=>inBoxC(x,z,C));
+  for(const o of VEH){if(o.id===me)continue;const dx=o.x-x,dz=o.z-z;const al=dx*f[0]+dz*f[1],lat=-dx*f[1]+dz*f[0];const dot=o.f[0]*f[0]+o.f[1]*f[1];
+    if(MB&&dot<.6&&!inBoxC(o.x,o.z,MB)&&((MB[0]-o.x)*o.f[0]+(MB[1]-o.z)*o.f[1])>0)continue;if(dot<-.2&&Math.hypot(dx,dz)>3.2)continue;const gap=(len+o.len)/2+1.8;if(al>0&&al<gap+1.2&&Math.abs(lat)<1.8)return al<(len+o.len)/2+.9?2:1;}
   return false;}
 function roadDanger(x1,z1,x2,z2){for(const o of VEH){const reach=o.v>.8?Math.min(16,o.v*2.4)+3:2.6;for(let k=0;k<=6;k++){const px=o.x+o.f[0]*reach*k/6,pz=o.z+o.f[1]*reach*k/6;
       const sx=x2-x1,sz=z2-z1,L2=sx*sx+sz*sz||1;const t=clamp(((px-x1)*sx+(pz-z1)*sz)/L2,0,1);if(Math.hypot(px-(x1+sx*t),pz-(z1+sz*t))<2.6)return true;}}return false;}
@@ -4999,7 +5000,8 @@ function carStep(sdt){vehSnap();for(const c of cars){
   for(const ch of ALL){if(ch.area!=='town'||(ch===Mc&&(Mc.inCar||Mc.inBus))||!onRoadPt(ch.pos.x,ch.pos.z))continue;const dx=ch.pos.x-x,dz=ch.pos.z-z;const along=dx*f[0]+dz*f[1],lat=Math.abs(-dx*f[1]+dz*f[0]);if(along>-1.5&&along<9&&lat<2.5){block=true;if(along<4.5)hard=true;break;}}
   if(c.bus){const Lp=c.P.len;if(c.dwell>0){c.dwell-=sdt;block=true;hard=true;if(c.dwell<=0){c.dwell=0;c.atStop=null;}}
     else for(const st of BUS_STOPS){if(c.lastStop===st.id)continue;const ds=(((st.s-c.s)%Lp)+Lp)%Lp;if(ds<16){vlim=Math.min(vlim,Math.max(1.5,ds*.7));if(ds<.5){c.dwell=5;c.atStop=st.id;c.lastStop=st.id;block=true;}}}}
-  if(!block){const vb=vehBlocked(c.idx,x,z,f,c.bus?11:c.bike?1.8:4.3);block=!!vb;if(vb===2)hard=true;}
+  if(!block){if(c.ghost>0)c.ghost-=sdt;else{const vb=vehBlocked(c.idx,x,z,f,c.bus?11:c.bike?1.8:4.3);block=!!vb;if(vb===2)hard=true;}}
+  if(block&&!(c.dwell>0)){c.bt=(c.bt||0)+sdt;if(c.bt>14){c.bt=0;c.ghost=2.2;}}else c.bt=0;
   c.v=hard?0:lerp(c.v,block?0:vlim,1-Math.exp(-sdt*(block?6:.8)));if(block&&c.v<.3)c.v=0;c.s+=c.v*sdt;
   if(!c.P.loop&&c.s>c.P.len){c.wait=true;c.g.visible=false;continue;}
   c.g.position.set(x,.04,z);c.g.rotation.y=h;if(c.bike){const B=c.g.userData.bike;c.ph+=c.v*sdt*1.6;B.W.forEach(w=>w.rotation.x=c.ph*1.9);B.L[0].rotation.x=Math.sin(c.ph)*.55-.35;B.L[1].rotation.x=-Math.sin(c.ph)*.55-.35;}}}
