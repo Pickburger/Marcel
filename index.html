@@ -1082,7 +1082,8 @@ let HOMEB=null;
  const mbx=grp(TR,-38.2,0,-79.5);bx(mbx,M('#c8202a',{r:.4}),.6,1.1,.5,0,0,0);const mt=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.5,12,1,false,0,PI),M('#c8202a',{r:.4}));mt.rotation.z=PI/2;mt.rotation.y=PI/2;mt.position.y=1.1;mbx.add(mt);}
 {const bo=shop('boul',-43,-46,'S',{w:10,d:10,h:4.6,mat:M('#ffffff',{map:TX.brick('#d9c49a','#cbb58a')}),trim:'#6b3a2a',awn:'#e8a33a',sign:'BOULANGERIE ST-JEAN',signBg:'#6b3a2a'});regDoor('boul',bo,0);
  const ph=shop('pharma',-45,-66,'E',{w:12,d:12,h:4.6,mat:M('#ffffff',{map:TX.brick('#e8e8e4','#dcdcd6')}),trim:'#1f7a4c',awn:'#2f9a5c',sign:'PHARMACIE DU COIN',signBg:'#1f7a4c'});regDoor('pharma',ph,0);
- const cr=new THREE.Mesh(new THREE.BoxGeometry(.25,1.2,1.2),M('#2f9a5c',{e:'#3fdc7c',ei:.8}));cr.position.set(-38.7,4.2,-66);TR.add(cr);const cr2=new THREE.Mesh(new THREE.BoxGeometry(.26,.4,1.2),M('#ffffff',{e:'#ffffff',ei:.6}));cr2.position.set(-38.68,4.2,-66);TR.add(cr2);}
+ {const gm2=M('#2f9a5c',{e:'#3fdc7c',ei:.85}),wm=M('#ffffff',{e:'#ffffff',ei:.5});const cx=-38.15,cy2=3.55,cz=-60.75;for(const[w,h]of[[.4,1.15],[1.15,.4]]){const b1=new THREE.Mesh(new THREE.BoxGeometry(w+.08,h+.08,.1),wm);b1.position.set(cx,cy2,cz);TR.add(b1);const b2=new THREE.Mesh(new THREE.BoxGeometry(w,h,.14),gm2);b2.position.set(cx,cy2,cz);TR.add(b2);}
+  const br=new THREE.Mesh(new THREE.BoxGeometry(.95,.06,.06),M('#3a3a3a',{m:.6,r:.4}));br.position.set(-38.5,4.2,cz);TR.add(br);}}
 // --- Commerces (bloc nord)
 {const c=shop('cafe',-12,-50,'S',{w:13,d:12,h:5,mat:M('#ffffff',{map:TX.brick('#2f5d6b','#2a5260')}),trim:'#24363e',awn:'#c64a3c',sign:'CAFÉ LUNE',signBg:'#24363e'});regDoor('cafe',c,0);
  const tm=grp(c.g,0,0,0);for(const tx of[-4.5,4.5]){cy(tm,M('#2a2b2e',{m:.6}),.04,.04,.75,tx,0,8,6);cy(tm,M('#2a2b2e',{m:.6}),.38,.38,.04,tx,.75,8,16);for(const s of[-1,1])bx(tm,M('#2a2b2e',{m:.6}),.42,.45,.42,tx+s*.7,0,8);}
@@ -1357,7 +1358,7 @@ function metroKiosk(k){const S=MSTA[k],g=new THREE.Group();g.position.set(S.x,0,
   for(const s of[-1,1]){bx(g,M('#bcd8ea',{op:.4,r:.05}),.52,2.2,.04,s*.27,.45,1.12);bx(g,st,.04,.5,.06,s*.06,1.3,1.16);}bx(g,st,1.1,.1,.08,0,2.65,1.12);
   bx(g,st,4.1,.18,2.8,0,3.2,0);bx(g,bl,4.12,.42,2.82,0,2.78,0);
   const nm=new THREE.Mesh(new THREE.PlaneGeometry(3.6,.36),signMat(S.n.toUpperCase(),'#1f5fbf','#ffffff',1024,102,'800 54px "Bricolage Grotesque", sans-serif'));nm.position.set(0,2.99,1.42);g.add(nm);
-  const lg=new THREE.Mesh(new THREE.BoxGeometry(.7,.7,.7),signMat('M','#1f5fbf','#ffffff',128,128,'900 104px "Bricolage Grotesque", sans-serif'));lg.position.set(1.35,3.75,.7);g.add(lg);
+  const lg=new THREE.Mesh(new THREE.BoxGeometry(.7,.7,.7),signMat('M','#1f5fbf','#ffffff',128,128,'900 104px "Bricolage Grotesque", sans-serif'));lg.position.set(2.05,2.55,1.25);g.add(lg);const lp=new THREE.Mesh(new THREE.CylinderGeometry(.05,.06,2.2,8),M('#2a2e33',{m:.6,r:.4}));lp.position.set(2.05,1.1,1.25);g.add(lp);
   ns(bx(g,dk,1.0,.02,1.7,-.6,.2,-.2));ns(bx(g,dk,1.0,.02,1.7,.6,.2,-.2));for(const x of[-1.15,-.05,.05,1.15]){const h=new THREE.Mesh(new THREE.BoxGeometry(.06,.06,1.6),M('#111'));h.position.set(x,.75,-.1);h.rotation.x=-.45;g.add(h);bx(g,M('#9aa3aa',{m:.6}),.05,.85,1.6,x,.2,-.15);}
   const ms=new THREE.Mesh(new THREE.PlaneGeometry(1.4,.32),signMat('↓ MÉTRO','#1f2a35','#f2c21a',512,116,'800 64px "Atkinson Hyperlegible", sans-serif'));ms.position.set(0,2.3,-1.05);g.add(ms);
   AABB.push({x0:S.x-1.25,x1:S.x+1.25,z0:S.z-1.95,z1:S.z+1.95,h:3.4});}
@@ -3850,7 +3851,7 @@ function jobShift(J,hrs){const pay=Math.round(jobRate(J)*hrs);const JT2=JTASKS[J
     else out.push(pre,...A2);
     if(o.path)for(const p of o.path)out.push(...at(p,act,Math.max(1,dur*.6),{warp:3}));
     out.push(F(()=>{if(o.carry)Mc.carry=null;if(o.client)hideClient(area);if(o.car&&!o.keepCar)GASCAR.visible=Math.random()<.5&&act==='fuel';if(Mc.job){Mc.job.done.unshift(lab);Mc.job.done=Mc.job.done.slice(0,4);}}));return out;};
-  const jobF=F(()=>{Mc.job={t:nm,id:J.id,pay,start:gm,end:gm+hrs*60,done:[],cur:'Arrive au travail',hrs};Mc.apron=JT2.ap||'#2f6a4a';});
+  const jobF=F(()=>{Mc.carry=Mc.carry==='cooler'?null:Mc.carry;Mc.job={t:nm,id:J.id,pay,start:gm,end:gm+hrs*60,done:[],cur:'Arrive au travail',hrs};Mc.apron=JT2.ap||'#2f6a4a';});
   const endF=()=>F(()=>{const tip=J.tips?Math.round(rnd(8,25)*tipMult()):0;GASCAR.visible=false;LIFE.jobKinds=LIFE.jobKinds||[];if(!LIFE.jobKinds.includes(J.id))LIFE.jobKinds.push(J.id);Mc.job=null;Mc.apron=null;Mc.carry=null;addMoney(pay+tip,'Quart de '+hrs+' h : '+nm+(tip?' + pourboires':''));say(Mc,'Fin du quart! Bonne journée de travail!');LIFE.jobs=(LIFE.jobs||0)+1;});
   const loop=()=>F(()=>{const JJ=Mc.job;if(!JJ){return;}if(gm>=JJ.end-4){Mc.q.unshift(endF(),...(J.drive?[{t:'drive',to:'home',label:'Rentre du travail'}]:[]));return;}
     const t=mkTask(false);if(st.nm==null)st.nm=JJ.start+rnd(18,35);if(gm>=st.nm&&gm<JJ.end-25&&typeof MGJOB!=='undefined'&&MGJOB[J.id]&&mgBlock(MGJOB[J.id][0],{})<2){st.nm=gm+rnd(55,95);const m=MGJOB[J.id];const d=t.find(x=>x&&x.t==='do');t.splice(t.indexOf(d),0,...mgSteps(m[0],{a:d.a,pose:d.pose,seatH:d.seatH,yaw:d.yaw,job:J.id,q:'Un coup de rush au travail!',label:'Gère un coup de rush',...(m[1]||{})}));}
@@ -4541,7 +4542,7 @@ function planMarcel(){const h=hourOf(),wk=dayOf()<5;
   if(delivery&&gm>=delivery.at&&Mc.area==='home'&&Courier.area==='none'&&h>8&&h<21.5)return deliveryEvent();
   if(Mc.carry==='baguette')return[...at('home.fridge','fridge',2,{label:'Range le pain'}),F(()=>Mc.carry=null)];
   if(Mc.carry==='bag')return putAway();
-  if(Mc.carry==='cooler'&&Mc.area==='home')return[...at('home.fridge','fridge',3,{label:'Range ses poissons au frigo',say:pick(['Du poisson frais pour la semaine!','Ça, c\'est mon souper!'])}),F(()=>Mc.carry=null)];
+  if(Mc.carry==='cooler')return[...at('home.fridge','fridge',3,{label:'Range ses poissons au frigo',say:pick(['Du poisson frais pour la semaine!','Ça, c\'est mon souper!'])}),F(()=>Mc.carry=null)];
   if(dayOf()===6&&!flags.maman&&h>=16.4&&h<18.5)return mamanSouper();
   if(!flags.lunch&&h>=11.7&&h<14){flags.lunch=true;return homeMeal('dîner');}
   if(!flags.supper&&h>=17&&h<18.2&&flags.social<2&&Julie.area==='none'&&Math.random()<.25)return julieSouper();
@@ -7562,6 +7563,7 @@ function pecheHTML(){const lv=skLv('peche'),I=skInfo('peche');const caught=FISH.
      <span class="cmut">${f.h.map(x=>LOCE[x]+' '+LOCN[x]).join(' · ')} · ${seasonTxt(f)}${f.nt?' · 🌙 surtout la nuit':''}<br>${lock?'Taille : '+kgs(f.kg[0])+' à '+kgs(f.kg[1])+' kg':'Appâts : '+bt+' · '+kgs(f.kg[0])+' à '+kgs(f.kg[1])+' kg · '+f.p+' $/kg'}</span></div>`;}).join('');
   return h;}
 {const _cr7=cellRender;cellRender=function(){if(CELL.app!=='peche')return _cr7();const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent='Pêche';const keep=B.scrollTop;let h='';try{h=pecheHTML();}catch(e){console.error(e);h='<div class="cmut">Erreur d\'affichage</div>';}B.innerHTML=h;B.scrollTop=keep;};}
+{const _pc=planMarcel;planMarcel=()=>{if(Mc.carry==='cooler'&&!Mc.job&&!LIFE.tokyo&&!flags.trip&&!Mc.inCar)return[...at('home.fridge','fridge',3,{label:'Rapporte sa glacière et range ses poissons au frigo',say:pick(['Du poisson frais pour la semaine!','Ça, c\'est mon souper!'])}),F(()=>Mc.carry=null)];return _pc();};}
 {const _pm2=projMissions;projMissions=function(){const L=_pm2();L.push({id:'gq_go',e:'🥚',n:'Aller acheter des gashapons',ok:()=>{const h=hourOf();if(h<9||h>=20)return'Les commerces sont ouverts de 9 h à 20 h';if(money<10)return'Pas assez d\'argent';if(!Object.keys(GQSPOTS).length)return'Aucune machine';return true;},
   go:()=>{const A=Object.keys(GQSPOTS);const a=pick(A);const nm=(INT[a]&&INT[a].name)||'un commerce';flags.outing=true;toast('🥚 Marcel part acheter des gashapons : '+nm,true);
     const s=[F(()=>{say(Mc,pick(['Allez, une petite capsule!','J\'espère avoir la dorée!','Il me manque des figurines!']),3);})];if(a==='mall')s.push(...busTo('S2','Attend l\'autobus pour Les Galeries'));
