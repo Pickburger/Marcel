@@ -8599,10 +8599,16 @@ function toyURL(it){if(TOY.img[it.n])return TOY.img[it.n];const cv=toyThumb(it);
 const GP3={r:null};
 const GPCOL=['#ff5a6e','#4aa3ff','#ffd23f','#5fd38a','#c67bff','#ff9b3d','#3fd0d0','#ff7ac8'];
 /* rendu des petites scènes (gashapon, vignettes) avec le moteur principal : un seul contexte WebGL, pour ménager la mémoire des téléphones */
-function miniRender(sc,cam,W,H,bg){const cv=R.domElement,cw=cv.width,ch=cv.height,pr=R.getPixelRatio();const k=Math.min(1,cw/W,ch/H);const w=Math.max(1,Math.floor(W*k)),h=Math.max(1,Math.floor(H*k));
+const MINI={c:{}};
+function miniDisp(o){try{o.traverse(m=>{if(m.geometry)m.geometry.dispose();const ms=m.material?(Array.isArray(m.material)?m.material:[m.material]):[];for(const x of ms){if(!x||x.userData.keep)continue;for(const k of['map','emissiveMap','alphaMap','normalMap','roughnessMap'])if(x[k]&&x[k]!==glowTex&&!x[k].userData.keep)x[k].dispose();x.dispose();const si=signMats.indexOf(x);if(si>=0)signMats.splice(si,1);}});}catch(e){}}
+function miniRender(sc,cam,W,H,bg){const k=Math.min(1,Math.sqrt(360000/(W*H)));const w=Math.max(1,Math.floor(W*k)),h=Math.max(1,Math.floor(H*k));const key=w+'x'+h;
+  let E=MINI.c[key];if(!E){const ks=Object.keys(MINI.c);if(ks.length>=3){const o=MINI.c[ks[0]];o.rt.dispose();delete MINI.c[ks[0]];}
+    const rt=new THREE.WebGLRenderTarget(w,h,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat,encoding:THREE.sRGBEncoding});rt.texture.encoding=THREE.sRGBEncoding;
+    const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');E=MINI.c[key]={rt,c,g,buf:new Uint8Array(w*h*4),img:g.createImageData(w,h)};}
   const oc=R.getClearColor(new THREE.Color()).clone(),oa=R.getClearAlpha(),oe=R.toneMappingExposure,ort=R.getRenderTarget(),osu=R.shadowMap.needsUpdate;
-  R.setRenderTarget(null);R.setScissorTest(true);R.setViewport(0,0,w/pr,h/pr);R.setScissor(0,0,w/pr,h/pr);R.setClearColor(bg,1);R.toneMappingExposure=1.05;R.shadowMap.needsUpdate=false;R.clear(true,true,true);R.render(sc,cam);
-  R.setScissorTest(false);R.setViewport(0,0,cw/pr,ch/pr);R.setClearColor(oc,oa);R.toneMappingExposure=oe;R.setRenderTarget(ort);R.shadowMap.needsUpdate=osu;return[cv,0,ch-h,w,h];}
+  try{R.setRenderTarget(E.rt);R.setClearColor(bg,1);R.toneMappingExposure=1.05;R.shadowMap.needsUpdate=false;R.clear(true,true,true);R.render(sc,cam);R.readRenderTargetPixels(E.rt,0,0,w,h,E.buf);}
+  finally{R.setRenderTarget(ort);R.setClearColor(oc,oa);R.toneMappingExposure=oe;R.shadowMap.needsUpdate=osu;}
+  const d=E.img.data,row=w*4;for(let y=0;y<h;y++)d.set(E.buf.subarray((h-1-y)*row,(h-y)*row),y*row);E.g.putImageData(E.img,0,0);return[E.c,0,0,w,h];}
 function miniCanvas(sc,cam,S,bg,key){const s=miniRender(sc,cam,S,S,bg);const c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');g.drawImage(s[0],s[1],s[2],s[3],s[4],0,0,S,S);
   if(key){const d=g.getImageData(0,0,S,S),a=d.data;for(let i=0;i<a.length;i+=4){const r=a[i],gg=a[i+1],b=a[i+2];if(r>200&&b>200&&gg<70)a[i+3]=0;else if(r>150&&b>150&&gg<120){a[i+3]=120;}}g.putImageData(d,0,0);}return c;}
 function gp3Setup(){if(GP3.r)return true;try{const r=1,cv=null;
@@ -8611,7 +8617,7 @@ function gp3Setup(){if(GP3.r)return true;try{const r=1,cv=null;
   const floor=new THREE.Mesh(new THREE.CircleGeometry(4,40),new THREE.MeshStandardMaterial({color:C('#2a2f45'),roughness:.85}));floor.rotation.x=-PI/2;sc.add(floor);
   const back=new THREE.Mesh(new THREE.PlaneGeometry(14,8),new THREE.MeshBasicMaterial({map:ctex(256,(g,s)=>{const gr=g.createLinearGradient(0,0,0,s);gr.addColorStop(0,'#2a3558');gr.addColorStop(1,'#141a2c');g.fillStyle=gr;g.fillRect(0,0,s,s);for(let i=0;i<40;i++){g.fillStyle='rgba(255,255,255,'+(Math.random()*.06)+')';g.beginPath();g.arc(Math.random()*s,Math.random()*s*.6,Math.random()*18+4,0,PI*2);g.fill();}})}));back.position.set(0,3,-3);sc.add(back);
   Object.assign(GP3,{r,cv,sc,cam,mach:null,key:null});return true;}catch(e){console.error(e);GP3.fail=1;return false;}}
-function gp3Build(S,key){if(GP3.key===key&&GP3.mach)return;if(GP3.mach){GP3.sc.remove(GP3.mach);}GP3.key=key;const g=new THREE.Group();GP3.mach=g;GP3.sc.add(g);
+function gp3Build(S,key){if(GP3.key===key&&GP3.mach)return;if(GP3.mach){GP3.sc.remove(GP3.mach);if(GP3.fig)GP3.mach.remove(GP3.fig);miniDisp(GP3.mach);}GP3.key=key;const g=new THREE.Group();GP3.mach=g;GP3.sc.add(g);
   const col=C(S[2]);const body=new THREE.MeshStandardMaterial({color:col,roughness:.35,metalness:.15}),dark=new THREE.MeshStandardMaterial({color:C('#1b1d24'),roughness:.6}),chrome=new THREE.MeshStandardMaterial({color:C('#d8dde3'),metalness:.9,roughness:.2}),white=new THREE.MeshStandardMaterial({color:C('#f6f4ee'),roughness:.4});
   const B=(m,w,h,d,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y+h/2,z);g.add(o);return o;};
   B(dark,1.7,.08,1.2,0,0,0);B(body,1.62,1.25,1.1,0,.08,0);
