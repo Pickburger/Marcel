@@ -1509,7 +1509,7 @@ function mkTruck(tier){const TG=new THREE.Group();
  for(let z=158;z<=215;z+=2.5)cy(TR,fence,.04,.04,2,102,0,z,6);for(let x=40;x<=102;x+=2.5){cy(TR,fence,.04,.04,2,x,0,215.5,6);cy(TR,fence,.04,.04,2,x,0,157.5,6);}
  // entrepôt
  bx(TR,met,40,9,16,78,0,168,0,3);bx(TR,M('#4a5560',{r:.6}),40.5,.5,16.5,78,9,168);AABB.push({x0:58,x1:98,z0:160,z1:176,h:9});
- for(const x of[62,70,78,86,94]){bx(TR,M('#cfd6dc',{r:.5,m:.4}),4,4.2,.12,x,0,176.06);for(let y=.5;y<4.2;y+=.5)bx(TR,M('#aab2b9',{r:.5}),4,.05,.14,x,y,176.09);bx(TR,M('#e8c547'),.25,1.2,.25,x-2.4,0,177.3);bx(TR,M('#e8c547'),.25,1.2,.25,x+2.4,0,177.3);bx(TR,M('#2a2c30'),3.6,.4,.3,x,.2,176.2);}
+ for(const x of[62,70,78,86,94]){if(x!==70){bx(TR,M('#cfd6dc',{r:.5,m:.4}),4,4.2,.12,x,0,176.06);for(let y=.5;y<4.2;y+=.5)bx(TR,M('#aab2b9',{r:.5}),4,.05,.14,x,y,176.09);}bx(TR,M('#e8c547'),.25,1.2,.25,x-2.4,0,177.3);bx(TR,M('#e8c547'),.25,1.2,.25,x+2.4,0,177.3);bx(TR,M('#2a2c30'),3.6,.4,.3,x,.2,176.2);}
  for(let x=60;x<=96;x+=6)bx(TR,winMat,2.4,1,.06,x,6.2,176.03);
  {const s=new THREE.Mesh(new THREE.PlaneGeometry(16,1.9),signMat('TRANSPORT BORÉAL','#1f3a5a','#ffffff',1024,122,'800 70px "Bricolage Grotesque", sans-serif'));s.position.set(78,7.6,176.12);TR.add(s);}
  // bureau de répartition
@@ -7416,15 +7416,13 @@ function camGo(m){const tier=m.tier,L=TLEN[tier],pay0=camPay(m);const pool=[...m
   s.push(tr('town.dep_front',{label:'Fait le tour du véhicule'}),D('squat',3,{label:'Vérifie les pneus avant'}));
   s.push(tr('town.dep_rear',{label:'Va à l\'arrière du véhicule'}),D('look',3,{label:'Vérifie les feux et les portes'}));
   const loads=Math.ceil(m.n/3);
-  for(let i=0;i<loads;i++)s.push(cur('Charge le camion ('+(i+1)+'/'+loads+')'),tr('town.dep_dock',{label:'Va chercher des palettes au quai'}),D('stock',3,{label:'Prépare les palettes au quai',carry:'crate'}),F(()=>{Mc.carry='crate';}),tr('town.dep_rear',{label:'Apporte les palettes au camion'}),D('give',3,{label:'Charge les palettes dans le camion'}),F(()=>{Mc.carry=null;}));
-  s.push(D('install',3,{label:'Attache les sangles et ferme les portes',say:'Solide, ça ne bougera pas.'}));
-  s.push(tr('town.car_depot',{label:'Retourne à la cabine'}),D('text',3,{label:'Note son heure de départ dans le carnet'}));
+  s.push(...dockLoadSteps(tier,loads,'Charge le camion',cur));
   if(getFuel(tier)<.7)s.push(cur('Plein de carburant'),{t:'drive',to:'dpump',label:'Va à la pompe du dépôt'},tr('town.dep_pompe',{label:'Va à la pompe'}),D('fuel',5,{label:'Fait le plein (carte carburant de l\'entreprise)'}),F(()=>{setFuel(1,tier);toast('⛽ Plein fait · carte de l\'entreprise',true);}));
   pool.forEach((k,i)=>{const[nm,goods]=CAMD[k];
     s.push(cur('En route : '+nm),{t:'drive',to:k,label:'Livre '+goods+' : '+nm});
     s.push(F(()=>{Mc.carry=tier>=2?'crate':'box';if(Mc.job)Mc.job.cur='Livre '+goods;}));
-    s.push(D('install',2,{label:'Ouvre le hayon'}),D('give',3,{label:'Livre '+goods+' : '+nm+' (signature du client)',say:pick(['Livraison!','Signez ici, svp.','Voilà votre commande!','Bonne journée!'])}));
-    s.push(F(()=>{Mc.carry=null;if(!Mc.job)return;st.n++;const ok=gm<=Mc.job.start+170+(i+1)*85;if(ok)st.ot++;Mc.job.done.unshift((ok?'✓ ':'⏱ ')+nm);Mc.job.done=Mc.job.done.slice(0,4);toast(ok?'✅ Livré à temps : '+nm:'⏱ Livré en retard : '+nm,ok);}));
+    s.push(F(()=>{DK.rt=1;}),D('install',2,{label:'Ouvre la porte arrière du camion'}),D('give',3,{label:'Livre '+goods+' : '+nm+' (signature du client)',say:pick(['Livraison!','Signez ici, svp.','Voilà votre commande!','Bonne journée!'])}));
+    s.push(F(()=>{DK.rt=0;Mc.carry=null;if(!Mc.job)return;st.n++;const ok=gm<=Mc.job.start+170+(i+1)*85;if(ok)st.ot++;Mc.job.done.unshift((ok?'✓ ':'⏱ ')+nm);Mc.job.done=Mc.job.done.slice(0,4);toast(ok?'✅ Livré à temps : '+nm:'⏱ Livré en retard : '+nm,ok);}));
   });
   s.push(cur('Retourne au dépôt'),{t:'drive',to:'depot',label:'Retourne au dépôt'});
   s.push(F(()=>{parkSwap(false);}),cur('Remet son bon de livraison'),tr('town.dep_office',{label:'Remet son bon de livraison'}),D('give',3,{label:'Remet son bon signé',say:'Tournée terminée!'}));
@@ -7522,10 +7520,10 @@ function spGo(m){const tier=m.veh??m.tier,L=TLEN[tier],pay0=spPay(m);if(m.kind==
   s.push(F(()=>{JOB.start=gm;JOB.end=gm+(m.kind==='long'?900:600);Mc.job=JOB;}));
   s.push(tr('town.dep_office',{label:'Va chercher son contrat spécial'}),D('scan',4,{label:'Lit son contrat : '+m.name.toLowerCase(),say:m.kind==='long'?'Grosse journée de route aujourd\'hui!':'Un contrat spécial, ça paye bien!'}));
   s.push(F(()=>{parkSwap(true,tier);setSpots();}),cur('Inspection avant départ'),tr('town.dep_front',{label:'Fait le tour du véhicule'}),D('squat',3,{label:'Vérifie les pneus et les freins'}),tr('town.dep_rear',{label:'Va à l\'arrière du véhicule'}),D('look',2,{label:'Vérifie les feux et les portes'}));
-  if(getFuel(tier)<.85)s.push(cur('Plein de carburant'),{t:'drive',to:'dpump',label:'Va à la pompe du dépôt'},tr('town.dep_pompe',{label:'Va à la pompe'}),D('fuel',5,{label:'Fait le plein (carte de l\'entreprise)'}),F(()=>{setFuel(1,tier);}));
+  const fuelS=()=>getFuel(tier)<.85?[cur('Plein de carburant'),{t:'drive',to:'dpump',label:'Va à la pompe du dépôt'},tr('town.dep_pompe',{label:'Va à la pompe'}),D('fuel',5,{label:'Fait le plein (carte de l\'entreprise)'}),F(()=>{setFuel(1,tier);})]:[];
+  if(m.kind!=='long')s.push(...fuelS());
   if(m.kind==='long'){
-    for(let i=0;i<2;i++)s.push(cur('Charge la remorque ('+(i+1)+'/2)'),tr('town.dep_dock',{label:'Va chercher des palettes au quai'}),D('stock',3,{label:'Prépare les palettes au quai',carry:'crate'}),F(()=>{Mc.carry='crate';}),tr('town.dep_rear',{label:'Apporte les palettes au camion'}),D('give',3,{label:'Charge les palettes'}),F(()=>{Mc.carry=null;}));
-    s.push(D('install',3,{label:'Attache les sangles et scelle les portes'}),tr('town.car_depot',{label:'Monte dans la cabine'}),D('text',2,{label:'Remplit son carnet de route (heures de conduite)'}));
+    s.push(...dockLoadSteps(tier,2,'Charge la remorque',cur),...fuelS(),D('text',2,{label:'Remplit son carnet de route (heures de conduite)'}));
     s.push(cur('Route vers '+m.dest),{t:'drive',to:'hwOut',keep:1,label:'Prend l\'autoroute vers '+m.dest},F(()=>{cdqPrep(m.dest,tier);}),{t:'highway',dest:'cdq',dur:24,rate:7.5,label:'Roule vers '+m.dest+' ('+m.km+' km)'});
     s.push(F(()=>{STT().kmT+=m.km;setFuel(Math.max(.2,getFuel(tier)-.32),tier);}),cur('Livraison à '+m.dest),tr('cdq.quai',{label:'Ouvre les portes au quai de déchargement'}),D('give',4,{label:'Décharge les palettes au quai de '+m.dest,carry:'crate',say:'Ça arrive de chez Transport Boréal!'}),
       tr('cdq.bureau',{label:'Va à la réception du centre de distribution'}),D('text',3,{label:'Fait signer le connaissement',say:'Signez ici, svp!'}),D('eat',8,{label:'Pause repas réglementaire au resto routier',fx:{food:1}}),
@@ -8329,6 +8327,65 @@ function wardBuy(){const w=WD();const ft=Object.keys(WTOP).filter(id=>!w.tops.in
   if(fb.length&&(!got.length||Math.random()<.3)){const id=pick(fb);w.bots.push(id);got.push(WBOT[id][0]);(w.nw=w.nw||{})[id]=1;}
   if(!got.length){say(Mc,'J\'ai déjà tout ce qu\'il me faut!');return;}toast('🛍️ Nouveau dans la garde-robe : '+got.join(' et ').toLowerCase(),true);say(Mc,pick(['Je le mets demain matin!','Il me fait bien, celui-là!','Ma garde-robe s\'agrandit!']));cnt('linge');}
 {const _ft8=frTick;frTick=function(){_ft8();if(!WM.ld){WM.ld=1;try{wardApply();}catch(e){console.error(e);}}};}
+
+/* ================= v131 : quai de chargement — le camion recule à la porte, les portes s'ouvrent et se referment ================= */
+const DK={o:0,t:0,ro:0,rt:0,anim:null,snd:0};
+const TREAR=[2.98,4.45,5.95,9.95],TFRONT=[2.98,4.45,5.75,8.9],TCAB=[1.45,2.6,2.35,4.3],DQX=70,DQZ=176.55;
+/* porte de garage de l'entrepôt (quai n° 2) */
+{const g=new THREE.Group();g.position.set(DQX,0,176);town.add(g);
+ const it=ctex(256,(c,s)=>{const gr=c.createLinearGradient(0,0,0,s);gr.addColorStop(0,'#0e1114');gr.addColorStop(1,'#2a2c2e');c.fillStyle=gr;c.fillRect(0,0,s,s);
+   c.fillStyle='rgba(255,236,190,.16)';c.fillRect(s*.1,s*.05,s*.8,s*.05);for(const x of[.04,.66]){c.fillStyle='#3a4450';c.fillRect(s*x,s*.18,s*.3,s*.62);for(let y=0;y<3;y++){c.fillStyle='#22282e';c.fillRect(s*x,s*(.36+y*.2),s*.3,s*.02);for(let k=0;k<3;k++){c.fillStyle=['#b88a52','#a07848','#c89a62'][(k+y)%3];c.fillRect(s*(x+.02+k*.09),s*(.27+y*.2),s*.08,s*.09);}}}
+   c.fillStyle='#8a6a40';c.fillRect(s*.38,s*.82,s*.24,s*.06);for(let k=0;k<2;k++){c.fillStyle=['#b88a52','#c89a62'][k];c.fillRect(s*(.39+k*.11),s*.66,s*.1,s*.16);}c.fillStyle='rgba(0,0,0,.35)';c.fillRect(0,s*.9,s,s*.1);});
+ const op=new THREE.Mesh(new THREE.PlaneGeometry(4,4.2),new THREE.MeshBasicMaterial({map:it}));op.position.set(0,2.1,.03);g.add(op);
+ const fr=M('#8a949c',{r:.5,m:.4});const hb=new THREE.Mesh(new THREE.BoxGeometry(4.4,.5,.5),fr);hb.position.set(0,4.45,.22);hb.castShadow=true;g.add(hb);for(const s of[-1,1]){const r=new THREE.Mesh(new THREE.BoxGeometry(.14,4.2,.18),fr);r.position.set(s*2.07,2.1,.1);g.add(r);}
+ const st=ctex(128,(c,s)=>{c.fillStyle='#cfd6dc';c.fillRect(0,0,s,s);for(let y=0;y<s;y+=s/8){c.fillStyle='#aab2b9';c.fillRect(0,y,s,s/40);c.fillStyle='rgba(255,255,255,.35)';c.fillRect(0,y+s/40,s,s/80);}});st.repeat.set(1,4.2);
+ const pn=new THREE.Mesh(new THREE.BoxGeometry(4,4.2,.06),new THREE.MeshStandardMaterial({map:st,roughness:.5,metalness:.35}));pn.castShadow=true;g.add(pn);
+ const lp=new THREE.Mesh(new THREE.SphereGeometry(.12,10,8),new THREE.MeshBasicMaterial({color:0x3aff6a}));lp.position.set(2.45,3.6,.12);g.add(lp);DK.lamp=lp;
+ DK.wd={pn,h:4.2,g};}
+/* portes arrière des camions */
+function dockRig(tg,tier){const box=(w,h,d,m)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.castShadow=true;return o;};const dark=new THREE.MeshBasicMaterial({color:0x121417});
+  const slat=ctex(64,(c,s)=>{c.fillStyle='#c4cbd1';c.fillRect(0,0,s,s);for(let y=0;y<s;y+=s/4){c.fillStyle='#8f989f';c.fillRect(0,y,s,s/14);}});slat.repeat.set(1,6);
+  const host=tier===3?tg.userData.trl:tg;
+  if(tier===1||tier===2){const W=tier===1?2.25:2.35,y0=tier===1?1.17:1.27,y1=tier===1?3.25:3.62,z=tier===1?-4.42:-5.92;const h=y1-y0;
+    const dp=new THREE.Mesh(new THREE.PlaneGeometry(W,h),dark);dp.position.set(0,y0+h/2,z-.03);dp.rotation.y=PI;host.add(dp);
+    const pn=box(W+.04,h,.05,new THREE.MeshStandardMaterial({map:slat,roughness:.5,metalness:.3}));pn.position.set(0,y0+h/2,z-.06);host.add(pn);
+    const hd=box(W+.1,.16,.12,M('#8d949b',{r:.5,m:.3}));hd.position.set(0,y1+.06,z-.07);host.add(hd);return{k:'roll',pn,h,top:y1};}
+  if(tier===0){const z=-2.97,y0=.98,y1=2.5,h=y1-y0,W=1.6;const dp=new THREE.Mesh(new THREE.PlaneGeometry(W,h),dark);dp.position.set(0,y0+h/2,z-.015);dp.rotation.y=PI;host.add(dp);const P=[];
+    for(const s of[-1,1]){const pv=new THREE.Group();pv.position.set(s*W/2,0,z-.03);host.add(pv);const d=box(W/2,h,.05,M('#f4f5f6',{r:.45,m:.25}));d.position.set(-s*W/4,y0+h/2,0);pv.add(d);const wn=box(W/2-.2,.5,.06,M('#2a3644',{r:.06,m:.7}));wn.position.set(-s*W/4,y1-.45,-.005);pv.add(wn);P.push({pv,s});}return{k:'swing',P,max:1.75};}
+  {const z=-12.73,y0=1.8,y1=4.15,h=y1-y0,W=2.42;const dp=new THREE.Mesh(new THREE.PlaneGeometry(W,h),dark);dp.position.set(0,y0+h/2,z-.03);dp.rotation.y=PI;host.add(dp);const P=[];
+    for(const s of[-1,1]){const pv=new THREE.Group();pv.position.set(s*W/2,0,z-.06);host.add(pv);const d=box(W/2,h,.05,M('#c9ced3',{r:.5,m:.35}));d.position.set(-s*W/4,y0+h/2,0);pv.add(d);for(const x of[.18,.42])pv.add((()=>{const b=box(.05,h-.1,.08,M('#cdd2d8',{r:.2,m:.9}));b.position.set(-s*W/2*x*2,y0+h/2,-.04);return b;})());P.push({pv,s});}return{k:'swing',P,max:2.55};}}
+TRKG.forEach((g,t)=>{try{g.userData.rd=dockRig(g,t);}catch(e){console.error(e);}});
+function dockDoors(){const w=DK.wd;if(w){const o=DK.o;w.pn.scale.y=Math.max(.03,1-o);w.pn.position.y=w.h-w.h*(1-o)/2;DK.lamp.material.color.setHex(o>.02&&o<.98?0xffb02a:o>=.98?0xff3a2a:0x3aff6a);}
+  const g=MCAR.trk!=null?TRKG[MCAR.trk]:null,R=g&&g.userData.rd;if(!R)return;const o=DK.ro;if(R.k==='roll'){R.pn.scale.y=Math.max(.04,1-o);R.pn.position.y=R.top-R.h*(1-o)/2;}else for(const p of R.P)p.pv.rotation.y=-p.s*o*R.max;}
+/* trajectoire : avance, tourne, puis recule droit vers la porte */
+function dockSegs(tier,inn){const zq=DQZ+TREAR[tier];const A=[{k:'l',a:[50,190],b:[56,190],yaw:PI/2},{k:'c',th0:0,th1:PI/2},{k:'l',a:[70,204],b:[70,zq],yaw:0,rev:1}];
+  if(inn)return A;return[{k:'l',a:[70,zq],b:[70,204],yaw:0},{k:'c',th0:PI/2,th1:0,rev:1},{k:'l',a:[56,190],b:[50,190],yaw:PI/2,rev:1}];}
+const segLen=s=>s.k==='l'?Math.hypot(s.b[0]-s.a[0],s.b[1]-s.a[1]):14*Math.abs(s.th1-s.th0);
+function segPose(s,u){if(s.k==='l')return[s.a[0]+(s.b[0]-s.a[0])*u,s.a[1]+(s.b[1]-s.a[1])*u,s.yaw];const th=s.th0+(s.th1-s.th0)*u;return[56+14*Math.sin(th),204-14*Math.cos(th),PI/2-th];}
+function dockStart(inn,tier){DK.anim={segs:dockSegs(tier,inn),i:0,d:0,done:false,tier,inn};MCAR.driving=true;Mc.inCar=true;MCAR.driver.visible=true;Mc.pose='sit';}
+function dockFinish(){const A=DK.anim;if(!A)return;const S=A.segs[A.segs.length-1];const p=segPose(S,1);MCAR.x=p[0];MCAR.z=p[1];MCAR.yaw=p[2];placeMcar();A.done=true;MCAR.v=0;MCAR.driving=false;}
+function dockTick(dt){if(DK.anim&&!DK.anim.done){const A=DK.anim,S=A.segs[A.i];const v=(S.rev?2.3:3.6)*dt*speed;A.d+=v;const L=segLen(S);if(A.d>=L){A.d-=L;A.i++;if(A.i>=A.segs.length){dockFinish();}}
+    if(!A.done){const S2=A.segs[A.i],p=segPose(S2,Math.min(1,A.d/segLen(S2)));MCAR.driving=!S2.rev;MCAR.x=p[0];MCAR.z=p[1];MCAR.yaw=p[2];MCAR.v=S2.rev?-2.3:3.6;placeMcar();Mc.pos={x:MCAR.x,z:MCAR.z};Mc.yaw=Mc.tyaw=MCAR.yaw;
+      if(S2.rev&&VIS_AREA==='town'&&tReal-DK.snd>.9){DK.snd=tReal;try{SFX._i&&SFX.on&&SFX._i.tone(1050,.32,'square',.018);}catch(e){}}}}
+  const sp=dt*speed*.55;const o0=DK.o,r0=DK.ro;DK.o=clamp(DK.o+Math.sign(DK.t-DK.o)*sp,0,1);if(Math.abs(DK.t-DK.o)<sp)DK.o=DK.t;DK.ro=clamp(DK.ro+Math.sign(DK.rt-DK.ro)*sp*1.3,0,1);if(Math.abs(DK.rt-DK.ro)<sp*1.3)DK.ro=DK.rt;
+  if(DK.o!==o0||DK.ro!==r0){dockDoors();if(VIS_AREA==='town'&&tReal-DK.snd>.35&&DK.o!==o0){DK.snd=tReal;try{SFX._i&&SFX.on&&SFX._i.noise(.4,'bandpass',420,.05,0,1.5);}catch(e){}}}}
+{const _stp=step;step=function(dt){const r=_stp(dt);try{dockTick(dt);}catch(e){}return r;};}
+/* étapes : de l'inspection jusqu'au départ */
+function dockLoadSteps(tier,loads,lab,cur){const zq=DQZ+TREAR[tier],fz=zq+TFRONT[tier],cab=[DQX+1.65,zq+TCAB[tier]];
+  const toQuai=[[cab[0]+.6,cab[1]],[cab[0]+.6,fz+1.4],[66.4,fz+1.4],[66.4,180.2],[67.4,178.4]],toCab=[[66.4,180.2],[66.4,fz+1.4],[cab[0]+.6,fz+1.4],[cab[0]+.6,cab[1]],cab];
+  const qyaw=Math.atan2(DQX-67.4,DQZ-178.4);const s=[];
+  s.push(cur('Recule au quai de chargement'),tr('town.car_depot',{label:'Monte dans la cabine'}),F(()=>dockStart(true,tier)),W(()=>DK.anim&&DK.anim.done,{a:'drive',label:'Recule le camion jusqu\'à la porte de l\'entrepôt',max:400}),
+    F(()=>{if(!DK.anim.done)dockFinish();Mc.inCar=false;MCAR.driver.visible=false;Mc.pos={x:cab[0],z:cab[1]};Mc.pose='stand';try{SFX.door();}catch(e){}}),
+    {t:'path',pts:toQuai.map(p=>[...p]),label:'Descend et va à l\'arrière du camion'},F(()=>{Mc.yaw=Mc.tyaw=qyaw;DK.t=1;DK.rt=1;}),
+    D('install',2,{yaw:qyaw,label:'Ouvre la porte de garage et la porte du camion',say:pick(['On ouvre!','Quai numéro deux, c\'est le mien.'])}),W(()=>DK.o>.99&&DK.ro>.99,{a:'look',yaw:qyaw,label:'Les portes s\'ouvrent…',max:60}));
+  for(let i=0;i<loads;i++)s.push(cur(lab+' ('+(i+1)+'/'+loads+')'),D('scan',3,{yaw:qyaw,label:'Scanne les palettes qui montent dans le camion'}),F(()=>{try{if(VIS_AREA==='town'&&SFX._i&&SFX.on){SFX._i.noise(.25,'lowpass',180,.12);SFX._i.noise(.15,'bandpass',900,.06,.3,2);}}catch(e){}}),
+    D('look',4,{yaw:qyaw,label:'Le cariste monte les palettes dans le camion',say:pick(['Doucement avec le chariot!','Une palette de plus.','Ça rentre au pouce près!'])}));
+  s.push(D('install',3,{yaw:qyaw,label:'Vérifie l\'arrimage et signe le bon de chargement',say:'Solide, ça ne bougera pas.'}),F(()=>{DK.t=0;DK.rt=0;}),W(()=>DK.o<.01&&DK.ro<.01,{a:'look',yaw:qyaw,label:'Les portes se referment',max:60}),
+    {t:'path',pts:toCab.map(p=>[...p]),label:'Retourne à la cabine'},F(()=>{try{SFX.door();}catch(e){}dockStart(false,tier);}),W(()=>DK.anim&&DK.anim.done,{a:'drive',label:'Sort du quai de chargement',max:400}),
+    F(()=>{if(!DK.anim.done)dockFinish();DK.anim=null;Mc.inCar=false;MCAR.driver.visible=false;MCAR.at='depot';const Pk=PARKS.depot;Mc.pos={x:Pk.door[0],z:Pk.door[1]};Mc.node=nk(Pk.node[0],Pk.node[1]);Mc.back=[...Pk.walk].reverse().slice(1);Mc.pose='stand';}),
+    D('text',3,{label:'Note son heure de départ dans le carnet'}));
+  return s;}
+{const _ft9=frTick;frTick=function(){_ft9();if(!DK.ld){DK.ld=1;try{dockDoors();}catch(e){}}};}
 
 {const _pc=planMarcel;planMarcel=()=>{Mc.apron=null;if(flags.morning){const h=hourOf();if(h>=11||h<4)flags.morning=false;else if(Mc.area==='home'&&!Mc.job&&!LIFE.tokyo&&!flags.trip&&!Mc.inCar&&!Mc.carry){flags.morning=false;return morning();}}if(Mc.carry==='cooler'&&!Mc.job&&!LIFE.tokyo&&!flags.trip&&!Mc.inCar)return[...at('home.fridge','fridge',3,{label:'Rapporte sa glacière et range ses poissons au frigo',say:pick(['Du poisson frais pour la semaine!','Ça, c\'est mon souper!'])}),F(()=>Mc.carry=null)];return _pc();};}
 {const _pm2=projMissions;projMissions=function(){const L=_pm2();L.push({id:'gq_go',e:'🥚',n:'Aller acheter des gashapons',ok:()=>{const h=hourOf();if(h<9||h>=20)return'Les commerces sont ouverts de 9 h à 20 h';if(money<10)return'Pas assez d\'argent';if(!Object.keys(GQSPOTS).length)return'Aucune machine';return true;},
