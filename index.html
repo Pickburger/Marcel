@@ -3104,6 +3104,7 @@ const SFX=(()=>{let ac=null,master,nb,L={},on=false,nextBird=0,nextCricket=0,nex
     lever(){noise(.12,'lowpass',400,.12);},
     babble(ch){if(!on)return;const base=ch===Mc?185:(ch.look.h||1)<.7?430:(ch.look.long||ch.look.bun)?290:150;const n=3+Math.floor(Math.random()*5);
       for(let i=0;i<n;i++){const f=base*rnd(.85,1.35);tone(f,.09,'triangle',.04,i*.1,rnd(-60,60));noise(.07,'bandpass',f*rnd(3,6),.02,i*.1,4);}},
+    get _i(){return ac?{tone,noise,lv,loop,now,L}:null;},
     update(dt){if(!on||!ac)return;const a=VIS_AREA,out=a==='town',t=tReal;
       const far=!!OUTD[a];const drv=(Mc.inCar&&a==='town')||a==='route';
       lv('wind',(out||far)?.04+(RAIN()?.03:0)+(a==='route'?.07:0)+(a==='plage'?.04:0):0);
@@ -3116,8 +3117,8 @@ const SFX=(()=>{let ac=null,master,nb,L={},on=false,nextBird=0,nextCricket=0,nex
       const talky=tvm==='news'||tvm==='quiz'||tvm==='talk'||tvm==='reno'||(a==='home'&&SCR.pc.mode==='vcall');lv('tv',talky?.05*(.5+.5*Math.abs(Math.sin(t*7)))*(Math.sin(t*.9)>-.6?1:.1):0,.05);
       if(a!=='plage')lv('water',a==='home'&&Mc.act==='shower'?.16:(a==='home'&&Mc.act==='dishes'?.06:0));lv('sizzle',a==='home'&&Mc.act==='cook'?.05+.02*Math.random():0,.05);
       lv('hum',(a==='home'&&Mc.act==='massage')||(a==='town'&&Mc.act==='spa')?.12:(a==='home'&&OWN.aqua?.03:0));
-      if(out&&dayF>.3&&t>nextBird){nextBird=t+rnd(1.5,5);api.chirp();}
-      if(out&&night>.6&&weather!=='pluie'&&t>nextCricket){nextCricket=t+rnd(.4,1.2);api.cricket();}
+      if(out&&dayF>.3&&t>nextBird){const sn=SEASON();nextBird=t+rnd(1.5,5)*(sn==='hiver'?9:sn==='automne'?2.2:sn==='printemps'?.55:1);if(sn!=='hiver'&&!RAIN())api.chirp();}
+      if(out&&night>.6&&weather!=='pluie'&&t>nextCricket){nextCricket=t+rnd(.4,1.2);const mo=MON();if(mo>=5&&mo<=8)api.cricket();}
       if(Mc.act==='type'&&t>nextKey){nextKey=t+rnd(.06,.22);api.key();}
       if(a==='casino'&&Math.random()<dt*.35)api.slot();if(a==='arena'&&Math.random()<dt*.04)api.organ();
       if(a==='town'&&Mc.act==='feed'&&Math.random()<dt*.8)api.quack();
@@ -5302,7 +5303,7 @@ function perfAdapt(raw){PERF.acc+=raw;PERF.n++;PERF.t+=raw;if(PERF.t<2.5)return;
 function perfApply(){const L=PERF.lvl,dpr=window.devicePixelRatio||1;R.setPixelRatio(Math.min([1.75,1.4,1.15,1][L],dpr));const ms=L>=2?1024:2048;if(sun.shadow.mapSize.x!==ms){sun.shadow.mapSize.set(ms,ms);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}R.shadowMap.type=L>=3?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;try{resize();}catch(e){}}
 function visibility(){const a=VIS_AREA=trans?(trans.kind==='in'?(trans.ph<1?'town':trans.I.key):(trans.ph<1?trans.I.key:'town')):Mc.area;
   town.visible=a==='town';for(const k in INT)INT[k].g.visible=k===a;
-  for(const ch of ALL){if(ch.area==='none'){ch.m.root.visible=false;continue;}ch.m.root.visible=ch.area===a&&!(ch===Mc&&(Mc.inCar||Mc.inBus));if(ch.dog)ch.dog.visible=a==='town';}}
+  for(const ch of ALL){if(ch.area==='none'){ch.m.root.visible=false;continue;}ch.m.root.visible=ch.area===a&&!(ch===Mc&&(Mc.inCar||Mc.inBus||Mc.hid));if(ch.dog)ch.dog.visible=a==='town';}}
 function step(dt){tReal+=dt;
   let rate=runChar(Mc,dt);
   for(const ch of ALL){if(ch===Mc||ch.staff)continue;if(ch.area==='none'&&!ch.q.length)continue;runChar(ch,dt);}
@@ -7001,6 +7002,7 @@ function convHTML(c){const m=MS(c.id),i=frInfo(c.id),pct=Math.floor(i.x/i.need*1
   o+=`<div class="cchat">${bubs(c)||'<div class="cmut" style="text-align:center">Aucun message pour l\'instant. Écris le premier!</div>'}</div>`;
   const p=m.pend;
   if(p&&p.t==='chat')o+=`<div class="cact">`+p.opts.map((t,k)=>`<button type="button" data-a="frp:${c.id}|${k}">${t}</button>`).join('')+`</div>`;
+  if(p&&p.t==='nb')o+=`<div class="cact">`+p.opts.map((t,k)=>`<button type="button" class="${k?'':'pri'}" data-a="nbp:${c.id}|${k}">${t}</button>`).join('')+`</div>`;
   if(p&&p.t==='inv')o+=`<div class="cact"><button type="button" class="pri" data-a="fra:${c.id}|1">✅ J'y vais</button><button type="button" data-a="fra:${c.id}|0">❌ Pas aujourd'hui</button></div>`;
   if(INVITE&&INVITE.id===c.id)o+=`<div class="cban"><span>✉️ Rendez-vous : <b>${KINDS[INVITE.k].e} ${KINDS[INVITE.k].n}</b><br><span class="cmut">Marcel y va dès qu'il a fini ce qu'il fait.</span></span><button type="button" data-a="fcancel">Annuler</button></div>`;
   o+=`<div class="cact"><button type="button" class="pri${gm<(m.cd||0)?' no':''}" data-a="frj:${c.id}">💬 Jaser (+4)</button><button type="button" class="${m.gd===dayN()?'no':''}" data-a="frg:${c.id}">🎁 Cadeau 15 $ (+14)</button></div>
@@ -7595,6 +7597,394 @@ function pecheHTML(){const lv=skLv('peche'),I=skInfo('peche');const caught=FISH.
      <span class="cmut">${f.h.map(x=>LOCE[x]+' '+LOCN[x]).join(' · ')} · ${seasonTxt(f)}${f.nt?' · 🌙 surtout la nuit':''}<br>${lock?'Taille : '+kgs(f.kg[0])+' à '+kgs(f.kg[1])+' kg':'Appâts : '+bt+' · '+kgs(f.kg[0])+' à '+kgs(f.kg[1])+' kg · '+f.p+' $/kg'}</span></div>`;}).join('');
   return h;}
 {const _cr7=cellRender;cellRender=function(){if(CELL.app!=='peche')return _cr7();const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent='Pêche';const keep=B.scrollTop;let h='';try{h=pecheHTML();}catch(e){console.error(e);h='<div class="cmut">Erreur d\'affichage</div>';}B.innerHTML=h;B.scrollTop=keep;};}
+/* ================= v121 : rêves de vie, traditions des saisons, voisins qui ont une vie, ambiances sonores ================= */
+const V121={h:null,gt:0};
+/* ---------- nouveaux voisins ---------- */
+{const NEWC=[
+ ['linda','Linda Tremblay','f','🚑','Paramédic, voisine','wb1','la course en sentier','assur',['#e8c2a0','#6b3a1f','#2a6a8a','#1f2430',1,0,.97],["Garde de nuit terminée. Le café va être double ce matin ☕","Mets ta tuque, c'est pas le temps de tomber malade!","Je cours au parc à 7 h demain, tu embarques?"],["Dans mon métier, une journée tranquille, c'est une bonne journée.","Dans le mien, une journée tranquille, c'est louche."]],
+ ['normand','Normand Gagné','m','🚌','Chauffeur d\'autobus, voisin','hw88','les vieux campeurs','liv',['#d9a98a','#8a8f98','#3a5a8a','#2a2f3a',0,1,1.02],["J'ai vu ton char au garage. Rien de grave, j'espère?","La 12 était bondée ce matin, tout le monde collé comme des sardines 🚌","Mon Westfalia a démarré du premier coup! Miracle."],["Trente ans à conduire, pis j'aime encore ça.","Moi, après trente minutes dans le trafic, j'ai mon voyage."]],
+ ['thuy','Thuy Nguyen','f','🍜','Cuisinière au Resto-bar Le Carrefour, voisine','hw20','la cuisine de sa grand-mère','resto',['#e0b088','#120e0c','#c8402f','#2f3442',1,0,.94],["J'ai fait trop de rouleaux de printemps. T'en veux? 🥢","Coup de feu au resto ce soir, 80 couverts!","Goûte à ça la prochaine fois : bouillon de 12 heures."],["Le secret d'une bonne soupe, c'est le temps.","Le mien, c'est le sachet dans la boîte."]]];
+ for(const d of NEWC){if(CBY[d[0]])continue;const c={id:d[0],n:d[1],g:d[2],e:d[3],role:d[4],bk:d[5],hobby:d[6],perk:d[7],kinds:CKIND,bg:d[8][2],look:{skin:d[8][0],hair:d[8][1],shirt:d[8][2],pants:d[8][3],long:!!d[8][4],beard:!!d[8][5],h:d[8][6],coat:d[8][2]},o:d[9],d:d[10]};
+  CONTACTS.push(c);CBY[c.id]=c;try{TT[c.id]=c.o.map(t=>[['e',t]]);WHO[c.id]=[c.n.split(' ')[0],'en ligne'];}catch(e){}}
+ const T_=(op,r1,a1,r2,a2)=>[op,[[r1,a1],[r2,a2]]];
+ CT.linda={t:[T_("Garde de nuit terminée. Le café va être double ce matin ☕","Repose-toi bien!","Promis. Douze heures de sommeil, minimum.","T'as sauvé combien de vies?","Une cheville foulée pis un chat dans un arbre. Grosse nuit!"),T_("Je cours au parc à 7 h demain, tu embarques?","Je vais essayer!","Je t'attends au kiosque. Pas d'excuses!","7 h? Je dors, moi","Ha! Je cours pour deux, d'abord."),T_("Mets ta tuque, c'est pas le temps de tomber malade!","Oui, madame la paramédic","Bon voisin, ça. Je veux pas te ramasser en ambulance!","J'ai la couenne dure","C'est ce qu'ils disent tous, avant la grippe.")]};
+ CT.normand={t:[T_("La 12 était bondée ce matin, tout le monde collé comme des sardines 🚌","T'as de la patience!","Trente ans de métier, mon homme. On s'habitue.","Je préfère mon char","Avec le prix du gaz? T'es brave!"),T_("Mon Westfalia a démarré du premier coup! Miracle.","Bravo! La Gaspésie s'en vient","Percé, me voilà… un boulon à la fois.","Il roule vraiment?","Il roule. Arrêter, c'est une autre histoire."),T_("J'ai vu ton char au garage. Rien de grave, j'espère?","Juste l'entretien","Tant mieux. Réjean, c'est un bon gars, pas un voleur.","Un petit bruit, rien de plus","Un petit bruit… c'est comme ça que ça commence!")]};
+ CT.thuy={t:[T_("J'ai fait trop de rouleaux de printemps. T'en veux? 🥢","Certain!","Je t'en laisse une douzaine sur ta galerie.","Garde-m'en deux","Deux? Tu vas en vouloir dix, je te connais."),T_("Coup de feu au resto ce soir, 80 couverts!","Lâche pas, cheffe!","Merci! Je vais dormir debout après.","Je passerai manger","Demande la table 4, je te gâte."),T_("Goûte à ça la prochaine fois : bouillon de 12 heures.","J'ai déjà faim","Bon signe. Un vrai cuisinier a toujours faim.","Douze heures?!","La patience, Marcel. C'est le premier ingrédient.")]};
+ try{CBY.steve.ch=Steve;}catch(e){}}
+
+/* ---------- données des voisins ---------- */
+const NBD={
+ steve:{home:'steve',adr:'la maison d\'à côté',job:'Soudeur à l\'usine Laflamme',wtxt:'à l\'usine Laflamme',work:null,wh:[7,15.5],dish:'des ailes de poulet et des nachos devant le match',
+  beats:[["Steve soude des châssis à l'usine Laflamme depuis douze ans. Le soir, c'est hockey dans l'entrée de garage.","Dure journée à l'usine… Douze ans que je soude des châssis. Une chance qu'il y a le hockey le soir!"],
+   ["Il rêve d'entraîner une équipe pee-wee à l'aréna, mais il n'ose pas donner son nom.","Je te dis ça à toi : j'aimerais coacher des pee-wee à l'aréna. Mais je sais pas si j'ai ça en moi…"],
+   ["Il s'est lancé : il est maintenant l'entraîneur des Castors pee-wee. Première pratique samedi.","Ça y est! J'ai donné mon nom. Coach Steve, des Castors pee-wee. Première pratique samedi 😬"],
+   ["Les Castors ont perdu leurs six premiers matchs. Steve en perd le sommeil et dessine des jeux sur des napkins.","Six défaites de suite… Je dessine des jeux sur des napkins à 2 h du matin. Dis-moi que ça va tourner."],
+   ["Première victoire des Castors, 3 à 2 en prolongation! Steve garde la rondelle du match sur son foyer.","ON A GAGNÉ! 3-2 en prolongation! Les petits pleuraient, moi aussi. La rondelle est sur mon foyer 🏒"]]},
+ raymond:{home:'hw45',adr:'45, rue de l\'Ouest',job:'Retraité de la papetière',wtxt:'',work:null,wh:null,dish:'sa fameuse tourtière du Lac',
+  beats:[["Raymond a travaillé 38 ans à la papetière. Depuis le départ de sa Thérèse, il joue souvent au cribbage tout seul.","38 ans à la papetière, mon Marcel. Astheure, je joue au cribbage tout seul… Thérèse me battait tout le temps."],
+   ["Il a ressorti du garage le vieux canot de cèdre de son père. Il veut le remettre à l'eau.","J'ai ressorti le canot de cèdre de mon père. Il est magané, mais je vais le remettre à l'eau, tu vas voir."],
+   ["Le canot avance : les membrures sont refaites. Sa fille de Calgary a annoncé sa visite.","Les membrures du canot sont refaites! Pis ma fille descend de Calgary le mois prochain. Je compte les dodos."],
+   ["Sa petite-fille Léa a passé une semaine chez lui. Il lui a montré le cribbage; elle l'a battu.","Léa est repartie hier. Elle m'a battu au cribbage, la petite vlimeuse. Comme sa grand-mère."],
+   ["Le canot est à l'eau! Raymond l'a baptisé « La Thérèse ».","Le canot flotte, Marcel! Je l'ai appelé « La Thérèse ». Viens faire un tour sur le lac quand tu veux."]]},
+ josee:{home:'hw155',adr:'155, rue de l\'Ouest',job:'Artiste peintre',wtxt:'dans son atelier',work:null,wh:[9.5,16],atHome:1,dish:'un risotto aux champignons sauvages',
+  beats:[["Josée peint dans son atelier au-dessus du garage. Elle vend surtout des paysages aux touristes.","Je peins des lacs pour les touristes. Ça paye le loyer, mais c'est pas ça que j'ai dans le ventre."],
+   ["Elle travaille en secret sur une série de grands formats : les ruelles du quartier, la nuit.","Je te montre quelque chose, mais dis-le à personne : je peins nos ruelles, la nuit. En grand."],
+   ["La Galerie du Centre a accepté de voir ses toiles. Elle n'en dort plus.","La Galerie du Centre veut voir mes ruelles. Jeudi. J'ai changé de chandail quatre fois juste pour y penser."],
+   ["C'est oui : sa première exposition solo aura lieu à la Galerie du Centre.","ILS ONT DIT OUI! Ma première expo solo, à moi toute seule! Tu viens au vernissage, c'est un ordre 🎨"],
+   ["Le soir du vernissage, elle a vendu sept toiles. Celle de la ruelle derrière chez Marcel n'est pas à vendre.","Sept toiles vendues! Mais la ruelle derrière chez vous, je la garde. Elle est pour toi, quand tu voudras."]]},
+ mathilde:{home:'he20',adr:'20, rue de l\'Est',job:'Enseignante de 4e année',wtxt:'à l\'école des Érables',work:'ecole',wh:[7.75,15.75],dish:'un pâté au saumon avec sa sauce aux œufs',
+  beats:[["Mathilde enseigne en 4e année à l'école des Érables. Elle corrige jusqu'à tard et connaît tous les enfants du quartier.","Vingt-six élèves, vingt-six caractères. Je corrige jusqu'à minuit, mais je changerais pas de métier."],
+   ["Elle veut monter une pièce de théâtre avec sa classe, mais l'école n'a pas un sou pour les décors.","Je veux monter une pièce avec ma classe. Problème : zéro budget pour les décors. Je cherche des idées…"],
+   ["Les parents du quartier ont fourni du bois et de la peinture. Les décors prennent forme dans le gymnase.","Les parents ont tout donné : bois, peinture, vieux rideaux. Le gymnase a l'air d'un vrai théâtre!"],
+   ["Soir de générale : le petit Émile, le plus gêné de la classe, a demandé le premier rôle.","Tu sais, Émile, celui qui parle jamais? Il a demandé le premier rôle. J'ai failli brailler devant la classe."],
+   ["La pièce a fait salle comble. La commission scolaire lui offre de créer un programme de théâtre.","Salle comble, ovation debout! Pis la commission scolaire veut que je parte un programme de théâtre. Moi!"]]},
+ olivier:{home:'he112',adr:'112, rue de l\'Est',job:'Développeur de jeux, à la maison',wtxt:'à son bureau, à la maison',work:null,wh:[10,18],atHome:1,dish:'des tacos maison, sauce beaucoup trop piquante',
+  beats:[["Olivier programme pour une firme de Montréal, en pantoufles. Il sort peu, sauf pour chercher ses colis.","Je code pour une boîte de Montréal, en pantoufles. Mon record : quatre jours sans sortir. Pas fier."],
+   ["Le soir, il fabrique son propre jeu : un petit village où un bonhomme vit sa vie tout seul.","Le soir, je fais mon jeu à moi : un bonhomme qui vit sa vie dans un petit village. Ça te rappelle quelqu'un?"],
+   ["Il a montré son jeu dans un festival à Montréal. Une file s'est formée devant son kiosque.","J'ai montré mon jeu à Montréal. Il y avait une FILE devant mon kiosque. Une file, Marcel!"],
+   ["Un éditeur veut le publier. Olivier hésite à lâcher son emploi stable.","Un éditeur veut publier mon jeu. Mais lâcher ma job stable… Toi, tu ferais quoi?"],
+   ["Il a démissionné et sorti son jeu. Le personnage principal porte une chemise bleue, comme Marcel.","J'ai sauté. Le jeu est sorti ce matin! Pis regarde bien le héros : chemise bleue. C'est toi, mon chum."]]},
+ isabelle:{home:'he180',adr:'180, rue de l\'Est',job:'Étudiante en design',wtxt:'au cégep',work:null,wh:[8.5,14.5],dish:'un pad thaï (elle jure que c\'est sa seule recette)',
+  beats:[["Isabelle étudie en design et photographie tout ce qui bouge. Elle paie ses études en travaillant les fins de semaine.","Design le jour, boutique la fin de semaine, photo la nuit. Je dors en 2029, je pense."],
+   ["Pour son projet final, elle photographie les gens du quartier devant leur porte.","Mon projet final : les gens du quartier devant leur porte. Tu poserais pour moi? T'as une bonne face."],
+   ["Son portrait de Raymond avec son canot a été choisi pour l'expo des finissants.","Mon portrait de Raymond avec son canot est choisi pour l'expo des finissants! Il le sait pas encore."],
+   ["Diplôme en poche. Un studio de Québec lui offre un stage, mais elle ne veut pas quitter le quartier.","J'ai mon diplôme! Pis un stage à Québec… mais partir d'ici? Je sais pas. Ça me vire à l'envers."],
+   ["Elle reste : elle ouvre son petit studio photo au centre-ville. Premier contrat : le menu d'un resto.","Je reste! J'ouvre mon studio au centre-ville. Premier contrat : les photos d'un menu de resto. Ça commence!"]]},
+ linda:{home:'wb1',adr:'au coin de la rue',job:'Paramédic',wtxt:'en ambulance',work:'hopital',wh:[6,18],dish:'un chili qui réchauffe jusqu\'aux orteils',
+  beats:[["Linda est paramédic depuis quinze ans. Elle court en sentier pour se vider la tête après ses gardes.","Quinze ans d'ambulance. Après une grosse garde, je vais courir dans le bois. Ça replace les idées."],
+   ["Elle a recueilli un chien trouvé sur un appel : un grand bâtard maigre qu'elle a appelé Biscuit.","J'ai ramené un chien d'un appel. Personne le réclamait. Il s'appelle Biscuit pis il mange comme quatre."],
+   ["Biscuit a mangé un soulier, un coussin et la télécommande. Linda l'a inscrit à l'école de dressage.","Bilan de la semaine : un soulier, un coussin, la télécommande. Biscuit commence l'école lundi!"],
+   ["Biscuit a réussi son cours. Il reste calme même quand les sirènes passent.","Biscuit a son diplôme! Il bronche même plus quand les sirènes passent. Meilleur que moi."],
+   ["Biscuit est devenu chien de réconfort à l'hôpital. Les patients le demandent par son nom.","Biscuit fait ses rondes à l'hôpital, astheure. Les patients le demandent par son nom. Je suis juste sa chauffeuse!"]]},
+ normand:{home:'hw88',adr:'88, rue de l\'Ouest',job:'Chauffeur d\'autobus',wtxt:'au volant de la 12',work:'gare',wh:[5.5,14],dish:'des cigares au chou, recette de sa mère',
+  beats:[["Normand conduit l'autobus de la ligne 12 depuis trente ans. Il connaît ses passagers par leur prénom.","Trente ans sur la 12. Je connais mes passagers par leur petit nom, pis leurs problèmes avec."],
+   ["Dans sa cour dort un Westfalia 1984 rouillé. Il jure qu'il l'emmènera en Gaspésie à sa retraite.","Tu vois le Westfalia dans ma cour? Un 84. À ma retraite, lui pis moi, on fait le tour de la Gaspésie."],
+   ["Le moteur du Westfalia tourne enfin. Il reste les freins, le toit… et à convaincre sa blonde, Diane.","Le moteur tourne! Reste les freins, le toit, pis convaincre Diane de dormir là-dedans. Le plus dur."],
+   ["Sa retraite est signée : dernier trajet de la 12 dans un mois. Ses passagers préparent une surprise.","C'est signé. Mon dernier tour de la 12 dans un mois. Ça me fait tout drôle… trente ans, c'est une vie."],
+   ["Dernier trajet : ses passagers avaient décoré l'autobus. Le Westfalia est parti pour Percé, Diane à bord.","Ils avaient décoré mon autobus, Marcel. J'ai braillé au terminus. Là, on part pour Percé. Diane a dit oui!"]]},
+ thuy:{home:'hw20',adr:'20, rue de l\'Ouest',job:'Cuisinière au Resto-bar Le Carrefour',wtxt:'aux fourneaux du Carrefour',work:'cvb_resto',wh:[14,22],dish:'un phở dont le bouillon mijote depuis la veille',
+  beats:[["Thuy est cuisinière de ligne au Carrefour. Elle cuisine les plats des autres et garde ceux de sa grand-mère pour ses amis.","Au resto, je fais des burgers. Chez nous, je fais la cuisine de ma grand-mère. Devine laquelle j'aime mieux."],
+   ["Elle teste des bánh mì sur ses voisins. Tout le monde en redemande.","J'ai fait des bánh mì pour toute la rue. Normand en a mangé trois. Je pense que je tiens quelque chose."],
+   ["Elle a loué une table au marché du samedi. Tout était vendu à 11 h.","Première journée au marché : tout vendu à 11 h! J'avais préparé pour la journée complète 😅"],
+   ["Son patron lui offre le poste de sous-cheffe pour la garder. Elle hésite entre la sécurité et son comptoir.","Le boss m'offre sous-cheffe pour que je reste. C'est flatteur… mais mon comptoir, c'est mon rêve à moi."],
+   ["Elle a choisi : « Chez Thuy » ouvre au marché quatre jours par semaine. La file fait le tour du kiosque.","C'est officiel : « Chez Thuy », quatre jours par semaine au marché! La file faisait le tour du kiosque ce matin 🍜"]]}
+};
+const NBL=Object.keys(NBD).filter(id=>CBY[id]&&BLD[NBD[id].home]);
+const NBLV=[0,3,8,14,22];
+const NBS=()=>LIFE.nb&&LIFE.nb.s?LIFE.nb:(LIFE.nb={s:{},nf:dayN()+1,ns:dayN()+2,nc:dayN()+6,greet:{},fav:null,sup:null});
+const nbS=id=>{const S=NBS();return S.s[id]||(S.s[id]={beat:0,bd:-9,vis:-9});};
+const nbN=id=>CBY[id].n.split(' ')[0];
+const nbChic=id=>!!nbS(id).ch;
+function nbXP(id,v){if(v>0)return frXP(id,v);LIFE.fr=LIFE.fr||{};LIFE.fr[id]=Math.max(0,(LIFE.fr[id]||0)+v);}
+function nbRel(id){if(nbChic(id))return'😠 En chicane';const l=frInfo(id).l,f=CBY[id].g==='f';return l<3?(f?'Voisine qu\'on salue':'Voisin qu\'on salue'):l<8?'Bon voisinage':l<14?(f?'Voisine de confiance':'Voisin de confiance'):l<22?(f?'Amie du quartier':'Ami du quartier'):'Comme de la famille';}
+function nbWorking(id,h=hourOf()){const d=NBD[id];if(!d.wh)return false;const wk=id==='thuy'?dayOf()>=2:id==='linda'?dayOf()%3!==2:dayOf()<5;return wk&&h>=d.wh[0]&&h<d.wh[1];}
+function nbNow(id){const d=NBD[id],c=CBY[id],h=hourOf();if(c.ch&&c.ch.area!=='none'&&c.ch.lab)return c.ch.lab;if(h>=22.5||h<6)return'😴 Dort';
+  if(nbWorking(id))return'💼 Au travail'+(d.wtxt?' ('+d.wtxt+')':'');const k=(dayN()*7+Math.floor(h/2)*3+id.length)%5;
+  if(!d.wh&&k<2)return['🃏 Joue aux cartes à la maison','☕ Jase au Café Lune'][k];return['🏠 À la maison','🍳 Se fait à manger','📺 Se repose à la maison','🛒 Fait ses commissions','✨ Son passe-temps : '+c.hobby][k];}
+const nbAway=id=>nbWorking(id)&&!NBD[id].atHome;const nbHome=id=>{const h=hourOf();return h>=8.5&&h<20.5&&!nbAway(id);};
+/* --- position des voisins devant chez eux --- */
+function nbDoor(bk,side,dist){const b=BLD[bk];const tx=-b.n.z,tz=b.n.x;let s=side;try{const P=PARKS['d_'+bk];if(P&&P.park){const dd=(P.park[0]-b.door.x)*tx+(P.park[1]-b.door.z)*tz;s=Math.abs(side)*(dd>0?-1:1);}}catch(e){}
+  return{x:b.door.x+b.n.x*dist+tx*s,z:b.door.z+b.n.z*dist+tz*s,yaw:Math.atan2(b.n.x,b.n.z)};}
+function nbPut(ch,bk,side,dist){spawnAt(ch,bk);const p=nbDoor(bk,side,dist);ch.pos={x:p.x,z:p.z};ch.yaw=p.yaw;return p;}
+function nbPlace(ch,x,z,tx,tz){setArea(ch,'town');ch.m.root.visible=true;ch.pos={x,z};ch.yaw=Math.atan2(tx-x,tz-z);ch.node=nearestNode(x,z);ch.back=[];try{ch.m.hat.visible=true;}catch(e){}}
+function nbCh(id){const c=CBY[id];const had=!!c.ch;const ch=chOf(c);if(!had&&id!=='steve'){try{compactRig(ch.m.root,[ch]);}catch(e){}}return ch;}
+const nbIdle=id=>{const c=CBY[id];return !c.ch||(c.ch.area==='none'&&c.ch!==FRCH);};
+function nbTrip(bk,label){const b=BLD[bk];const far=Math.hypot(b.door.x+53,b.door.z+47)>85&&PARKS['d_'+bk];return{far:!!far,go:far?[{t:'drive',to:'d_'+bk,label},tr('town.b_'+bk)]:[tr('town.b_'+bk,{label})],back:far?[{t:'drive',to:'home',label:'Rentre à la maison'}]:[]};}
+
+/* ---------- services, chicanes, soupers ---------- */
+const NBFAV=[
+ {k:'pelle',e:'❄️',q:"Salut Marcel! Ma souffleuse a rendu l'âme pis mon entrée est ensevelie. Tu viendrais me donner un coup de pelle?",lab:'Pellette l\'entrée de ',a:'shovel',m:[25,35],say:['Ça, c\'est de la belle neige lourde!','Un voisin, ça sert à ça!'],ok:()=>(LIFE.snowD||0)>.25&&weather!=='tempete'},
+ {k:'feuilles',e:'🍂',q:"Marcel! J'ai une montagne de feuilles dans la cour pis le camion passe demain. Un coup de râteau?",lab:'Ramasse les feuilles chez ',a:'rake',m:[25,35],say:['Douze sacs, minimum!','Ça sent bon l\'automne.'],ok:()=>SEASON()==='automne'&&!RAIN()&&!SNOWING()},
+ {k:'sofa',e:'🛋️',q:"Salut voisin! J'ai acheté un sofa usagé, mais il faut être deux pour le rentrer. Aurais-tu dix minutes?",lab:'Aide à rentrer le sofa de ',a:'lift',m:[12,18],say:['Pivote! Pivote!','Lève de ton bord… non, l\'autre bord!'],ok:()=>!RAIN()},
+ {k:'boost',e:'🔋',q:"Marcel, mon char part pas à matin. Aurais-tu des câbles à booster?",lab:'Survolte la batterie de l\'auto de ',a:'install',m:[8,12],say:['Rouge sur rouge, noir sur noir…','Essaie-le, là!'],ok:()=>tempBase()<8},
+ {k:'galerie',e:'🖌️',q:"Je repeins ma galerie cette semaine. Un deuxième pinceau serait pas de refus, voisin!",lab:'Repeint la galerie de ',a:'paint',m:[35,50],say:['Deux couches, c\'est mieux.','Gris perle. Beau choix!'],ok:()=>(SEASON()==='ete'||SEASON()==='printemps')&&!RAIN()&&tempBase()>8},
+ {k:'meuble',e:'🪛',q:"J'ai une bibliothèque suédoise en 87 morceaux sur mon plancher… Tu viendrais m'aider à la monter?",lab:'Monte une bibliothèque en kit chez ',a:'install',m:[25,35],say:['Il reste trois vis… c\'est normal?','La clé Allen, mon ennemie.'],ok:()=>true},
+ {k:'vitres',e:'🪟',q:"Grand ménage du printemps! M'aiderais-tu à laver mes grandes vitres d'en avant?",lab:'Lave les vitres de ',a:'wipe',m:[20,30],say:['On voit dehors, astheure!','Du vinaigre pis du papier journal.'],ok:()=>SEASON()==='printemps'&&!RAIN()},
+ {k:'plantes',e:'🪴',q:"Je pars deux jours au chalet. Passerais-tu arroser mes tomates pis mes fleurs?",lab:'Arrose les fleurs et les tomates de ',a:'look',m:[10,15],say:['Elles avaient soif!','Belles tomates, quand même.'],ok:()=>SEASON()==='ete'&&!RAIN()},
+ {k:'gouttiere',e:'🪜',q:"Mes gouttières débordent de feuilles. Tiendrais-tu l'échelle pendant que je monte?",lab:'Tient l\'échelle pour ',a:'look',m:[15,22],say:['Je te tiens, monte!','Regarde pas en bas!'],ok:()=>(SEASON()==='automne'||SEASON()==='printemps')&&!RAIN()}];
+const NBCHIC=[
+ {k:'musique',q:"Marcel, ta musique hier soir… on l'entendait jusque dans ma chambre. J'ai pas fermé l'œil.",ok:()=>true},
+ {k:'neige',q:"Dis donc, c'est toi qui as soufflé ta neige sur mon terrain? J'ai un banc de quatre pieds devant ma porte!",ok:()=>SEASON()==='hiver'&&(LIFE.snowD||0)>.15},
+ {k:'feuilles',q:"Tes feuilles se ramassent toutes chez nous, Marcel. Ça fait trois fois que je racle ton érable!",ok:()=>SEASON()==='automne'},
+ {k:'auto',q:"Ton auto bloquait mon entrée ce matin. J'ai failli être en retard à cause de ça.",ok:()=>true},
+ {k:'bac',q:"Ton bac de recyclage traîne au chemin depuis une semaine. Le vent l'a viré chez nous deux fois.",ok:()=>true},
+ {k:'tondeuse',q:"La tondeuse à 7 h un samedi matin, Marcel? Sérieusement?",ok:()=>SEASON()==='ete'||SEASON()==='printemps'},
+ {k:'bbq',q:"La boucane de ton BBQ est rentrée direct dans mon salon hier. Mes rideaux sentent la saucisse.",ok:()=>SEASON()==='ete'}];
+function nbPend(id,k,text,opts,ex){const m=MS(id);msgAdd(id,'e',text,true);m.pend={t:'nb',k,opts,at:gm,exp:gm+600,...ex};try{SFX.ping();}catch(e){}}
+function nbReply(id,i){const m=MS(id),p=m.pend;if(!p||p.t!=='nb')return;m.pend=null;CELL._bot=1;const S=NBS(),st=nbS(id),nm=nbN(id);msgAdd(id,'m',p.opts[i]);
+  if(p.k==='fav'){if(i===0){S.fav={id,f:p.f,exp:gm+1440};msgAdd(id,'e',pick(["T'es ben fin! Je t'attends.","Merci, voisin! Je te revaudrai ça.","Ah, tu me sauves la vie!"]));toast('🤝 Marcel ira aider '+nm+' dès qu\'il sera libre',true);}
+    else{nbXP(id,-8);msgAdd(id,'e',pick(["Pas de trouble, je vais m'arranger.","Correct, une autre fois."]));}}
+  else if(p.k==='sup'){if(i===0){S.sup={id,day:dayN()};msgAdd(id,'e',"Parfait! On t'attend vers 18 h. Apporte juste ta bonne humeur.");toast('🍽️ Souper chez '+nm+' ce soir vers 18 h',true);}
+    else{msgAdd(id,'e',"Dommage! On se reprendra.");}}
+  else if(p.k==='chic'){if(i===0&&Math.random()<.65){nbXP(id,-10);msgAdd(id,'e',pick(["Correct. Merci de le prendre de même. On en parle plus.","Bon. C'est oublié, voisin."]));}
+    else{st.ch={why:p.why,d:dayN()};nbXP(id,i===0?-25:-45);msgAdd(id,'e',i===0?"Ouin… c'est facile à dire. On verra ben.":pick(["Ah ben, si c'est de même!","Je vois que ça te dérange pas trop. Parfait."]));toast('😠 Marcel est en chicane avec '+nm,false);cnt('nb_chic');}}
+  else if(p.k==='paix'){st.ch=null;nbXP(id,i===0?30:5);msgAdd(id,'e',i===0?"Ça me fait du bien d'entendre ça. Viens prendre un café un de ces jours.":"Bon… correct.");if(i===0){toast('🤝 Réconcilié avec '+nm,true);cnt('nb_paix');}}}
+function nbAuto(id){const p=MS(id).pend;if(!p||p.t!=='nb')return;const yes=p.k==='fav'?Math.random()<.75:p.k==='sup'?Math.random()<.85:p.k==='chic'?Math.random()<.8:true;nbReply(id,yes?0:1);toast('💬 Marcel a répondu lui-même à '+nbN(id),true);}
+function nbFavSteps(){const S=NBS(),fv=S.fav;if(!fv)return null;const id=fv.id,d=NBD[id],F0=NBFAV.find(x=>x.k===fv.f)||NBFAV[5],nm=nbN(id),ch=nbCh(id);S.fav=null;const T=nbTrip(d.home,'Va donner un coup de main à '+nm);const dur=rnd(F0.m[0],F0.m[1]);FRCH=ch;
+  const end=gm+dur+90;ch.lab='🤝 Reçoit l\'aide de Marcel';ch.q=[F(()=>{const p=nbPut(ch,d.home,1.5,1.1);}),W(()=>(Mc.area==='town'&&Math.hypot(Mc.pos.x-ch.pos.x,Mc.pos.z-ch.pos.z)<4)||gm>end,{a:'look',max:400}),D('talk',4,{partner:Mc}),D(F0.a==='lift'?'lift':'look',0,{until:end,partner:Mc}),F(()=>despawn(ch))];
+  return[...T.go,D('talk',4,{label:'Jase avec '+nm+' sur le pas de la porte',partner:ch,speaker:true,chat:[['p','Merci d\'être venu, Marcel!'],['m','Entre voisins, c\'est normal.']],fx:{social:1}}),
+    D(F0.a,dur,{label:F0.lab+nm,warp:2,say:pick(F0.say),fx:{social:.5,fun:.15}}),
+    F(()=>{const tip=Math.random()<.5;nbXP(id,60);cnt('nb_fav');need.social=Math.min(100,need.social+10);ch.q=[D('wave',2),F(()=>despawn(ch))];if(FRCH===ch)FRCH=null;say(ch,pick(['Merci mille fois, Marcel!','T\'es un vrai bon voisin!','Je te dois une bière!']),3);
+      if(tip){const g=pick([['une tarte au sucre encore chaude',0],['un pot de ketchup maison',0],['20 $ « pour le trouble »',20],['un six-pack de la microbrasserie',0]]);if(g[1])addMoney(g[1],'Merci de '+nm);else need.food=Math.min(100,need.food+12);setTask('🤝 '+nm+' lui offre '+g[0]+' pour le remercier');}
+      else setTask('🤝 A rendu service à '+nm);msgAdd(id,'e',pick(["Encore merci pour tantôt! T'es en or.","Merci pour le coup de main, voisin. Ça s'oublie pas."]),true);}),...T.back];}
+function nbSupSteps(){const S=NBS(),sp=S.sup;if(!sp)return null;const id=sp.id,d=NBD[id],nm=nbN(id),ch=nbCh(id);S.sup=null;flags.supper=true;const T=nbTrip(d.home,'S\'en va souper chez '+nm);const dur=rnd(85,110);FRCH=ch;const wine=money>40;
+  ch.lab='🍽️ Reçoit Marcel à souper';ch.q=[F(()=>nbPut(ch,d.home,.9,.8)),W(()=>(Mc.area==='town'&&Math.hypot(Mc.pos.x-ch.pos.x,Mc.pos.z-ch.pos.z)<4)||gm>sp.t0+240,{a:'look',max:400}),D('talk',3,{partner:Mc}),F(()=>despawn(ch))];sp.t0=gm;
+  return[...(wine?[D('text',1,{label:'Prend une bouteille pour ses hôtes',say:'On arrive pas les mains vides!'}),payF(18,'Bouteille pour le souper chez '+nm)]:[]),...T.go,
+    D('talk',3,{label:'Est accueilli par '+nm,partner:ch,speaker:true,chat:[['p','Entre, entre! Ça sent bon, hein?'],['m','Ça sent le ciel! Merci de l\'invitation.']]}),
+    F(()=>{Mc.hid=true;try{SFX.door();}catch(e){}}),D('talk',dur,{label:'Soupe chez '+nm+' : '+d.dish,warp:3,fx:{food:1.6,social:1.3,fun:.6}}),
+    F(()=>{Mc.hid=false;try{SFX.door();}catch(e){}nbXP(id,wine?95:80);cnt('nb_sup');flags.social++;if(FRCH===ch)FRCH=null;say(Mc,pick(['Quel bon souper!','J\'ai trop mangé… mais ça valait la peine!','On est bien entre voisins.']),3);setTask('🍽️ A soupé chez '+nm);
+      msgAdd(id,'e',pick(["Merci d'être venu! La prochaine fois, c'est toi qui cuisines 😄","Belle soirée, voisin. On remet ça!"]),true);LIFE.lastOuting={kind:'souper chez '+nm};}),...T.back];}
+function nbPaixSteps(id){const d=NBD[id],nm=nbN(id),ch=nbCh(id),st=nbS(id);const T=nbTrip(d.home,'Va faire la paix avec '+nm);const g=pick([['une tarte au sucre',14],['une caisse de six',16],['un pot de confiture de fraises',9],['une plante en pot',18]]);FRCH=ch;const t0=gm;
+  ch.lab='😠 Attend des excuses';ch.q=[F(()=>nbPut(ch,d.home,.9,.8)),W(()=>(Mc.area==='town'&&Math.hypot(Mc.pos.x-ch.pos.x,Mc.pos.z-ch.pos.z)<4)||gm>t0+240,{a:'look',max:400}),D('talk',14,{partner:Mc}),F(()=>despawn(ch))];
+  return[D('text',1,{label:'Prépare '+g[0]+' pour '+nm,say:'Faut ben que quelqu\'un fasse le premier pas.'}),payF(g[1],'Cadeau de réconciliation'),...T.go,
+    D('talk',12,{label:'S\'explique avec '+nm+' et lui offre '+g[0],partner:ch,speaker:true,chat:[['m','Je m\'excuse pour l\'autre jour. Tiens, c\'est pour toi.'],['p','Ah ben… t\'étais pas obligé.'],['m','On est voisins. Je veux pas qu\'on reste en froid.'],['p','T\'as raison. On efface pis on recommence.']],fx:{social:1.2}}),
+    F(()=>{st.ch=null;nbXP(id,85);cnt('nb_paix');if(FRCH===ch)FRCH=null;toast('🤝 Marcel et '+nm+' ont fait la paix',true);setTask('🤝 S\'est réconcilié avec '+nm);say(ch,pick(['Merci, Marcel. Ça me pesait.','Voisins un jour, voisins toujours!']),3);msgAdd(id,'e',"Merci d'être passé. J'aime mieux ça de même.",true);}),...T.back];}
+function nbVisitSteps(id){const d=NBD[id],nm=nbN(id),ch=nbCh(id),st=nbS(id);st.vis=dayN();const T=nbTrip(d.home,'Va faire un tour chez '+nm);FRCH=ch;const t0=gm,c=CBY[id];
+  ch.lab='💬 Jase avec Marcel';ch.q=[F(()=>nbPut(ch,d.home,.9,.8)),W(()=>(Mc.area==='town'&&Math.hypot(Mc.pos.x-ch.pos.x,Mc.pos.z-ch.pos.z)<4)||gm>t0+240,{a:'look',max:400}),D('talk',20,{partner:Mc}),F(()=>despawn(ch))];
+  return[...T.go,D('talk',18,{label:'Jase avec '+nm+' sur sa galerie',partner:ch,speaker:true,chat:frTalk(c),fx:{social:1.4,fun:.4}}),F(()=>{nbXP(id,28);cnt('nb_vis');if(FRCH===ch)FRCH=null;}),...T.back];}
+/* --- vie quotidienne visible --- */
+function nbRoutine(h){if(VIS_AREA!=='town'||h<6.5||h>=21)return;const act=NBL.filter(id=>CBY[id].ch&&CBY[id].ch.area!=='none');if(act.length>=2||Math.random()>.6)return;
+  const pool=NBL.filter(id=>nbIdle(id)&&!(id==='steve'&&(INVITE||Steve.q.length)));if(!pool.length||!frFree())return;const id=pick(pool),d=NBD[id],ch=nbCh(id);if(ch.area!=='none'||ch.q.length)return;const wk=d.wh&&d.work&&BLD[d.work]&&nbWorking(id,d.wh[0]+.1);
+  const bye=[tr('town.b_'+d.home),F(()=>despawn(ch))];
+  if(wk&&Math.abs(h-d.wh[0])<1){ch.lab='🚶 En route pour le travail';ch.q=[F(()=>spawnAt(ch,d.home)),D('look',1),tr('town.b_'+d.work),F(()=>despawn(ch))];return;}
+  if(wk&&Math.abs(h-d.wh[1])<1){ch.lab='🚶 Revient du travail';ch.q=[F(()=>spawnAt(ch,d.work)),D('look',1),...bye];return;}
+  if(nbWorking(id,h)&&!d.atHome)return;const snow=(LIFE.snowD||0)>.25&&weather!=='tempete',sn=SEASON();if(RAIN()||weather==='tempete')return;
+  const r=Math.random();
+  if(r<.6){const a=snow?['shovel','❄️ Pellette son entrée']:sn==='automne'?['rake','🍂 Racle ses feuilles']:sn==='ete'?pick([['look','🪴 Arrose ses fleurs'],['wipe','🚗 Lave son auto'],['scroll','📱 Prend l\'air sur sa galerie']]):pick([['look','🌷 Inspecte son terrain'],['scroll','📱 Prend l\'air sur sa galerie'],['wipe','🪟 Lave ses vitres']]);
+    ch.lab=a[1];ch.q=[F(()=>{nbPut(ch,d.home,2.2,2.6);}),D(a[0],rnd(25,50)),F(()=>{const p=nbDoor(d.home,0,.7);ch.pos={x:p.x,z:p.z};}),F(()=>despawn(ch))];}
+  else if(r<.85&&!INVITE){ch.lab='🌳 Se promène au parc';ch.q=[F(()=>spawnAt(ch,d.home)),tr('town.kiosk'),D('look',rnd(15,30)),...bye];}
+  else{const dst=pick(['cafe','epic','boul','dep','pharma'].filter(k=>BLD[k]));ch.lab='🛒 Fait ses commissions';ch.q=[F(()=>spawnAt(ch,d.home)),tr('town.b_'+dst),F(()=>despawn(ch))];}}
+function nbGreet(){if(Mc.area!=='town'||Mc.inCar)return;const S=NBS(),dn=dayN();for(const id of NBL){const ch=CBY[id].ch;if(!ch||ch.area!=='town'||ch===FRCH)continue;if(S.greet[id]===dn)continue;const dx=ch.pos.x-Mc.pos.x,dz=ch.pos.z-Mc.pos.z;if(dx*dx+dz*dz>30)continue;S.greet[id]=dn;
+    if(nbChic(id)){say(ch,pick(['Hum. Bonjour.','…','Marcel.']),2.4);continue;}say(ch,pick(['Salut Marcel!','Tiens, mon voisin préféré!','Belle journée, hein Marcel?','Bonjour, voisin!','Pis, Marcel, ça va?']),2.8);nbXP(id,4);need.social=Math.min(100,need.social+3);return;}}
+function nbHourly(h){const S=NBS(),dn=dayN();
+  for(const id of NBL){const p=MS(id).pend;if(p&&p.t==='nb'&&gm-p.at>170)nbAuto(id);}
+  if(S.fav&&gm>S.fav.exp){const id=S.fav.id;S.fav=null;nbXP(id,-20);msgAdd(id,'e',"Laisse faire pour le coup de main, je me suis arrangé autrement.",true);}
+  if(S.sup&&(S.sup.day<dn||h>19.4)){const id=S.sup.id;S.sup=null;nbXP(id,-25);msgAdd(id,'e',"On t'a attendu pour souper… Ton assiette a refroidi.",true);toast('🍽️ Marcel a manqué le souper chez '+nbN(id),false);}
+  for(const id of NBL){const st=nbS(id);if(st.ch&&dn-st.ch.d>=5&&h>=10&&h<20){if(Math.random()<.5){nbPend(id,'paix',"Écoute, Marcel… c'est niaiseux, notre affaire. On oublie ça?",["T'as ben raison. Sans rancune!","Si tu veux."]);toast('✉️ '+nbN(id)+' tend la main',true);}else{st.ch=null;nbXP(id,-20);}break;}}
+  if(h<9||h>=20.5||LIFE.tokyo)return;const busy=NBL.some(id=>{const p=MS(id).pend;return p&&p.t==='nb';});
+  /* nouvelles de leur vie */
+  for(const id of NBL){const st=nbS(id),B=NBD[id].beats;if(st.beat>=B.length||nbChic(id)||dn-st.bd<2)continue;if(frInfo(id).l<NBLV[st.beat]||Math.random()>.3||gm-(S.lb??-9999)<(st.beat?240:420))continue;const m=MS(id);if(m.pend)continue;msgAdd(id,'e',B[st.beat][1],true);st.beat++;st.bd=dn;S.lb=gm;toast('📖 '+nbN(id)+' se confie à Marcel',true);try{SFX.ping();}catch(e){}cnt('nb_beat');return;}
+  if(busy)return;const free=NBL.filter(id=>!nbChic(id)&&!MS(id).pend&&nbHome(id));if(!free.length)return;
+  if(!S.fav&&dn>=S.nf&&h<18&&Math.random()<.22){const fs=NBFAV.filter(f=>f.ok());if(fs.length){const id=pick(free),f=pick(fs);S.nf=dn+2+Math.floor(Math.random()*3);nbPend(id,'fav',f.q,['✅ J\'arrive!','❌ Pas le temps aujourd\'hui'],{f:f.k});toast(f.e+' '+nbN(id)+' demande un service à Marcel',true);return;}}
+  if(!S.sup&&dn>=S.ns&&h>=10&&h<15.5&&!flags.supper&&Math.random()<.2){const c=free.filter(id=>frInfo(id).l>=2);if(c.length){const id=pick(c);S.ns=dn+3+Math.floor(Math.random()*4);nbPend(id,'sup',"Viens donc souper à la maison ce soir! Je fais "+NBD[id].dish+".",['✅ Avec plaisir!','❌ Pas ce soir, désolé']);toast('🍽️ '+nbN(id)+' invite Marcel à souper',true);return;}}
+  if(dn>=S.nc&&!NBL.some(nbChic)&&Math.random()<.1){const cs=NBCHIC.filter(c=>c.ok());const c=pick(cs),id=pick(free.filter(x=>x!=='steve').length?free.filter(x=>x!=='steve'):free);S.nc=dn+8+Math.floor(Math.random()*7);nbXP(id,-6);nbPend(id,'chic',c.q,['🙏 Désolé, je vais faire attention','🤷 Voyons, c\'est pas si grave!'],{why:c.k});toast('😬 '+nbN(id)+' est fâché contre Marcel',false);}}
+
+/* ---------- traditions des saisons ---------- */
+const SZL=[
+ {id:'stjean',s:0,k:[8,8],e:'⚜️',n:'Fête nationale',d:'Feux d\'artifice de la Saint-Jean, le soir',old:1},
+ {id:'canada',s:0,k:[11,11],e:'🚚',n:'1er juillet',d:'Jour du déménagement et feux du soir',old:1},
+ {id:'epl',s:0,k:[22,22],e:'🌽',n:'Épluchette de blé d\'Inde',d:'Tout le voisinage se retrouve au parc, de 16 h 30 à 19 h',h:[16.5,19],w:()=>!RAIN()},
+ {id:'grace',s:1,k:[12,12],e:'🦃',n:'Action de grâce',d:'Souper de dinde chez Maman, de 16 h à 18 h',h:[16,18.3],w:()=>!flags.maman&&!flags.supper},
+ {id:'hallo',s:1,k:[21,21],e:'🎃',n:'Halloween',d:'Citrouilles, bonbons et costumes',old:1},
+ {id:'guig',s:2,k:[4,6],e:'🥫',n:'La guignolée',d:'Don de denrées à la salle paroissiale, de 10 h à 16 h',h:[10,16],w:()=>money>60},
+ {id:'noel',s:2,k:[9,9],e:'🎄',n:'Réveillon de Noël',d:'Sapin, tourtière et famille',old:1},
+ {id:'an',s:2,k:[11,11],e:'🎆',n:'Jour de l\'An',d:'Feux d\'artifice à minuit',old:1},
+ {id:'carn',s:2,k:[19,20],e:'⛄',n:'Carnaval d\'hiver',d:'Tire sur la neige et sculptures au parc, de 11 h à 17 h',h:[11,17],w:()=>weather!=='tempete'&&!RAIN()},
+ {id:'sucres',s:3,k:[1,22],e:'🍁',n:'Temps des sucres',d:'Sortie à la cabane à sucre',old:1},
+ {id:'corv',s:3,k:[14,14],e:'🧹',n:'Corvée du printemps',d:'Les voisins nettoient le parc ensemble, de 9 h à 12 h',h:[9,12],w:()=>!RAIN()&&!SNOWING()},
+ {id:'vg',s:3,k:[20,21],e:'🏷️',n:'Vente de garage',d:'Marcel vend ses vieilleries devant chez lui, de 9 h à 13 h',h:[9,13],w:()=>!RAIN()&&!SNOWING()}];
+const SZ=()=>LIFE.sz||(LIFE.sz={});
+const szKey=T=>SDAY().y+':'+T.id;
+const szToday=T=>{const q=SDAY();return q.s===T.s&&q.k>=T.k[0]&&q.k<=T.k[1];};
+const szOpen=T=>{if(T.old||SZ()[szKey(T)]||!szToday(T))return false;const h=hourOf();return h>=T.h[0]&&h<T.h[1]&&T.w();};
+function szGuests(n,x,z,lab){const ids=[...NBL].filter(id=>nbIdle(id)&&!nbChic(id)&&id!=='steve').sort(()=>Math.random()-.5).slice(0,n);const out=[];ids.forEach((id,i)=>{const ch=nbCh(id);const a=i/n*PI*1.5-PI*.75;const px=x+Math.sin(a)*2.3,pz=z+Math.cos(a)*2.1+2.4;ch.lab=lab;out.push({id,ch,px,pz});});return out;}
+function szParty(G,until,anim,x,z){for(const g of G){g.ch.q=[F(()=>nbPlace(g.ch,g.px,g.pz,x,z)),D(anim,0,{until:until+rnd(-8,6)}),F(()=>despawn(g.ch))];}}
+function szDone(T,ids,xp){SZ()[szKey(T)]=1;cnt('trad');cnt('trad_'+T.id);for(const id of ids||[])nbXP(id,xp||25);}
+let VGT=null;
+function vgTable(on){if(!VGT){if(!on)return;VGT=new THREE.Group();const wd=M('#a9865a',{r:.8});const top=new THREE.Mesh(new THREE.BoxGeometry(1.9,.06,.75),wd);top.position.y=.74;VGT.add(top);for(const[x,z]of[[-.85,-.3],[.85,-.3],[-.85,.3],[.85,.3]]){const l=new THREE.Mesh(new THREE.BoxGeometry(.06,.74,.06),wd);l.position.set(x,.37,z);VGT.add(l);}
+    const cols=['#c8402f','#3d8bfd','#f2c21a','#4a8a5a','#8a4a6a','#e8e8ee'];for(let i=0;i<7;i++){const s=.14+((i*37)%10)/60;const b=new THREE.Mesh(new THREE.BoxGeometry(s,s*(.7+(i%3)*.4),s),M(cols[i%6],{r:.7}));b.position.set(-.8+i*.27,.77+s*.4,((i*13)%7-3)*.07);b.rotation.y=i*.7;VGT.add(b);}
+    const sg=new THREE.Mesh(new THREE.BoxGeometry(.7,.42,.04),M('#fff8d8',{r:.9}));sg.position.set(0,.45,.4);VGT.add(sg);VGT.traverse(o=>{if(o.isMesh){o.castShadow=true;}});VGT.position.set(-53,0,-44.6);town.add(VGT);}
+  VGT.visible=on;}
+function szSteps(T){const id=T.id;
+  if(id==='epl'){const X=-10,Z=-12.6,T1=Math.max(gm+70,dayStart()+18.6*60),G=szGuests(4,X,Z,'🌽 À l\'épluchette du quartier');
+    return[F(()=>{toast('🌽 C\'est l\'épluchette de blé d\'Inde du quartier!',true);szParty(G,T1,'eat',X,Z);}),tr('town.kiosk',{label:'Se rend à l\'épluchette de blé d\'Inde au parc'}),D('lift',14,{label:'Épluche une montagne de blé d\'Inde avec les voisins',say:pick(['Le premier qui trouve l\'épi rouge embrasse sa voisine!','Du bon blé d\'Inde de Neuville!'])}),payF(8,'Contribution à l\'épluchette'),
+      D('eat',0,{until:T1-25,label:'Mange du blé d\'Inde bien beurré',fx:{food:2.2,social:1.4,fun:.8},say:pick(['Du beurre, du sel, c\'est toute!','J\'en suis à mon cinquième…']),speaker:true,chat:[['p','Passe-moi le beurre, Marcel!'],['m','Tiens. Y est-tu assez sucré à ton goût?'],['p','C\'est le meilleur de l\'été!']],partner:G[0]&&G[0].ch}),
+      D('talk',0,{until:T1,label:'Jase avec tout le voisinage',fx:{social:1.6,fun:.6},partner:G[1]&&G[1].ch,speaker:true,chat:genTalk('generic',3)}),F(()=>{szDone(T,G.map(g=>g.id),30);setTask('🌽 A fêté à l\'épluchette de blé d\'Inde');LIFE.lastOuting={kind:'à l\'épluchette de blé d\'Inde'};})];}
+  if(id==='grace'){return[F(()=>{toast('🦃 Action de grâce : Maman a fait une dinde!',true);szDone(T);}),...mamanSouper().map(x=>{if(x&&typeof x.label==='string'&&/^Soupe chez Maman/.test(x.label))x.label='Soupe chez Maman : la dinde de l\'Action de grâce';return x;})];}
+  if(id==='guig'){const don=money>400?40:20;return[{t:'drive',to:'eglise',label:'Apporte des denrées à la guignolée'},...at('eglise.cafe','pay',4,{label:'Remet des denrées et un don aux bénévoles de la guignolée',say:pick(['Pour que personne manque de rien à Noël.','C\'est pas grand-chose, mais c\'est de bon cœur.'])}),payF(don,'Don à la guignolée'),
+      F(()=>{szDone(T);need.social=Math.min(100,need.social+12);need.fun=Math.min(100,need.fun+8);say(Mc,'Ça fait du bien de donner.');setTask('🥫 A donné à la guignolée');}),{t:'drive',to:'home',label:'Rentre de la guignolée'}];}
+  if(id==='carn'){const X=-10,Z=-12.6,T1=gm+110,G=szGuests(3,X,Z,'⛄ Au carnaval d\'hiver');
+    return[F(()=>{toast('⛄ Le carnaval d\'hiver bat son plein au parc!',true);szParty(G,T1,'look',X,Z);}),tr('town.kiosk',{label:'Se rend au carnaval d\'hiver au parc'}),D('eat',12,{label:'Roule de la tire d\'érable sur la neige',fx:{food:.8,fun:1.2},say:pick(['De la tire sur la neige, y a rien de meilleur!','Ça colle aux dents, c\'est parfait!'])}),payF(5,'Tire sur la neige'),
+      D('lift',25,{label:'Sculpte un castor dans un bloc de neige',warp:2,fx:{fun:1},say:pick(['Ça… c\'est supposé être un castor.','Un chef-d\'œuvre!'])}),
+      D('talk',0,{until:T1,label:'Se réchauffe en jasant avec les voisins',fx:{social:1.5,fun:.5},partner:G[0]&&G[0].ch,speaker:true,chat:[['p','Y fait frette, mais on est bien!'],['m','Une tuque, un chocolat chaud, pis on est en affaires.']]}),
+      F(()=>{szDone(T,G.map(g=>g.id),25);const w=Math.random()<.3+skLv('crea')*.006;if(w){addMoney(75,'Prix de sculpture sur neige');say(Mc,'Mon castor a gagné un prix!');}setTask('⛄ A fêté au carnaval d\'hiver');LIFE.lastOuting={kind:'au carnaval d\'hiver'};})];}
+  if(id==='corv'){const X=-10,Z=-12.6,T1=gm+115,G=szGuests(4,X,Z,'🧹 À la corvée du parc');
+    return[F(()=>{toast('🧹 Corvée du printemps : tout le monde au parc!',true);szParty(G,T1,'rake',X,Z);}),tr('town.kiosk',{label:'Se rend à la corvée du printemps au parc'}),D('rake',0,{until:T1-20,label:'Ramasse les déchets et les branches de l\'hiver au parc',warp:2,fx:{social:.7},say:pick(['On en trouve, des affaires, sous la neige!','Un parc propre, c\'est l\'affaire de tous.'])}),
+      D('talk',0,{until:T1,label:'Prend un café avec les bénévoles',fx:{social:1.5,fun:.5},partner:G[0]&&G[0].ch,speaker:true,chat:[['p','Beau travail, tout le monde!'],['m','Le parc a jamais été aussi beau.']]}),
+      F(()=>{szDone(T,G.map(g=>g.id),30);cnt('benev');setTask('🧹 A participé à la corvée du printemps');})];}
+  if(id==='vg'){const T1=Math.min(gm+170,dayStart()+13.4*60),G=szGuests(2,-53,-45.4,'🏷️ Fouille à la vente de garage');let i=0;for(const g of G){g.px=-54.2+i*2.4;g.pz=-43.3;i++;}
+    return[F(()=>{vgTable(true);toast('🏷️ Vente de garage chez Marcel!',true);}),tr('town.porch',{label:'Installe sa table de vente de garage'}),D('lift',8,{yaw:0,label:'Sort ses boîtes de vieilleries',say:pick(['Mes vieux disques… bon, je les vends.','Qui veut un fondue-set jamais ouvert?'])}),F(()=>szParty(G,T1,'look',-53,-44.6)),
+      D('talk',0,{until:T1,yaw:0,label:'Marchande avec les passants à sa vente de garage',warp:2,fx:{social:1.1,fun:.4},say:pick(['Deux piastres, c\'est donné!','Tout doit partir!','Ça, c\'est une antiquité, madame.']),partner:G[0]&&G[0].ch,speaker:true,chat:[['p','Combien pour le grille-pain?'],['m','Cinq piastres.'],['p','Trois!'],['m','Quatre, pis je vous donne le fil avec.']]}),
+      F(()=>{vgTable(false);const g=Math.round(rnd(45,150)+skLv('social')*2);addMoney(g,'Vente de garage');szDone(T,G.map(x=>x.id),18);setTask('🏷️ A fait '+g+' $ à sa vente de garage');flags.dirty=false;})];}
+  return null;}
+function szMissions(){return SZL.filter(T=>!T.old).map(T=>({id:'sz_'+T.id,e:T.e,n:T.n,ok:()=>{if(SZ()[szKey(T)])return'Déjà fêté cette année';if(!szToday(T))return'Ce n\'est pas le bon jour';const h=hourOf();if(h<T.h[0]||h>=T.h[1])return'De '+fmt(T.h[0]*60)+' à '+fmt(T.h[1]*60);if(!T.w())return'Pas possible en ce moment';return Mc.job?'Marcel est au travail':true;},go:()=>szSteps(T)}));}
+function szWhen(T){const q=SDAY();const S=SEAS[T.s];const lab=S[5]+' '+S[0]+', jour '+(T.k[0]===T.k[1]?T.k[0]:T.k[0]+' à '+T.k[1]);if(szToday(T))return'<b style="color:#2f8a4a">Aujourd\'hui!</b>';let dd=((T.s-q.s+4)%4)*30+(T.k[0]-q.k);if(dd<0)dd+=120;return lab+' · dans '+dd+' jour'+(dd>1?'s':'');}
+function szHTML(){const q=SDAY(),sn=SEAS[q.s];const M=szMissions();const mine=SZL.filter(T=>T.s===q.s),next=SZL.filter(T=>T.s!==q.s).sort((a,b)=>((a.s-q.s+4)%4)-((b.s-q.s+4)%4)||a.k[0]-b.k[0]);
+  const AMB_={0:'Cigales l\'après-midi, grillons le soir, enfants qui jouent et camion de crème glacée',1:'Vent dans les feuilles mortes, voiliers d\'outardes et corneilles',2:'Vent d\'hiver, neige qui crisse sous les bottes, mésanges et grelots des Fêtes',3:'Chants d\'oiseaux, neige qui fond goutte à goutte, rainettes le soir et retour des outardes'};
+  let h=`<div class="cinfo"><b>${sn[5]} ${sn[0]} · jour ${q.k} de 30${q.y?' · an '+(q.y+1):''}</b><br><span class="cmut">${tempNow()} °C · ${fmtDay()}<br>🔊 ${AMB_[q.s]}</span></div>`;
+  const row=T=>{const done=SZ()[szKey(T)];const m=M.find(x=>x.id==='sz_'+T.id);if(m&&szToday(T)&&!done)return camRow(m,T.d);return`<div class="crow" style="cursor:default"><span>${T.e} ${T.n}<small>${T.d}</small><small>${done?'':szWhen(T)}</small></span><em>${done?'✓ Fêté':T.old?'':''}</em></div>`;};
+  h+=`<div class="ch2">Traditions de la saison</div>`+mine.map(row).join('')+`<div class="ch2">À venir cette année</div>`+next.map(row).join('');
+  h+=`<div class="cinfo"><span class="cmut">Traditions vécues : <b>${C_('trad')}</b>. Marcel y va de lui-même s'il est libre ce jour-là; ajoute-la à sa liste pour être certain qu'il n'en manque pas une.</span></div>`;return h;}
+
+/* ---------- rêves de vie ---------- */
+const RV=()=>LIFE.reve&&LIFE.reve.done?LIFE.reve:(LIFE.reve={k:null,done:{},f:{}});
+let TOURN=null;
+{const _lf=landFish;landFish=function(r){try{if(TOURN&&gm<TOURN.until&&r&&r.f&&r.kg)TOURN.w.push([r.kg,r.f.n]);}catch(e){}return _lf.apply(this,arguments);};}
+const rvNum=(e,n,d,v,goal,money_)=>({e,n,d,ok:v>=goal,p:clamp(v/goal,0,1),v:money_?cNum(Math.min(v,goal))+' / '+cNum(goal)+' $':Math.min(v,goal)+' / '+goal});
+const rvMis=(e,n,id,ok)=>({e,n,mis:id,ok:!!ok,p:ok?1:0});
+const fishSpecies=()=>FISH.filter(f=>C_('f_'+f.k)).length;const fishBest=()=>{const R=FREC();let b=0;for(const k in R)if(R[k]>b)b=R[k];return b;};
+const REVES={
+ resto:{e:'🍽️',n:'Ouvrir son resto',prix:30000,d:'Ti-Guy parle de prendre sa retraite. Marcel se voit déjà derrière le comptoir de « Chez Marcel ».',fin:'Marcel est propriétaire de « Chez Marcel »',rente:()=>320+skLv('cuisine')*9,rl:'Profits de Chez Marcel',
+  steps:()=>{const R=RV();return[rvNum('🍳','Maîtriser la cuisine','Compétence Cuisine niveau 20',skLv('cuisine'),20),rvNum('👨‍🍳','Faire ses classes chez Ti-Guy','Emploi d\'aide-cuisinier niveau 10',jobInfo('casse').l,10),rvMis('📜','Suivre le cours « Gérer un restaurant »','rv_cours',R.f.cours),rvNum('💰','Amasser la mise de fonds','En banque au moment d\'acheter',money,30000,1),rvMis('🔑','Racheter le casse-croûte de Ti-Guy','rv_fin_resto',R.done.resto)];}},
+ boreal:{e:'🚛',n:'Devenir propriétaire de Transport Boréal',prix:75000,d:'Le patron cherche une relève. Qui de mieux qu\'un chauffeur qui connaît chaque quai de chargement?',fin:'Marcel est le patron de Transport Boréal',rente:()=>650+jobInfo('camion').l*10,rl:'Profits de Transport Boréal',
+  steps:()=>{const R=RV();return[{e:'🪪',n:'Obtenir le permis de classe 1',d:'Formation et examen dans l\'app Camionnage',ok:hasPerm(1),p:hasPerm(1)?1:hasPerm(3)?.5:0,v:hasPerm(1)?'Classe 1':hasPerm(3)?'Classe 3':'Classe 5'},rvNum('🚚','Devenir un chauffeur d\'expérience','Emploi de camionneur niveau 30',jobInfo('camion').l,30),rvNum('🌙','Réussir des contrats spéciaux','Déménagements, nuits et longues routes',C_('camSp'),10),rvMis('🤝','Rencontrer le patron pour parler de la relève','rv_patron',R.f.patron),rvNum('💰','Réunir le prix d\'achat','En banque au moment de signer',money,75000,1),rvMis('🖋️','Signer le rachat de Transport Boréal','rv_fin_boreal',R.done.boreal)];}},
+ peche:{e:'🏆',n:'Gagner le tournoi de pêche provincial',prix:0,d:'Le Grand Tournoi provincial couronne chaque année le meilleur pêcheur du Québec. Le trophée irait bien dans le salon.',fin:'Marcel est champion provincial de pêche',rente:()=>150,rl:'Commandite de Pêche & Plein Air',
+  steps:()=>{const R=RV();return[rvNum('🎣','Devenir un pêcheur aguerri','Compétence Pêche niveau 20',skLv('peche'),20),rvNum('📖','Connaître ses poissons','Espèces différentes pêchées',fishSpecies(),18),{e:'🐟',n:'Sortir une prise de 4 kg ou plus',d:'Record personnel, toutes espèces',ok:fishBest()>=4,p:clamp(fishBest()/4,0,1),v:kgs(Math.min(fishBest(),4))+' / 4,0 kg'},rvMis('🥇','Gagner le tournoi régional de la marina','rv_tr',R.f.reg),rvMis('🏆','Gagner le Grand Tournoi provincial','rv_tp',R.done.peche)];}}};
+const rvPrev=(k,n)=>REVES[k].steps().slice(0,n).every(s=>s.ok);
+function rvFinish(k){const R=RV(),D_=REVES[k];R.done[k]=dayN();if(R.k===k)R.k=null;cnt('reve');toast('🌟 Rêve réalisé : '+D_.fin+'!',true);setTask('🌟 '+D_.fin+'! Un rêve de vie réalisé');try{SFX.jackpot();}catch(e){}say(Mc,pick(['J\'ai réussi… J\'AI RÉUSSI!','Si on m\'avait dit ça il y a un an!','Maman va être fière!']),4);need.fun=100;need.social=Math.min(100,need.social+30);rvApply();try{msgAdd('maman','e','Mon grand!!! J\'ai su la nouvelle. Je suis TELLEMENT fière de toi ❤️',true);}catch(e){}}
+function tournEnd(prov){const T=TOURN;TOURN=null;const R=RV();const w=(T?T.w:[]).map(x=>x[0]).sort((a,b)=>b-a).slice(0,3);const sc=w.reduce((a,b)=>a+b,0);const best=prov?rnd(4.2,7.4):rnd(1.5,3.5),n=prov?48:16;const rank=sc>best?1:Math.min(n,2+Math.floor((best-sc)/best*n*.85));
+  const nm=prov?'Grand Tournoi provincial':'tournoi régional';const res=w.length?'ses '+w.length+' meilleures prises pèsent '+kgs(sc)+' kg':'aucune prise';cnt('tourn');
+  if(rank===1){if(prov){addMoney(5000,'Bourse du Grand Tournoi provincial');rvFinish('peche');}else{addMoney(400,'Bourse du tournoi régional');R.f.reg=dayN();toast('🥇 Marcel gagne le tournoi régional!',true);setTask('🥇 Gagne le tournoi régional de la marina ('+kgs(sc)+' kg)');say(Mc,'Premier! Le provincial, j\'arrive!',3.5);}}
+  else{if(rank<=3)addMoney(prov?600:100,'Podium au '+nm);toast('🎣 '+(prov?'Provincial':'Régional')+' : '+rank+'e sur '+n+' ('+res+')',rank<=3);setTask('🎣 Termine '+rank+'e sur '+n+' au '+nm+' : '+res+'. Le gagnant avait '+kgs(best)+' kg');say(Mc,pick(['La prochaine fois, c\'est la bonne.','Il m\'en manquait un gros…','Le lac m\'a pas gâté aujourd\'hui.']),3);}}
+function tournGo(prov){const fee=prov?150:40;return[F(()=>{TOURN={prov,w:[],until:gm+420};flags.peche=true;LIFE.pecheD=dayN();LIFE.tournD=dayN();toast(prov?'🏆 Marcel part pour le Grand Tournoi provincial!':'🥇 Marcel part pour le tournoi régional!',true);}),{t:'drive',to:'quai',label:prov?'Part pour le Grand Tournoi provincial de pêche':'Part pour le tournoi régional de pêche'},tr('town.q_peche',{label:'S\'installe au bout du quai pour le tournoi'}),payF(fee,'Inscription au tournoi de pêche'),
+   D('look',3,{label:'Attend le coup de départ du tournoi',say:pick(['Concentration, Marcel…','Trois belles prises. C\'est tout ce que je demande.'])}),...fishSession(prov?11:8),D('look',4,{label:'Fait peser ses prises par les juges',say:'Verdict?'}),F(()=>tournEnd(prov)),{t:'drive',to:'home',label:'Rentre du tournoi'}];}
+function rvMissions(){const R=RV(),L=[];const busy=()=>Mc.job?'Marcel est au travail':true;const hrs=(a,b,t)=>{const h=hourOf();return h>=a&&h<b?true:t;};
+  L.push({id:'rv_cours',e:'📜',n:'Cours « Gérer un restaurant »',ok:()=>{if(R.f.cours)return'Cours déjà réussi';const r=hrs(9,16,'Offert de 9 h à 16 h à la bibliothèque');if(r!==true)return r;if(money<450)return'Il manque '+cNum(450-money)+' $';return busy();},
+   go:()=>[...at('lib.desk','pay',3,{label:'S\'inscrit au cours « Gérer un restaurant »',say:'Un jour, mon propre resto!'}),payF(450,'Cours « Gérer un restaurant »'),...at('lib.read','read',rnd(100,130),{label:'Suit le cours : prix de revient, salubrité et gestion d\'équipe',warp:3,say:pick(['Le coût des aliments : 30 % du prix…','MAPAQ, permis, assurances… ouf.'])}),F(()=>{R.f.cours=dayN();cnt('formation');toast('📜 Cours réussi : Marcel sait gérer un restaurant',true);setTask('📜 Réussit son cours de gestion de restaurant');})]});
+  L.push({id:'rv_fin_resto',e:'🔑',n:'Racheter le casse-croûte de Ti-Guy',ok:()=>{if(R.done.resto)return'Rêve réalisé';if(!rvPrev('resto',3))return'Il reste des étapes à franchir';const r=hrs(10,19,'Ti-Guy est là de 10 h à 19 h');if(r!==true)return r;if(money<30000)return'Il manque '+cNum(30000-money)+' $';return busy();},
+   go:()=>[...at('casse.comptoir','talk',12,{label:'Discute du rachat avec Ti-Guy',say:'Ti-Guy… je suis prêt.',speaker:true,chat:[['m','Ti-Guy, je veux reprendre le casse-croûte.'],['p','J\'attendais juste ça, mon Marcel. Tu connais la plaque mieux que moi.'],['m','Je garde la recette de sauce à poutine, promis.'],['p','Si tu la changes, je reviens te hanter!']]}),D('pay',3,{label:'Signe les papiers chez le notaire',say:'Ma signature tremble!'}),payF(30000,'Achat du casse-croûte'),F(()=>rvFinish('resto')),D('wave',3,{label:'Accroche l\'enseigne « Chez Marcel »',say:'CHEZ MARCEL. Ça sonne bien en titi!'})]});
+  L.push({id:'rv_patron',e:'🤝',n:'Rencontrer le patron de Transport Boréal',ok:()=>{if(R.f.patron)return'Rencontre déjà faite';if(!rvPrev('boreal',3))return'Il faut d\'abord faire ses preuves (étapes 1 à 3)';const r=hrs(8,17,'Le bureau est ouvert de 8 h à 17 h');if(r!==true)return r;return busy();},
+   go:()=>[{t:'drive',to:'depot',label:'Va rencontrer le patron de Transport Boréal'},tr('town.dep_office',{label:'Entre au bureau du patron'}),D('talk',25,{label:'Parle de la relève avec le patron',warp:2,say:pick(['Monsieur Boréal, j\'ai une proposition.','Cette compagnie-là, je l\'ai tatouée sur le cœur.']),fx:{social:.6}}),F(()=>{R.f.patron=dayN();toast('🤝 Le patron accepte de vendre à Marcel pour 75 000 $',true);setTask('🤝 Le patron lui promet la compagnie pour 75 000 $');}),{t:'drive',to:'home',label:'Rentre, la tête pleine de projets'}]});
+  L.push({id:'rv_fin_boreal',e:'🖋️',n:'Signer le rachat de Transport Boréal',ok:()=>{if(R.done.boreal)return'Rêve réalisé';if(!R.f.patron||!rvPrev('boreal',3))return'Il reste des étapes à franchir';const r=hrs(8,17,'Le bureau est ouvert de 8 h à 17 h');if(r!==true)return r;if(money<75000)return'Il manque '+cNum(75000-money)+' $';return busy();},
+   go:()=>[{t:'drive',to:'depot',label:'Va signer le rachat de Transport Boréal'},tr('town.dep_office',{label:'Entre au bureau pour la signature'}),D('pay',6,{label:'Signe l\'acte de vente devant le notaire',say:'Trente camions… pis ils sont à moi.'}),payF(75000,'Rachat de Transport Boréal'),F(()=>rvFinish('boreal')),D('wave',3,{label:'Serre la main de toute l\'équipe',say:'Rien change, les gars : on livre à l\'heure!'}),{t:'drive',to:'home',label:'Rentre chez lui, patron'}]});
+  const tok=prov=>()=>{if(prov&&R.done.peche)return'Rêve réalisé';if(!prov&&R.f.reg)return'Déjà gagné';if(prov&&!R.f.reg)return'Il faut d\'abord gagner le tournoi régional';if(!rvPrev('peche',3))return'Il reste des étapes à franchir';if(pondFrozen())return'Le lac est gelé : les tournois reprennent au printemps';if(dayOf()<5)return'Les tournois ont lieu la fin de semaine';const r=hrs(6,12,'Départ entre 6 h et midi');if(r!==true)return r;if(LIFE.tournD===dayN())return'Déjà participé aujourd\'hui';if(RAIN()||weather==='tempete')return'Tournoi remis à cause du mauvais temps';if(money<(prov?150:40))return'Pas assez d\'argent pour l\'inscription';if(!OWN.canne)return'Il lui faut une canne à pêche';return busy();};
+  L.push({id:'rv_tr',e:'🥇',n:'Tournoi régional de la marina',ok:tok(false),go:()=>tournGo(false)},{id:'rv_tp',e:'🏆',n:'Grand Tournoi provincial',ok:tok(true),go:()=>tournGo(true)});return L;}
+/* trophées et effets permanents */
+let RVG=null,RVsig='';
+function rvApply(){const R=RV();try{if(R.done.resto&&INT.casse)INT.casse.name='Chez Marcel';}catch(e){}
+  const sig=Object.keys(R.done).sort().join(',');if(sig===RVsig||!INT.home)return;RVsig=sig;if(!sig){if(RVG)RVG.visible=false;return;}
+  if(RVG){INT.home.dyn.remove(RVG);}RVG=new THREE.Group();RVG.position.set(2.72,.86,-1.26);const wd=M('#5a3a26',{r:.5}),gold=M('#e2b23a',{r:.25,m:.8}),B=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;RVG.add(o);return o;},C=(r1,r2,h,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,14),m);o.position.set(x,y,z);o.castShadow=true;RVG.add(o);return o;};
+  B(1.5,.05,.3,wd,0,0,0);for(const x of[-.68,.68])for(const z of[-.11,.11])B(.05,.84,.05,wd,x,-.44,z);B(1.36,.04,.24,wd,0,-.5,0);
+  if(R.done.resto){const wh=M('#f6f4ee',{r:.8});C(.075,.07,.1,wh,-.48,.075,0);const s=new THREE.Mesh(new THREE.SphereGeometry(.095,12,8),wh);s.position.set(-.48,.17,0);s.scale.y=.75;RVG.add(s);B(.2,.02,.1,gold,-.48,.032,.06);}
+  if(R.done.boreal){const bl=M('#2f5d8a',{r:.5}),wt=M('#e8e8ee',{r:.6}),bk=M('#222',{r:.8});B(.11,.11,.11,bl,-.14,.1,0);B(.26,.14,.12,wt,.06,.115,0);for(const x of[-.14,.0,.13])for(const z of[-.055,.055]){const w=C(.028,.028,.02,bk,x,.05,z);w.rotation.x=PI/2;}}
+  if(R.done.peche){C(.05,.065,.03,wd,.48,.04,0);C(.012,.012,.06,gold,.48,.085,0);C(.07,.03,.1,gold,.48,.165,0);for(const sx of[-1,1]){const t=new THREE.Mesh(new THREE.TorusGeometry(.03,.008,5,10),gold);t.position.set(.48+sx*.075,.17,0);RVG.add(t);}}
+  INT.home.dyn.add(RVG);}
+function rvWeekly(){const R=RV(),dn=dayN();if(dayOf()!==0||hourOf()<9||(R.pay??-1)>=dn)return;R.pay=dn;for(const k in R.done){const D_=REVES[k];if(!D_)continue;const v=Math.round(D_.rente()*rnd(.8,1.25));if(v>0)addMoney(v,D_.rl);}}
+function rvHTML(){const R=RV();const Ms=rvMissions();let h='';const doneK=Object.keys(R.done);
+  if(doneK.length)h+=`<div class="cinfo"><b>🌟 Rêves réalisés</b><br>`+doneK.map(k=>`${REVES[k].e} ${REVES[k].fin} <span class="cmut">· ${REVES[k].rl.toLowerCase()} : ~${cNum(REVES[k].rente())} $ par semaine</span>`).join('<br>')+`</div>`;
+  if(!R.k||!REVES[R.k]||R.done[R.k]){const left=Object.keys(REVES).filter(k=>!R.done[k]);if(!left.length)return h+`<div class="cinfo"><b>Marcel a réalisé tous ses rêves.</b><br><span class="cmut">Il ne lui reste qu'à en profiter!</span></div>`;
+    h+=`<div class="cinfo"><b>À quoi rêve Marcel?</b><br><span class="cmut">Choisis le grand rêve de sa vie. Les étapes s'appuient sur ce qu'il fait déjà : ses emplois, ses compétences, ses économies. Tu peux changer de rêve sans perdre ta progression.</span></div>`;
+    for(const k of left){const D_=REVES[k],S=D_.steps(),n=S.filter(s=>s.ok).length;h+=`<div class="cinfo"><b>${D_.e} ${D_.n}</b><br><span class="cmut">${D_.d}</span><div class="cbar"><i style="width:${Math.round(n/S.length*100)}%;background:#e2a23a"></i></div><span class="cmut">${n} étape${n>1?'s':''} sur ${S.length} déjà franchie${n>1?'s':''}${D_.prix?' · '+cNum(D_.prix)+' $ à réunir':''}</span><div class="cact"><button type="button" class="pri" data-a="rvc:${k}">Choisir ce rêve</button></div></div>`;}return h;}
+  const D_=REVES[R.k],S=D_.steps(),n=S.filter(s=>s.ok).length;const pct=Math.round(S.reduce((a,s)=>a+s.p,0)/S.length*100);
+  h+=`<div class="cinfo"><b>${D_.e} ${D_.n}</b><br><span class="cmut">${D_.d}</span><div class="cbar"><i style="width:${pct}%;background:#e2a23a"></i></div><span class="cmut"><b>${pct} %</b> · ${n} étape${n>1?'s':''} sur ${S.length}</span></div><div class="ch2">Les étapes</div>`;
+  let cur=false;S.forEach((s,i)=>{const m=s.mis&&Ms.find(x=>x.id===s.mis);const here=!s.ok&&!cur;if(here)cur=true;
+    if(m&&!s.ok){h+=camRow(m,'Étape '+(i+1)+' · '+s.n);return;}
+    h+=`<div class="cinfo" style="padding:7px 9px;${s.ok?'opacity:.75':''}"><div style="display:flex;justify-content:space-between;gap:6px"><span>${s.ok?'✅':here?'👉':'◻️'} <b>${s.n}</b></span><span class="cmut">${s.ok?'Fait':(s.v||'')}</span></div>${s.d?'<span class="cmut">'+s.d+'</span>':''}${!s.ok&&s.p>0&&s.p<1?'<div class="cbar mini"><i style="width:'+Math.round(s.p*100)+'%;background:#e2a23a"></i></div>':''}</div>`;});
+  h+=`<div class="cinfo"><span class="cmut">Une fois réalisé : ${D_.rl.toLowerCase()} d'environ ${cNum(D_.rente())} $ par semaine et un souvenir sur la tablette du salon.</span><div class="cact"><button type="button" data-a="rvc:none">Changer de rêve</button></div></div>`;return h;}
+/* ---------- app Voisins ---------- */
+function nbMissions(){const L=[];for(const id of NBL){const nm=nbN(id);
+    if(nbChic(id))L.push({id:'nb_paix_'+id,e:'🕊️',n:'Faire la paix avec '+nm,ok:()=>{if(!nbChic(id))return'C\'est déjà réglé';const h=hourOf();if(h<9||h>=20)return'Entre 9 h et 20 h';if(nbAway(id))return nm+' est au travail';if(money<20)return'Pas assez d\'argent pour un petit cadeau';if(!frFree())return'Marcel a déjà de la visite';return Mc.job?'Marcel est au travail':true;},go:()=>nbPaixSteps(id)});
+    else L.push({id:'nb_vis_'+id,e:'💬',n:'Aller jaser avec '+nm,ok:()=>{const h=hourOf();if(nbS(id).vis===dayN())return'Déjà passé aujourd\'hui';if(h<9||h>=20)return'Entre 9 h et 20 h';if(nbAway(id))return nm+' est au travail';if(RAIN()||weather==='tempete')return'Pas par ce temps-là';if(!frFree()||!nbIdle(id))return nm+' est occupé';return Mc.job?'Marcel est au travail':true;},go:()=>nbVisitSteps(id)});}return L;}
+function nbHTML(){const S=NBS(),Ms=nbMissions();let h=`<div class="cinfo"><b>🏘️ Le voisinage de Marcel</b><br><span class="cmut">Services rendus : <b>${C_('nb_fav')}</b> · soupers chez les voisins : <b>${C_('nb_sup')}</b> · chicanes réglées : <b>${C_('nb_paix')}</b><br>Les voisins écrivent dans Messages : un service à rendre, une invitation, une chicane… Sans réponse après trois heures, Marcel répond lui-même.</span></div>`;
+  const pend=NBL.filter(id=>{const p=MS(id).pend;return p&&p.t==='nb';});
+  if(S.fav)h+=`<div class="cinfo">🤝 <b>Service promis à ${nbN(S.fav.id)}</b><br><span class="cmut">Marcel y va dès qu'il est libre (entre 8 h et 19 h 30).</span></div>`;
+  if(S.sup)h+=`<div class="cinfo">🍽️ <b>Souper chez ${nbN(S.sup.id)} ce soir</b><br><span class="cmut">Marcel part vers 17 h 30. Au menu : ${NBD[S.sup.id].dish}.</span></div>`;
+  for(const id of pend){const p=MS(id).pend;h+=`<div class="cinfo">✉️ <b>${nbN(id)} attend une réponse</b><div class="cact">`+p.opts.map((t,k)=>`<button type="button" class="${k?'':'pri'}" data-a="nbp:${id}|${k}">${t}</button>`).join('')+`</div></div>`;}
+  const ord=[...NBL].sort((a,b)=>(nbChic(b)?1:0)-(nbChic(a)?1:0)||frInfo(b).l-frInfo(a).l);
+  for(const id of ord){const c=CBY[id],d=NBD[id],st=nbS(id),I=frInfo(id),m=Ms.find(x=>x.id===(nbChic(id)?'nb_paix_':'nb_vis_')+id);const B=d.beats;
+    h+=`<div class="cinfo"><div style="display:flex;justify-content:space-between;gap:6px"><span>${c.e} <b>${c.n}</b></span><span class="cmut">niv. ${I.l}</span></div><span class="cmut">${d.job} · ${d.adr}<br>${nbNow(id)}</span>
+     <div class="cbar mini" style="margin:5px 0"><i style="width:${Math.round(I.x/I.need*100)}%;background:${nbChic(id)?'#c8402f':'#34c759'}"></i></div><span style="font-size:.74rem"><b>${nbRel(id)}</b></span>`;
+    if(st.beat>0)h+=`<div class="cmut" style="margin-top:5px">`+B.slice(0,st.beat).map(b=>'📖 '+b[0]).join('<br>')+`</div>`;
+    h+=`<div class="cmut" style="margin-top:4px">${st.beat>=B.length?'✨ Marcel connaît toute son histoire.':'🔒 La suite de son histoire : '+(I.l>=NBLV[st.beat]?'bientôt…':'amitié niveau '+NBLV[st.beat])}</div>`;
+    h+=`<div class="cact"><button type="button" data-a="nbm:${id}">💬 Messages</button></div>`+(m?camRow(m,nbChic(id)?'Avec un petit cadeau pour briser la glace':'Une jasette sur sa galerie (+28 d\'amitié)'):'')+`</div>`;}
+  return h;}
+CAPPS.push(['reves','🌟','Rêves','linear-gradient(135deg,#f2b84a,#c9661a)'],['voisins','🏘️','Voisins','linear-gradient(135deg,#5ac58a,#1f7a5a)'],['saisons','🍁','Saisons','linear-gradient(135deg,#e2683a,#8a2a1a)']);
+{const _cr8=cellRender;cellRender=function(){const a=CELL.app;if(a!=='reves'&&a!=='voisins'&&a!=='saisons')return _cr8();const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent=a==='reves'?'Rêves de vie':a==='voisins'?'Voisins':'Saisons';const keep=B.scrollTop;let h='';try{h=a==='reves'?rvHTML():a==='voisins'?nbHTML():szHTML();}catch(e){console.error(e);h='<div class="cmut">Erreur d\'affichage</div>';}B.innerHTML=h;B.scrollTop=keep;};}
+$('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,i=a.indexOf(':');if(i<0)return;const k=a.slice(0,i),[v1,v2]=a.slice(i+1).split('|');
+  if(k==='rvc'){const R=RV();R.k=v1==='none'?null:v1;if(R.k)toast('🌟 Nouveau rêve : '+REVES[R.k].n,true);}
+  else if(k==='nbp')nbReply(v1,+v2);
+  else if(k==='nbm'){CELL.app='messages';CELL.cid=v1;CELL._bot=1;MS(v1).un=0;}
+  else return;try{cellRender();}catch(e2){}});
+{const _pm3=projMissions;projMissions=function(){const L=_pm3();try{L.push(...rvMissions(),...nbMissions(),...szMissions());}catch(e){console.error(e);}return L;};}
+/* ---------- planification ---------- */
+function v121Free(){const h=hourOf();return !LIFE.tokyo&&!Mc.inCar&&!Mc.job&&!Mc.carry&&!flags.morning&&!flags.trip&&(Mc.area==='home'||Mc.area==='town')&&!INVITE&&frFree()&&Julie.area==='none'&&Steve.area==='none'&&!TODO().length&&h>=7&&h<21;}
+function v121Plan(){const S=NBS(),h=hourOf(),dn=dayN();
+  if(S.sup&&S.sup.day===dn&&h>=17.4&&h<19.2)return nbSupSteps();
+  for(const T of SZL)if(szOpen(T)&&!(S.sup&&T.id==='grace')){try{const s=szSteps(T);if(s&&s.length)return s;}catch(e){console.error(e);SZ()[szKey(T)]=1;}}
+  if(S.sup&&S.sup.day===dn&&h>=16.3)return null;
+  if(S.fav&&h>=8&&h<19.5){const f=NBFAV.find(x=>x.k===S.fav.f);if(!f||f.ok()||gm>S.fav.exp-300)return nbFavSteps();}
+  const ck=NBL.find(id=>nbChic(id)&&dn-nbS(id).ch.d>=2&&!nbAway(id));if(ck&&h>=10&&h<19&&money>40&&!RAIN()&&nbS(ck).try!==dn){nbS(ck).try=dn;return nbPaixSteps(ck);}
+  return null;}
+{const _p121=planMarcel;planMarcel=()=>{Mc.hid=false;if(VGT&&VGT.visible&&!(Mc.q&&Mc.q.length))vgTable(false);try{if(v121Free()){const s=v121Plan();if(s&&s.length)return s;}}catch(e){console.error(e);}return _p121();};}
+function v121Tick(){if(tReal-V121.gt>.8){V121.gt=tReal;try{nbGreet();}catch(e){}}
+  const hi=Math.floor(gm/60);if(V121.h===hi)return;const first=V121.h==null;V121.h=hi;if(first){rvApply();return;}const h=hourOf();
+  try{nbHourly(h);}catch(e){console.error(e);}try{nbRoutine(h);}catch(e){console.error(e);}try{rvWeekly();rvApply();}catch(e){console.error(e);}
+  if(Math.floor(h)===9){for(const T of SZL)if(!T.old&&szToday(T)&&!SZ()[szKey(T)]&&SZ()['r'+szKey(T)]!==dayN()){SZ()['r'+szKey(T)]=dayN();toast(T.e+' Aujourd\'hui : '+T.n.toLowerCase()+'!',true);}}}
+{const _ft=frTick;frTick=function(){_ft();try{v121Tick();}catch(e){console.error(e);}};}
+
+{const _sc=statCats;statCats=function(){const L=_sc();try{L.push({e:'🌟',n:'Rêves de vie réalisés',v:Object.keys(RV().done).length,m:Object.keys(REVES).length},{e:'📖',n:'Histoires des voisins',v:NBL.reduce((a,id)=>a+nbS(id).beat,0),m:NBL.reduce((a,id)=>a+NBD[id].beats.length,0)},{e:'🍁',n:'Traditions des saisons',v:SZL.filter(T=>!T.old&&C_('trad_'+T.id)>=1).length,m:SZL.filter(T=>!T.old).length});}catch(e){}return L;};}
+/* ---------- ambiances sonores : par lieu et par saison ---------- */
+const AMB={n:{},L:null,cic:0,cicT:0};
+const AMBP={mall:'mall',tkmagasin:'mall',cvb_mode:'shop',cvb_fleur:'shop',cvb_disques:'shop',cvb_boul:'shop',pharma:'shop',boul:'shop',poste:'shop',peche:'shop',tkdenki:'shop',tksouv:'shop',cvb_livres:'quiet',cvb_galerie:'quiet',lib:'quiet',eglise:'quiet',tkmanga:'quiet',
+ cvb_creme:'resto',cvb_resto:'resto',casse:'resto',micro:'resto',tkramen:'resto',tksushi:'resto',tkizakaya:'resto',cvb_cafe:'cafe',cafe:'cafe',tkmatcha:'cafe',cvb_cine:'cine',cine:'cine',epic:'epic',dep:'epic',tkkonbini:'konbini',quinc:'quinc',electro:'arcade',arcp:'arcade',tkgame:'arcade',tkretro:'arcade',
+ animal:'animal',quilles:'quilles',gym:'gym',hopital:'hopital',ecole:'ecole',office:'office',garage:'garage',gare:'gare',mstation:'gare',metro:'gare',wagon:'wagon',avion:'avion',aeroport:'aero',cdq:'depot',ski:'ski',cabane:'cabane',parcnat:'foret',campagne:'champ',tokyo:'tokyo',harajuku:'tokyo',odaiba:'tokyo',akiba:'akiba',tkneko:'neko',tkonsen:'onsen',tkgondole:'vent',maman:'maman',home:'home',etage:'home',hotel:'hotel'};
+function ambTick(dt){const I=SFX._i;if(!I||!SFX.on)return;const t=tReal,a=VIS_AREA,out=a==='town';
+  if(!AMB.L)AMB.L={leaves:I.loop('bandpass',3400,.5),cic:I.loop('bandpass',5600,10),snow:I.loop('bandpass',700,2.2),vent:I.loop('highpass',2600,.3),stream:I.loop('bandpass',1500,.7),fridge:I.loop('lowpass',115,3)};
+  const set=(k,v,tc=.4)=>AMB.L[k].g.gain.setTargetAtTime(v,I.now(),tc),T=I.tone,N=I.noise;
+  const ev=(k,lo,hi)=>{if(AMB.n[k]==null||AMB.n[k]-t>hi+1){AMB.n[k]=t+rnd(lo,hi)*Math.random();return false;}if(t<AMB.n[k])return false;AMB.n[k]=t+rnd(lo,hi);return true;};
+  const P=AMBP[a]||(out?'town':OUTD[a]?'nature':'room'),sn=SEASON(),day=dayF>.3,nt=night>.6,wet=RAIN(),sw=SNOWING(),nat=P==='foret'||P==='champ'||P==='cabane'||P==='ski'||a==='plage',open=out||nat,h=hourOf();
+  const clink=()=>{const f=rnd(2400,3600);T(f,.05,'triangle',.018);T(f*1.5,.04,'triangle',.012,.03);},beep=()=>T(1960,.07,'square',.014),chime=()=>{T(659,.5,'sine',.035);T(523,.7,'sine',.035,.45);},
+    crow=()=>{for(let i=0;i<3;i++){T(560,.2,'sawtooth',.02,i*.34,-140,.03);N(.18,'bandpass',1400,.018,i*.34,2);}},geese=()=>{const n=4+Math.floor(Math.random()*5);let w=0;for(let i=0;i<n;i++){const f=rnd(380,470);T(f,.15,'sawtooth',.014,w,-70,.03);T(f*2.02,.12,'square',.004,w,-120,.03);w+=rnd(.2,.42);}},
+    chick=()=>{T(3900,.07,'sine',.026,0,-400);T(3300,.07,'sine',.026,.1,-300);for(let i=0;i<3;i++)T(2450,.09,'triangle',.018,.24+i*.13);},peep=()=>{const n=6+Math.floor(Math.random()*8);for(let i=0;i<n;i++)T(rnd(2850,3150),.07,'sine',.011,i*.19+Math.random()*.05,220,.02);},
+    bleep=()=>{for(let i=0;i<4;i++)T(pick([523,659,784,1047,1319]),.07,'square',.012,i*.08);};
+  let crowd=null,fr=0,vent=0,stream=0;
+  if(P==='mall'){crowd=.075+.02*Math.sin(t*.4);vent=.01;if(ev('muz',.5,1.1))T(pick([392,440,523,587,659,784]),.55,'sine',.011,0,0,.08);if(ev('pa',40,90))chime();}
+  else if(P==='shop'){crowd=.02;if(ev('bp',5,12))beep();if(ev('bell',25,60))T(1568,.35,'triangle',.03);}
+  else if(P==='epic'){crowd=.03;fr=.05;if(ev('bp',2.5,7))beep();if(ev('pa',45,100))chime();}
+  else if(P==='konbini'){fr=.04;if(ev('bp',4,9))beep();if(ev('kb',18,40))[784,659,523,659,880].forEach((f,i)=>T(f,.16,'sine',.03,i*.17));}
+  else if(P==='quinc'){crowd=.015;if(ev('ck',6,14)){T(rnd(700,1100),.12,'square',.02,0,-200);N(.1,'bandpass',2600,.04,0,3);}if(ev('bp',7,15))beep();}
+  else if(P==='resto'){crowd=.075+.025*Math.sin(t*.6);if(ev('cl',1.2,4))clink();if(a==='casse'&&ev('fz',5,11))N(1.4,'highpass',4200,.025,0,.8);}
+  else if(P==='cafe'){if(ev('cl',3,8))clink();if(ev('esp',14,30))N(1.7,'highpass',3200,.028,0,.5,6500);}
+  else if(P==='cine'){vent=.008;if(ev('bm',9,20))N(1.6,'lowpass',140,.1,0,1,60);}
+  else if(P==='arcade'){crowd=.035;if(ev('bl',.6,2.2))bleep();if(ev('co',9,20)){T(988,.07,'square',.02);T(1319,.3,'square',.02,.07);}}
+  else if(P==='animal'){if(ev('ch',1.5,4))SFX.chirp();if(ev('bk',9,22))SFX.bark();if(ev('mw',14,30))SFX.meow();fr=.02;}
+  else if(P==='quilles'){crowd=.05;if(ev('bw',5,11)){N(1.3,'lowpass',170,.08,0,1,330);N(.35,'bandpass',1200,.12,1.3,1);for(let i=0;i<5;i++)T(rnd(700,1100),.05,'square',.025,1.32+i*.05);}}
+  else if(P==='gym'){vent=.02;fr=.03;if(ev('cg',5,12)){T(rnd(280,420),.2,'square',.03,0,-90);N(.12,'bandpass',2400,.05,0,3);}}
+  else if(P==='quiet'){if(ev('pg',6,14))N(.12,'highpass',2500,.016,0,.6,5200);if(a==='eglise'&&ev('ec',20,50))T(196,2.2,'sine',.015,0,0,.6);}
+  else if(P==='hopital'){vent=.015;if(ev('mo',1.5,1.7))T(880,.09,'sine',.014);if(ev('pa',30,70))chime();}
+  else if(P==='ecole'){crowd=h>=8&&h<15.5&&dayOf()<5?.06+.03*Math.sin(t*.9):0;vent=.008;if(crowd&&ev('kd',4,10))for(let i=0;i<3;i++)T(rnd(700,1100),.12,'triangle',.012,i*.15,rnd(-200,300));}
+  else if(P==='office'){vent=.012;if(ev('ky',.12,.5))SFX.key();if(ev('ph',35,80)){for(let i=0;i<2;i++){T(1250,.3,'sine',.02,i*.5);T(1480,.3,'sine',.015,i*.5+.02);}}}
+  else if(P==='garage'){if(ev('aw',6,15)){for(let i=0;i<8;i++)N(.05,'bandpass',1700,.06,i*.06,4);T(110,.5,'sawtooth',.025);}if(ev('cg',12,28))SFX.clang();fr=.02;}
+  else if(P==='gare'){crowd=.04;fr=.04;if(ev('pa',22,50))chime();if(ev('rb',18,40))N(3.5,'lowpass',120,.12,0,1,70);}
+  else if(P==='wagon'){fr=.09;if(ev('cc',.85,.95)){N(.04,'lowpass',520,.08);N(.04,'lowpass',520,.06,.14);}}
+  else if(P==='avion'){fr=.1;vent=.05;if(ev('dg',40,90))T(1047,.5,'sine',.03);}
+  else if(P==='aero'){crowd=.08;if(ev('pa',15,35))chime();}
+  else if(P==='depot'){fr=.05;vent=.01;if(ev('fk',12,28))for(let i=0;i<3;i++)T(1250,.18,'square',.016,i*.45);if(ev('cg',15,35)){N(.3,'lowpass',260,.1);}}
+  else if(P==='tokyo'||P==='akiba'){crowd=.08+.02*Math.sin(t*.5);if(ev('px',9,20))for(let i=0;i<8;i++)T(i%2?1500:1900,.11,'sine',.014,i*.27);if(P==='akiba'&&ev('bl',1.2,4))bleep();}
+  else if(P==='neko'){if(ev('mw',5,12))SFX.meow();if(ev('cl',5,12))clink();}
+  else if(P==='onsen'){stream=.05;if(ev('dr',1.5,4))T(rnd(900,1400),.08,'sine',.02,0,-500);}
+  else if(P==='vent'){vent=.03;}
+  else if(P==='cabane'){if(ev('fc',.15,.9))N(.03,'highpass',2000,.04);if(ev('fd',.3,.34))T(pick([392,440,494,587,659]),.16,'sawtooth',.007);}
+  else if(P==='foret'){stream=.035;if(day&&ev('wp',12,30))for(let i=0;i<7;i++)N(.02,'bandpass',1800,.045,i*.07,6);}
+  else if(P==='ski'){vent=.02;if(ev('sw',3,8))N(.9,'highpass',2200,.03,0,.5,5000);}
+  else if(P==='maman'){if(ev('tk',1,1))T(1800,.02,'square',.012);fr=.012;}
+  else if(P==='home'){fr=.012;if(sn==='hiver'&&weather==='tempete')set('snow',.02+.012*Math.sin(t*.5));else if(sn==='ete'&&nt&&!wet&&ev('crh',1.2,3)){for(let i=0;i<3;i++)T(4400,.03,'square',.004,i*.06);}}
+  if(crowd!=null)I.lv('crowd',crowd);set('fridge',fr);set('vent',vent);set('stream',stream);
+  /* saisons, à l'extérieur */
+  let lv_=0,sno=P==='home'&&sn==='hiver'&&weather==='tempete'?null:0,cic=0;
+  if(open){
+    if(sn==='hiver'){sno=sw?(weather==='tempete'?.1+.04*Math.sin(t*.7):.045):.014+.01*Math.sin(t*.3);if(day&&!sw&&ev('chk',9,24))chick();if(day&&ev('crw',30,70))crow();
+      if(out&&nt&&SDAY().k<=12&&h>16&&h<23&&ev('grl',25,60)){for(let i=0;i<9;i++){T(rnd(2800,3700),.05,'triangle',.012,i*.14);N(.03,'highpass',6000,.01,i*.14);}}
+      if(Mc.act==='shovel'&&ev('shv',.9,1.4))N(.35,'bandpass',900,.07,0,1.2,2400);}
+    else if(sn==='printemps'){if(day&&!wet&&SDAY().k<=16&&ev('drp',.4,2.2))T(rnd(900,1500),.07,'sine',.018,0,-500);if(nt&&!wet&&tempBase()>2&&ev('pep',2.5,6))peep();if(day&&ev('gee',80,170))geese();if(SDAY().k<=14)stream=Math.max(stream,.012);set('stream',stream);}
+    else if(sn==='ete'){if(day&&!wet&&tempNow()>21&&h>10&&h<19){if(t>AMB.cicT){AMB.cicT=t+rnd(14,34);AMB.cic=t+rnd(4,7);}if(t<AMB.cic)cic=.016*(.6+.4*Math.sin(t*46));}
+      if(out&&day&&!wet&&ev('kid',18,50))for(let i=0;i<4;i++)T(rnd(700,1150),.13,'triangle',.011,i*.16,rnd(-200,320));
+      if(out&&!wet&&h>13&&h<19.5&&ev('ice',150,360))[659,784,880,784,659,523,587,659,784,659].forEach((f,i)=>T(f,.19,'square',.008,i*.21));}
+    else{lv_=(.014+.03*Math.max(0,Math.sin(t*.23))+.02*Math.max(0,Math.sin(t*.61+1)))*(wet?.5:1);if(day&&ev('gee',45,110))geese();if(day&&ev('crw',22,55))crow();if(Mc.act==='rake'&&ev('rk',.8,1.2))N(.3,'highpass',2600,.05,0,.6,5200);}}
+  set('leaves',lv_,.6);if(sno!=null)set('snow',sno,.8);set('cic',cic,.05);}
+{const _su=SFX.update;SFX.update=function(dt){_su.call(SFX,dt);try{ambTick(dt);}catch(e){}};
+ const _st=SFX.step;SFX.step=function(out){const I=SFX._i;if(out&&I&&SFX.on){if((LIFE.snowD||0)>.2){I.noise(.1,'bandpass',1350,.055,0,.9);I.noise(.05,'highpass',3800,.02,.02);return;}if(SEASON()==='automne'&&Math.random()<.45){_st.call(SFX,out);I.noise(.07,'highpass',3200,.028,0,.7);return;}if(RAIN()){_st.call(SFX,out);I.noise(.08,'bandpass',1900,.03,0,1.5);return;}}return _st.call(SFX,out);};}
+
 {const _pc=planMarcel;planMarcel=()=>{Mc.apron=null;if(flags.morning){const h=hourOf();if(h>=11||h<4)flags.morning=false;else if(Mc.area==='home'&&!Mc.job&&!LIFE.tokyo&&!flags.trip&&!Mc.inCar&&!Mc.carry){flags.morning=false;return morning();}}if(Mc.carry==='cooler'&&!Mc.job&&!LIFE.tokyo&&!flags.trip&&!Mc.inCar)return[...at('home.fridge','fridge',3,{label:'Rapporte sa glacière et range ses poissons au frigo',say:pick(['Du poisson frais pour la semaine!','Ça, c\'est mon souper!'])}),F(()=>Mc.carry=null)];return _pc();};}
 {const _pm2=projMissions;projMissions=function(){const L=_pm2();L.push({id:'gq_go',e:'🥚',n:'Aller acheter des gashapons',ok:()=>{const h=hourOf();if(h<9||h>=20)return'Les commerces sont ouverts de 9 h à 20 h';if(money<10)return'Pas assez d\'argent';if(!Object.keys(GQSPOTS).length)return'Aucune machine';return true;},
   go:()=>{const A=Object.keys(GQSPOTS);const a=pick(A);const nm=(INT[a]&&INT[a].name)||'un commerce';flags.outing=true;toast('🥚 Marcel part acheter des gashapons : '+nm,true);
