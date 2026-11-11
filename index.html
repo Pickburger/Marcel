@@ -782,7 +782,6 @@ function personStyle(r,o){const F=r.fx||{},hs=F.hs||7,rn=i=>((hs>>>(i*3+1))%100)
   /* tête : plus grande, mâchoire, joues, yeux expressifs, vraie chevelure */
   r.head.scale.setScalar(1.2);r.head.position.y=.735;
   {const sk0=r.head.children.find(c=>isG(c,'SphereGeometry')&&Math.abs(c.geometry.parameters.radius-.118)<.001);if(sk0){sk0.scale.set(1,1.14,1.05);sk0.position.y=-.008;}}
-  if(!o.beard)for(const s of[1,-1]){const ck=new THREE.Mesh(new THREE.SphereGeometry(.03,10,8),new THREE.MeshStandardMaterial({color:C(o.skin).lerp(C('#e86a5a'),.28),roughness:.6,transparent:true,opacity:.3,depthWrite:false}));ck.scale.set(.85,.6,.3);ck.position.set(s*.068,-.03,.092);r.head.add(ck);}
   const iris=M(['#5a3a22','#3a5a7a','#4a6a3a','#3a2a1c','#6a4a2a'][hs%5],{r:.3});
   for(const c of r.head.children){if(!c.isMesh)continue;const g=c.geometry,p=g.parameters||{};
     if(g.type==='SphereGeometry'&&Math.abs(p.radius-.022)<.0005&&c.scale.z<.6){c.scale.set(1.25,1.15,.5);}
@@ -792,10 +791,10 @@ function personStyle(r,o){const F=r.fx||{},hs=F.hs||7,rn=i=>((hs>>>(i*3+1))%100)
     else if(g.type==='BoxGeometry'&&Math.abs(p.width-.048)<.001){c.position.y+=.008;c.position.z=.114;c.scale.set(1.05,1.25,1);}}
   const st=o.bun?3:o.long?2:(hs%4);const H=(rad,sx,sy,sz,x,y,z)=>{const m=mesh(new THREE.SphereGeometry(rad,14,10),hair);m.scale.set(sx,sy,sz);m.position.set(x,y,z);r.head.add(m);return m;};
   if(o.hair&&!o.bald){H(.125,1.02,.62,1.02,0,.07,-.02);H(.118,1.0,1.02,.62,0,.005,-.068);
-    if(st===0){H(.06,1.7,.5,.8,.02,.118,.075);for(const s of[1,-1])H(.04,.5,1.2,1.1,s*.118,.03,-.005);}
-    else if(st===1){H(.07,1.5,.55,.9,-.03,.115,.07).rotation.z=.25;H(.045,.5,1.1,1,.12,.035,0);H(.04,.5,1.3,1.1,-.119,.02,-.005);}
-    else if(st===2){H(.065,1.75,.6,.8,0,.112,.07);for(const s of[1,-1])H(.05,.55,2.3,1.1,s*.112,-.06,-.01);H(.13,.98,1.5,.5,0,-.1,-.09);}
-    else{for(let i=0;i<7;i++){const a=i/7*PI*2;H(.05,1,.8,1,Math.sin(a)*.085,.105+Math.cos(a*2)*.01,Math.cos(a)*.075-.01);}H(.055,1,.8,1,0,.125,0);}}
+    if(st===0){H(.1,1.02,.36,.62,0,.088,.042);for(const s of[1,-1])H(.035,.45,1.1,1.1,s*.117,.03,-.005);}
+    else if(st===1){H(.1,1.0,.36,.62,-.012,.09,.042).rotation.z=.16;H(.035,.45,1.0,1.1,.118,.035,0);H(.035,.45,1.2,1.1,-.118,.025,-.005);}
+    else if(st===2){H(.1,1.04,.38,.62,0,.088,.042);for(const s of[1,-1])H(.05,.55,2.3,1.1,s*.112,-.06,-.01);H(.13,.98,1.5,.5,0,-.1,-.09);}
+    else{H(.1,1.02,.34,.6,0,.09,.04);for(let i=0;i<8;i++){const a=i/8*PI*2;H(.042,1,.7,1,Math.sin(a)*.08,.118,Math.cos(a)*.072-.02);}}}
   if(F.sh)for(const x of F.sh){x.scale.x*=1.075;x.scale.z*=1.075;}
   if(F.sh)for(const L of[r.LL,r.RL]){const hm=mesh(new THREE.CylinderGeometry(.086*W,.09*W,.05,14),pantsM);hm.scale.z=1/W;hm.position.y=-.4;hm.visible=false;L.th.add(hm);F.sh.push(hm);}
   r.fx=F;F.W=W;}
