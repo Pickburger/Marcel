@@ -8223,8 +8223,7 @@ function coifThumb(st,col){const k=st+'|'+col;if(COIF.img[k])return COIF.img[k];
   try{if(!COIF.sc){const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x9a8a9a,.85));const d=new THREE.DirectionalLight(0xffffff,1.05);d.position.set(1.5,3,3);sc.add(d);const d2=new THREE.DirectionalLight(0xffd8e8,.45);d2.position.set(-3,1.5,-1);sc.add(d2);
       const p=makePerson({...Mc.look});p.hiRes=1;p.root.position.set(0,0,0);sc.add(p.root);p.root.updateMatrixWorld(true);const hp=new V3();p.head.getWorldPosition(hp);COIF.sc=sc;COIF.p=p;COIF.cam=new THREE.PerspectiveCamera(26,1,.05,20);COIF.cam.position.set(hp.x+.34,hp.y+.12,hp.z+1.08);COIF.cam.lookAt(hp.x,hp.y+.03,hp.z);
       COIF.bg=new THREE.Color('#f6e8ee');}
-    const r=GP3.r,S=132;hairSet(COIF.p,st,col);if(COIF.p.hat)COIF.p.hat.visible=false;const pw=GP3.cv.width,ph=GP3.cv.height;r.setSize(S,S,false);const oc=r.getClearColor(new THREE.Color()).clone(),oa=r.getClearAlpha();r.setClearColor(COIF.bg,1);r.render(COIF.sc,COIF.cam);
-    const url=GP3.cv.toDataURL('image/jpeg',.85);r.setClearColor(oc,oa);r.setSize(pw||S,ph||S,false);return COIF.img[k]=url;}catch(e){console.error(e);return null;}}
+    const S=132;hairSet(COIF.p,st,col);if(COIF.p.hat)COIF.p.hat.visible=false;const url=miniCanvas(COIF.sc,COIF.cam,S,COIF.bg).toDataURL('image/jpeg',.85);return COIF.img[k]=url;}catch(e){console.error(e);return null;}}
 function coifSteps(st,col,auto){const c=CF(),nm=HSTYK[st][1],price=coifPrice(st,col),old=coifCur(),same=st===old.st&&!col;const lise=coifLise();const cut=same?rnd(20,28):rnd(32,48);const tip=Math.round(price*.15);
   const seat={pose:'sit',seatH:.5,yaw:PI};
   return[F(()=>{c.pend=null;flags.coif=true;}),{t:'drive',to:'coiff',label:'Se rend au Salon de coiffure Chez Ginette'},
@@ -8593,14 +8592,20 @@ function toyBuild(it){TOY.gold=!!it.r;const T=toyCtx();try{(TOYS[it.n]||(T2=>{T2
   const bb=new THREE.Box3().setFromObject(T.g);const h=bb.max.y-bb.min.y,w=Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z);const s=1/Math.max(h,w*.95,.01);const inner=T.g;inner.scale.setScalar(s);inner.position.set(-(bb.min.x+bb.max.x)/2*s,-bb.min.y*s,-(bb.min.z+bb.max.z)/2*s);const root=new THREE.Group();root.add(inner);return root;}
 /* vignettes (rendues une fois, puis gardées) pour l'app Collections et la bande du bas */
 function toyThumb(it){if(TOY.th[it.n])return TOY.th[it.n];if(!gp3Setup())return null;try{if(!TOY.sc){const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x8a8a9a,.95));const d=new THREE.DirectionalLight(0xffffff,1.0);d.position.set(2,4,3);sc.add(d);const d2=new THREE.DirectionalLight(0xcfe0ff,.4);d2.position.set(-3,2,-1);sc.add(d2);TOY.sc=sc;TOY.cam=new THREE.PerspectiveCamera(30,1,.1,20);TOY.cam.position.set(1.1,1.25,2.5);TOY.cam.lookAt(0,.48,0);}
-    const r=GP3.r,S=112;const g=toyBuild(it);g.rotation.y=.45;TOY.sc.add(g);const pw=GP3.cv.width,ph=GP3.cv.height;r.setSize(S,S,false);const oc=r.getClearColor(new THREE.Color()).clone(),oa=r.getClearAlpha();r.setClearColor(0x000000,0);r.render(TOY.sc,TOY.cam);
-    const cv=document.createElement('canvas');cv.width=cv.height=S;cv.getContext('2d').drawImage(GP3.cv,0,0);TOY.sc.remove(g);r.setClearColor(oc,oa);r.setSize(pw||S,ph||S,false);TOY.th[it.n]=cv;return cv;}catch(e){console.error(e);return null;}}
+    const S=112;const g=toyBuild(it);g.rotation.y=.45;TOY.sc.add(g);const cv=miniCanvas(TOY.sc,TOY.cam,S,0xff00ff,1);TOY.sc.remove(g);TOY.th[it.n]=cv;return cv;}catch(e){console.error(e);return null;}}
 function toyURL(it){if(TOY.img[it.n])return TOY.img[it.n];const cv=toyThumb(it);if(!cv)return null;try{return TOY.img[it.n]=cv.toDataURL('image/png');}catch(e){return null;}}
 
 /* ================= v112 : gashapon en 3D (capsules avec physique) ================= */
 const GP3={r:null};
 const GPCOL=['#ff5a6e','#4aa3ff','#ffd23f','#5fd38a','#c67bff','#ff9b3d','#3fd0d0','#ff7ac8'];
-function gp3Setup(){if(GP3.r)return true;try{const cv=document.createElement('canvas');const r=new THREE.WebGLRenderer({canvas:cv,antialias:true,preserveDrawingBuffer:true,alpha:true});r.setClearColor(0x141a2c,1);r.outputEncoding=THREE.sRGBEncoding;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.05;
+/* rendu des petites scènes (gashapon, vignettes) avec le moteur principal : un seul contexte WebGL, pour ménager la mémoire des téléphones */
+function miniRender(sc,cam,W,H,bg){const cv=R.domElement,cw=cv.width,ch=cv.height,pr=R.getPixelRatio();const k=Math.min(1,cw/W,ch/H);const w=Math.max(1,Math.floor(W*k)),h=Math.max(1,Math.floor(H*k));
+  const oc=R.getClearColor(new THREE.Color()).clone(),oa=R.getClearAlpha(),oe=R.toneMappingExposure,ort=R.getRenderTarget(),osu=R.shadowMap.needsUpdate;
+  R.setRenderTarget(null);R.setScissorTest(true);R.setViewport(0,0,w/pr,h/pr);R.setScissor(0,0,w/pr,h/pr);R.setClearColor(bg,1);R.toneMappingExposure=1.05;R.shadowMap.needsUpdate=false;R.clear(true,true,true);R.render(sc,cam);
+  R.setScissorTest(false);R.setViewport(0,0,cw/pr,ch/pr);R.setClearColor(oc,oa);R.toneMappingExposure=oe;R.setRenderTarget(ort);R.shadowMap.needsUpdate=osu;return[cv,0,ch-h,w,h];}
+function miniCanvas(sc,cam,S,bg,key){const s=miniRender(sc,cam,S,S,bg);const c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');g.drawImage(s[0],s[1],s[2],s[3],s[4],0,0,S,S);
+  if(key){const d=g.getImageData(0,0,S,S),a=d.data;for(let i=0;i<a.length;i+=4){const r=a[i],gg=a[i+1],b=a[i+2];if(r>200&&b>200&&gg<70)a[i+3]=0;else if(r>150&&b>150&&gg<120){a[i+3]=120;}}g.putImageData(d,0,0);}return c;}
+function gp3Setup(){if(GP3.r)return true;try{const r=1,cv=null;
   const sc=new THREE.Scene();const cam=new THREE.PerspectiveCamera(34,1,.05,60);sc.add(new THREE.HemisphereLight(0xdfe9ff,0x3a2a40,.75));const dl=new THREE.DirectionalLight(0xffffff,1.1);dl.position.set(2.5,5,4);sc.add(dl);const rim=new THREE.DirectionalLight(0x9fc4ff,.5);rim.position.set(-3,2.5,-2);sc.add(rim);
   const pl=new THREE.PointLight(0xfff2d8,.6,4);pl.position.set(0,2.4,.2);sc.add(pl);
   const floor=new THREE.Mesh(new THREE.CircleGeometry(4,40),new THREE.MeshStandardMaterial({color:C('#2a2f45'),roughness:.85}));floor.rotation.x=-PI/2;sc.add(floor);
@@ -8659,7 +8664,7 @@ function gp3Up(G,dt){const Z=G.g3||(gp3Init(G),G.g3);G.k+=dt;Z.t+=dt;const targe
   if(G.st==='open'&&G.k>2.9){G.c--;Z.rot=0;Z.dropped=0;Z.opened=0;G.tr=0;if(GP3.out)GP3.out.visible=false;if(GP3.fig)GP3.fig.visible=GP3.glow.visible=false;if(G.c<=0){G.end=1;return;}G.st='crank';
     if(GP3.balls&&GP3.balls.filter(b=>b.on).length<12)GP3.balls.forEach(b=>{if(!b.on){b.on=true;b.g.visible=true;b.g.position.set(rnd(-.5,.5),GP3.y0+GP3.H-.3,rnd(-.25,.25));b.v.set(0,-1,0);}});}}
 function gp3Draw(G,g,SER,ALL,ownSet){const w=G.w,h=G.h,S=SER[G.si];if(!gp3Setup())return false;const Z=G.g3||(gp3Init(G),G.g3);gp3Build(S,(SER===GSERQ?'q':'j')+G.si);
-  const r=GP3.r,dp=G.dp||1;const W=Math.round(w*dp),H=Math.round(h*dp);if(GP3.cv.width!==W||GP3.cv.height!==H)r.setSize(W,H,false);
+  const dp=G.dp||1;const W=Math.round(w*dp),H=Math.round(h*dp);
   GP3.ck.rotation.z=-Z.rot;
   // capsule de sortie
   const O=GP3.out;if(O.visible){let p;if(G.st==='drop'){const u=Math.min(1,(Z.dropT-.35)/.55);p=new THREE.Vector3(0,.3-u*.12+Math.abs(Math.sin(u*PI*2.2))*.12*(1-u),.5+u*.3);O.rotation.x+=.25;}else{p=new THREE.Vector3(0,.19+.012*Math.sin(Z.t*3),.8);O.rotation.set(-.35,0,Math.sin(Z.t*2)*.12);}O.position.copy(p);
@@ -8669,7 +8674,7 @@ function gp3Draw(G,g,SER,ALL,ownSet){const w=G.w,h=G.h,S=SER[G.si];if(!gp3Setup(
   // caméra
   const zoom=G.st==='cap'||G.st==='open'?1:0;Z.camT+=(zoom-Z.camT)*.06;const asp=w/h;const far=asp<.75?7.6:5.6;
   const cx=lerp(Math.sin(Z.t*.35)*.45,0,Z.camT),cy=lerp(1.9,1.25,Z.camT),cz=lerp(far,3.4,Z.camT);GP3.cam.position.set(cx,cy,cz);GP3.cam.lookAt(0,lerp(1.38,.55,Z.camT),lerp(0,.55,Z.camT));GP3.cam.aspect=asp;GP3.cam.updateProjectionMatrix();
-  r.render(GP3.sc,GP3.cam);g.drawImage(GP3.cv,0,0,w,h);
+  {const m=miniRender(GP3.sc,GP3.cam,W,H,0x141a2c);g.drawImage(m[0],m[1],m[2],m[3],m[4],0,0,w,h);}
   // interface 2D par-dessus
   mgR(g,w/2-Math.min(160,w/2-10),8,Math.min(320,w-20),32,16,'rgba(0,0,0,.45)');mgT(g,S[1]+' Série : '+S[0],w/2,24,14,'#fff');
   if(G.st==='crank'){mgR(g,w/2-140,h-92,280,34,17,'rgba(0,0,0,.55)');mgT(g,'👆 Tourne la manivelle ('+G.tr+'/3)',w/2,h-75,15,'#fff');}
