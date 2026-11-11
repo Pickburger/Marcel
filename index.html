@@ -4328,7 +4328,7 @@ function bbqMeal(){const st=INV.steak&&INV.mais;const nd=st?['steak','mais']:['s
     ...at('town.c_patio','eat',rnd(15,20),{label:'Soupe sur sa terrasse',fx:{food:3,fun:.6}})];}
 function morning(){return[F(tokSave),D('stretch',2,{label:"Se lève et s'étire",say:pick(['Ahhh… déjà le matin?','Café. Il me faut du café.'])}),
   ...at('home.toilet','sit',4,{label:'Passe à la salle de bain'}),...at('home.shower','shower',10,{label:'Prend sa douche',fx:{hyg:7}}),
-  ...at('home.ward','dress',3,{label:"S'habille"}),F(()=>{const o=pick(OUTFITS);Mc.look.shirt=o[0];Mc.look.coat=o[1];}),...(OWN.espresso&&powerOn()&&INV.cafe?[...at('home.espresso','cook',3,{label:'Se fait un latte avec sa machine espresso',say:'Le meilleur café en ville!'}),F(()=>useInv('cafe'))]:[]),...cookMeal('dej')];}
+  ...at('home.ward','dress',2,{label:"Ouvre sa garde-robe"}),...wardSteps(),...(OWN.espresso&&powerOn()&&INV.cafe?[...at('home.espresso','cook',3,{label:'Se fait un latte avec sa machine espresso',say:'Le meilleur café en ville!'}),F(()=>useInv('cafe'))]:[]),...cookMeal('dej')];}
 function homeMeal(n){if(true)return cookMeal('rep',n);return[...at('home.fridge','fridge',3,{label:'Prépare le '+n}),...at('home.stove','cook',rnd(14,22),{say:pick(['Pâté chinois ce soir!','Spaghetti maison.','Soupe aux pois, comme grand-maman.'])}),
   ...at('home.eat','eat',rnd(14,20),{label:'Mange son '+n,fx:{food:3,fun:.3}}),F(()=>flags.dirty=true)];}
 function work(){flags.worked=true;flags.lunch=true;const ds=dayStart();const s=[];
@@ -4721,7 +4721,7 @@ function busTo(stopId,label){return[tr('town.bus_S1',{label:'Marche jusqu\'à l\
 function busHome(stopId){return[tr('town.bus_'+stopId,{label:'Retourne à l\'arrêt d\'autobus'}),{t:'bus',from:stopId,to:'S1',label:'Attend l\'autobus pour rentrer'}];}
 function mallOuting(){cnt('mall');LIFE.mallD=Math.floor(gm/1440);const buy=money>200&&Math.random()<.6;return[...busTo('S2','Attend l\'autobus pour Les Galeries'),
   ...at('mall.fontaine','look',3,{label:'Se promène aux Galeries du Quartier',say:'Il y a du monde aujourd\'hui!'}),...at('mall.mode','browse',rnd(10,18),{label:'Magasine des vêtements chez Mode Plus',say:pick(['Ce chandail-là est beau!','Trop cher pour une chemise…'])}),
-  ...(buy?[payF(Math.round(rnd(45,90)),'Mode Plus'),F(()=>{const c=pick(['#2a8a8a','#8a2a5a','#e8c547','#3a3a3a','#d8824f']);OUTFITS.push([c,pick(['#2f4a5f','#6b4a35','#3e5a3a'])]);say(Mc,'Un nouveau chandail!');})]:[]),
+  ...(buy?[payF(Math.round(rnd(45,90)),'Mode Plus'),F(()=>wardBuy())]:[]),
   ...at('mall.livres','browse',rnd(6,10),{say:'Le nouveau polar est sorti!'}),...at('mall.comptoir','pay',3,{label:'Commande à l\'aire de restauration',say:pick(['Un pad thaï, svp!','Une poutine et un Coke!'])}),payF(14,'Aire de restauration'),
   ...at('mall.table','eat',rnd(15,22),{label:'Mange à l\'aire de restauration',fx:{food:2.5,fun:.4}}),...at('mall.brew','pay',2,{say:'Un latte glacé pour la route!'}),F(()=>Mc.carry='coffee'),...busHome('S2'),F(()=>{LIFE.lastOuting={kind:'aux Galeries'};})];}
 function electroOuting(){const opts=[];if(!OWN.console&&money>650)opts.push(['console','Console de jeux',499,'🎮']);if(!OWN.vr&&money>750)opts.push(['vr','Casque de réalité virtuelle',599,'🥽']);const it=opts.length&&Math.random()<.6?pick(opts):null;
@@ -5038,7 +5038,7 @@ function animate(ch,dt){if(ch.act==='tread'||ch.act==='swim'||ch.act==='paddle')
   it.coffee.visible=a==='cocoa'||ch.carry==='coffee'&&!it.phone.visible;it.bag.visible=ch.carry==='bag';it.book.visible=a==='read'||(ch.carry==='book'&&!it.phone.visible);
   it.rod.visible=a==='fish'||a==='reel';it.rag.visible=a==='wipe';it.mop.visible=a==='mop';it.tray.visible=ch.carry==='tray';it.spat.visible=a==='grill';it.scan.visible=a==='scan';it.can.visible=a==='stir';it.crate.visible=ch.carry==='crate'&&a!=='give';it.skis.visible=it.poleL.visible=it.poleR.visible=a==='ski';it.apron.visible=!!ch.apron&&p!=='lie';it.apronSk.visible=!!ch.apron&&p!=='sit'&&p!=='lie'&&p!=='bike';if(ch.apron&&it.apronC!==ch.apron){it.apronC=ch.apron;for(const mm of it.apronMats)mm.color.set(C(ch.apron));it.apronMats[1].color.multiplyScalar(.8);}if(it.apronSk.visible){const L1=ch.m.LL.th.rotation.x,L2=ch.m.RL.th.rotation.x;it.apronSk.rotation.x=Math.min(0,L1,L2)*.55;}it.shovel.visible=a==='shovel';it.pint.visible=a==='drink';it.bball.visible=a==='bowl'&&(((tReal+ch.ph*.1)%5)/5)<.27;it.dbL.visible=it.dbR.visible=a==='lift';it.barbell.visible=a==='press';it.fishH.visible=a==='reel';it.cooler.visible=ch.carry==='cooler';it.pad.visible=a==='game';it.rake.visible=a==='rake';it.guitar.visible=a==='guitar';
   it.umbrella.visible=outside&&RAIN()&&(p==='walk')&&!it.phone.visible&&!it.coffee.visible;
-  if(ch.look.coat){const coat=outside&&ch.act!=='sleep'&&COLD&&a!=='swim'&&a!=='spa';m.shirtMat.color.copy(C(coat?ch.look.coat:ch.look.shirt));if(!ch.ped)m.hat.visible=coat&&ch!==Julie;}
+  if(ch.look.coat){const coat=outside&&ch.act!=='sleep'&&COLD&&a!=='swim'&&a!=='spa';if(ch===Mc&&typeof wardTex==='function')wardTex(coat);else m.shirtMat.color.copy(C(coat?ch.look.coat:ch.look.shirt));if(!ch.ped)m.hat.visible=coat&&ch!==Julie;}
   if(ch.dog){const f=new V3(Math.sin(ch.yaw),0,Math.cos(ch.yaw));const dp=m.root.position.clone().addScaledVector(f,-.6).add(new V3(Math.cos(ch.yaw)*.55,0,-Math.sin(ch.yaw)*.55));const ox=ch.dog.position.x,oz=ch.dog.position.z;ch.dog.position.lerp(dp,Math.min(1,dt*4));ch.dog.position.y=groundY(dp.x,dp.z);ch.dog.rotation.y=ch.yaw;animQuad(ch.dog,Math.hypot(ch.dog.position.x-ox,ch.dog.position.z-oz),dt);}
 }
 
@@ -6510,7 +6510,7 @@ function lotoStop(){const n=Math.random()<.6?1:2;const s=[...at('mall.loto','pay
   if(Math.random()<.65)s.push(F(()=>lotoBuy()));for(let i=0;i<n;i++)s.push(D('install',3,{label:'Gratte son billet'}),F(()=>scratch()));return s;}
 /* ---- nouvelle sortie aux Galeries ---- */
 mallOuting=function(){cnt('mall');LIFE.mallD=Math.floor(gm/1440);const A=[
-  ()=>{const buy=money>200&&Math.random()<.55;return[...at('mall.mode','browse',rnd(8,14),{label:'Magasine des vêtements chez Mode Plus',say:pick(['Ce chandail-là est beau!','Trop cher pour une chemise…'])}),...(buy?[payF(Math.round(rnd(45,90)),'Mode Plus'),F(()=>{const c=pick(['#2a8a8a','#8a2a5a','#e8c547','#3a3a3a','#d8824f']);OUTFITS.push([c,pick(['#2f4a5f','#6b4a35','#3e5a3a'])]);say(Mc,'Un nouveau chandail!');})]:[])];},
+  ()=>{const buy=money>200&&Math.random()<.55;return[...at('mall.mode','browse',rnd(8,14),{label:'Magasine des vêtements chez Mode Plus',say:pick(['Ce chandail-là est beau!','Trop cher pour une chemise…'])}),...(buy?[payF(Math.round(rnd(45,90)),'Mode Plus'),F(()=>wardBuy())]:[])];},
   ()=>at('mall.livres','browse',rnd(6,10),{label:'Feuillette des livres à la librairie',say:'Le nouveau polar est sorti!'}),
   ()=>at('mall.souliers','browse',rnd(6,10),{label:'Essaie des souliers chez Souliers & Cie'}),
   ()=>at('mall.electr','browse',rnd(6,10),{label:'Regarde les téléphones chez Électro Éclair',say:'Le nouveau cell est beau…'}),
@@ -7384,7 +7384,7 @@ const CVA={
   cafe:()=>[...at('cvb_cafe.comptoir','pay',2,{label:'Commande un café au Café Le Central'}),payF(5,'Café Le Central'),...at('cvb_cafe.table','eat',8,{label:'Boit son café au Café Le Central',fx:{fun:.4}})],
   livres:()=>[...at('cvb_livres.rayon','look',8,{label:'Feuillette des romans à la Librairie Page Blanche',fx:{fun:.4}}),...at('cvb_livres.comptoir','pay',2,{label:'Achète un roman'}),payF(22,'Librairie Page Blanche')],
   creme:()=>[...at('cvb_creme.comptoir','pay',2,{label:'Commande un cornet à la Crèmerie Le Cornet'}),payF(6,'Crèmerie Le Cornet'),...at('cvb_creme.table','eat',6,{label:'Mange un cornet de crème glacée',fx:{fun:.6}})],
-  mode:()=>[...at('cvb_mode.rayon','look',8,{label:'Regarde les vêtements à la Boutique Urbaine',fx:{fun:.3}}),...at('cvb_mode.comptoir','pay',2,{label:'Achète un nouveau chandail'}),payF(48,'Boutique Urbaine')],
+  mode:()=>[...at('cvb_mode.rayon','look',8,{label:'Regarde les vêtements à la Boutique Urbaine',fx:{fun:.3}}),...at('cvb_mode.comptoir','pay',2,{label:'Achète des vêtements'}),payF(48,'Boutique Urbaine'),F(()=>wardBuy())],
   fleur:()=>[...at('cvb_fleur.rayon','look',5,{label:'Choisit des fleurs chez Fleuriste Pétales'}),...at('cvb_fleur.comptoir','pay',2,{label:'Achète un bouquet'}),payF(18,'Fleuriste Pétales')],
   resto:()=>[...at('cvb_resto.comptoir','pay',2,{label:'Commande un burger au Resto-bar Le Carrefour'}),payF(32,'Resto-bar Le Carrefour'),...at('cvb_resto.table','eat',22,{label:'Mange un burger au Resto-bar Le Carrefour',fx:{fun:.5}})],
   disques:()=>[...at('cvb_disques.rayon','look',8,{label:'Fouille dans les bacs de Disques 33 Tours',fx:{fun:.5}}),...at('cvb_disques.comptoir','pay',2,{label:'Achète un vinyle'}),payF(26,'Disques 33 Tours')],
@@ -8267,6 +8267,68 @@ function coifReady(){const c=CF();if(flags.coif)return null;const o=coifOpen()==
 {const _ft7=frTick;frTick=function(){_ft7();try{const st=Mc.q&&Mc.q[0];if(st&&st.t==='cardrive'&&st.pts&&st.pts.length&&MCAR.bt>60&&PARKS[st.to]&&PARKS[st.to].park){const Pk=PARKS[st.to];MCAR.x=Pk.park[0];MCAR.z=Pk.park[1];st.pts=[];MCAR.bt=0;toast('🚗 Marcel s\'est sorti du bouchon par un autre chemin',true);}}catch(e){}if(!COIF.ld){COIF.ld=1;try{coifApply();}catch(e){console.error(e);}}};}
 {const _fa=faceAnim;faceAnim=function(ch,dt){const r=ch.m;if(r&&r.hairG&&r.hat){const on=r.hat.visible;if(on!==!!r._hatOn){r._hatOn=on;hairHat(r,on);}}return _fa(ch,dt);};}
 {const _ue=updateEnv;updateEnv=function(dt){const r=_ue.apply(this,arguments);if(VIS_AREA==='town')for(const p of COIFPOLE)p.material.map.offset.y-=dt*.25;return r;};}
+
+/* ================= v130 : garde-robe — Marcel choisit son chandail et ses pantalons le matin ================= */
+const WTOP={
+ t_bleu:['Chandail bleu','uni','#4f79b8'],t_bord:['Chandail bordeaux','uni','#7a3b4a'],t_creme:['Chandail crème','uni','#e8e2d0'],t_vert:['Chandail vert forêt','uni','#3e7a5a'],t_moutarde:['Chandail moutarde','uni','#c9a14a'],
+ t_noir:['T-shirt noir','uni','#2a2a2e'],t_gris:['Coton ouaté gris','uni','#8a8d94'],t_rose:['Polo rose','uni','#d86a8f'],t_turq:['Chandail turquoise','uni','#2a8a8a'],t_jaune:['T-shirt jaune','uni','#e8c547'],
+ t_orange:['Chandail orange brûlé','uni','#d8824f'],t_lav:['Chemise lavande','uni','#a898d8'],t_marine:['Polo marine','uni','#23304a'],t_kaki:['Chemise kaki','uni','#8a8a5a'],
+ t_carr_r:['Chemise à carreaux rouge','carreaux','#b8282a','#1a1a1a'],t_carr_b:['Chemise à carreaux bleue','carreaux','#2a4a8a','#dfe6ee'],t_carr_v:['Chemise à carreaux verte','carreaux','#2e5a3a','#1a1a1a'],
+ t_raye:['Marinière rayée','raye','#f2efe6','#1f3a6a'],t_raye_r:['Chandail rayé rouge','raye','#c8402f','#f2efe6'],t_hockey:['Chandail de hockey','hockey','#b8202a','#f2efe6','#1f3a8a']};
+const WBOT={
+ p_jean:['Jeans foncé','jean','#363b4a'],p_noir:['Pantalon noir','uni','#23232a'],p_beige:['Chino beige','uni','#c8b48a'],
+ p_pale:['Jeans pâle','jean','#7a94b8'],p_gris:['Pantalon gris','uni','#6a6d74'],p_brun:['Velours côtelé brun','velours','#6b4a35'],p_marine:['Pantalon marine','uni','#2a3550'],
+ p_kaki:['Pantalon cargo kaki','uni','#7a7550'],p_jog:['Jogging gris chiné','jean','#9a9ca2'],p_vert:['Chino vert olive','uni','#5a6a3a'],p_bourg:['Pantalon bourgogne','uni','#6a2a34']};
+const WD=()=>LIFE.ward||(LIFE.ward={tops:['t_bleu','t_bord','t_creme','t_vert','t_moutarde'],bots:['p_jean','p_noir','p_beige'],cur:{t:'t_bleu',b:'p_jean'}});
+const WT={tex:{},icon:{}};
+function wardPaint(g,s,it,top){const[n,pat,c,c2,c3]=it;g.fillStyle=c;g.fillRect(0,0,s,s);
+  if(pat==='raye'){g.fillStyle=c2;for(let y=0;y<s;y+=s/4)g.fillRect(0,y,s,s/8);}
+  else if(pat==='carreaux'){g.globalAlpha=.55;g.fillStyle=c2;g.fillRect(0,s*.1,s,s*.3);g.fillRect(s*.1,0,s*.3,s);g.globalAlpha=.35;g.fillRect(0,s*.62,s,s*.06);g.fillRect(s*.62,0,s*.06,s);g.globalAlpha=1;g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=s/64;g.beginPath();g.moveTo(0,s*.8);g.lineTo(s,s*.8);g.moveTo(s*.8,0);g.lineTo(s*.8,s);g.stroke();}
+  else if(pat==='hockey'){g.fillStyle=c2;g.fillRect(0,s*.3,s,s*.16);g.fillStyle=c3;g.fillRect(0,s*.34,s,s*.08);g.fillStyle=c2;g.fillRect(0,s*.86,s,s*.07);}
+  else if(pat==='jean'){for(let i=0;i<s*3;i++){g.fillStyle=Math.random()<.5?'rgba(255,255,255,.08)':'rgba(0,0,0,.1)';g.fillRect(Math.random()*s,Math.random()*s,s/16,1);}}
+  else if(pat==='velours'){for(let x=0;x<s;x+=s/16){g.fillStyle='rgba(0,0,0,.18)';g.fillRect(x,0,s/40,s);}}
+  else{for(let i=0;i<s;i++){g.fillStyle='rgba(255,255,255,.04)';g.fillRect(Math.random()*s,Math.random()*s,2,2);}}}
+function wardTexOf(id,top){const k=id;if(WT.tex[k])return WT.tex[k];const it=(top?WTOP:WBOT)[id];const t=ctex(128,(g,s)=>wardPaint(g,s,it,top));
+  const pat=it[1];if(pat==='carreaux')t.repeat.set(5,3);else if(pat==='raye')t.repeat.set(1,5);else if(pat==='hockey')t.repeat.set(1,1);else t.repeat.set(4,4);return WT.tex[k]=t;}
+function wardIcon(id,top){if(WT.icon[id])return WT.icon[id];const it=(top?WTOP:WBOT)[id];const cv=document.createElement('canvas');cv.width=cv.height=96;const g=cv.getContext('2d');
+  g.beginPath();if(top){g.moveTo(30,14);g.lineTo(18,20);g.lineTo(6,40);g.lineTo(20,48);g.lineTo(26,40);g.lineTo(26,86);g.lineTo(70,86);g.lineTo(70,40);g.lineTo(76,48);g.lineTo(90,40);g.lineTo(78,20);g.lineTo(66,14);g.quadraticCurveTo(48,26,30,14);}
+  else{g.moveTo(26,8);g.lineTo(70,8);g.lineTo(76,88);g.lineTo(56,88);g.lineTo(48,34);g.lineTo(40,88);g.lineTo(20,88);g.closePath();}
+  g.save();g.clip();const p=document.createElement('canvas');p.width=p.height=48;wardPaint(p.getContext('2d'),48,it,top);g.fillStyle=g.createPattern(p,'repeat');g.fillRect(0,0,96,96);
+  g.fillStyle='rgba(255,255,255,.12)';g.fillRect(0,0,40,96);g.restore();g.lineWidth=2;g.strokeStyle='rgba(0,0,0,.35)';g.stroke();if(top){g.beginPath();g.moveTo(30,14);g.quadraticCurveTo(48,26,66,14);g.strokeStyle='rgba(0,0,0,.45)';g.stroke();}
+  return WT.icon[id]=cv.toDataURL('image/png');}
+/* matériaux de Marcel : chandail (avec motif) et pantalon à lui seul */
+function wardPantsInit(){const r=Mc.m;if(r.pantsOwn)return;const shared=M(Mc.look.pants,{r:.9});const mine=new THREE.MeshStandardMaterial({color:C(Mc.look.pants),roughness:.9});r.root.traverse(o=>{if(o.isMesh&&o.material===shared)o.material=mine;});r.pantsOwn=mine;}
+function wardTex(coat){const r=Mc.m,m=r.shirtMat,w=WD();const key=coat?'coat'+Mc.look.coat:'t'+w.cur.t;if(m.userData.wk===key)return;const hadMap=!!m.map;m.userData.wk=key;
+  if(coat){m.map=null;m.color.copy(C(Mc.look.coat));}else{const it=WTOP[w.cur.t]||WTOP.t_bleu;if(it[1]==='uni'){m.map=null;m.color.copy(C(it[2]));}else{m.map=wardTexOf(w.cur.t,1);m.color.setRGB(1,1,1);}}
+  if(hadMap!==!!m.map)m.needsUpdate=true;}
+function wardApply(){const w=WD();wardPantsInit();const it=WTOP[w.cur.t]||WTOP.t_bleu,ib=WBOT[w.cur.b]||WBOT.p_jean;Mc.look.shirt=it[2];
+  const pm=Mc.m.pantsOwn,had=!!pm.map;if(ib[1]==='uni'){pm.map=null;pm.color.copy(C(ib[2]));}else{pm.map=wardTexOf(w.cur.b,0);pm.color.copy(C(ib[2])).multiplyScalar(1.25);}if(had!==!!pm.map)pm.needsUpdate=true;Mc.look.pants=ib[2];
+  Mc.m.shirtMat.userData.wk=null;wardTex(false);}
+function wardAuto(){const w=WD(),h=tempNow();const rain=RAIN();let tops=w.tops.filter(id=>id!==w.cur.t),bots=w.bots.filter(id=>id!==w.cur.b);if(!tops.length)tops=w.tops;if(!bots.length)bots=w.bots;
+  if(h<5){const warm=tops.filter(id=>/ouaté|carreaux|hockey|Chandail/.test(WTOP[id][0]));if(warm.length)tops=warm;}if(h>24){const lt=tops.filter(id=>/T-shirt|Polo|Chemise/.test(WTOP[id][0]));if(lt.length)tops=lt;}
+  return{t:pick(tops),b:Math.random()<.6?w.cur.b:pick(bots)};}
+/* le menu du matin */
+const WM={on:false,done:false,t0:0,dur:30,touched:false,sel:null};
+function wardUI(){let el=document.getElementById('ward');if(el)return el;const st=document.createElement('style');st.textContent=`#ward{position:absolute;left:50%;bottom:58px;z-index:8;transform:translate(-50%,8px);opacity:0;pointer-events:none;width:min(380px,calc(100% - 20px));max-height:calc(100% - 120px);overflow:auto;background:rgba(18,22,30,.95);backdrop-filter:blur(8px);border:1px solid var(--trait);border-radius:14px;padding:7px 9px;transition:opacity .3s,transform .3s;color:var(--craie)}
+#ward.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}#ward h4{margin:0 0 2px;font-size:.82rem}#ward .wl{font:600 .64rem var(--f-body);opacity:.7;margin:5px 0 3px;text-transform:uppercase;letter-spacing:.05em}
+#ward .wr{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}#ward .wi{flex:0 0 66px;width:66px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;background:#232b3a;border:2px solid transparent;border-radius:9px;padding:3px 2px;color:inherit;font:600 .56rem/1.1 var(--f-body);text-align:center;cursor:pointer;position:relative}#ward .wi span.t{display:block;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#ward .wn{position:absolute;top:1px;right:1px}
+#ward .wi img{width:32px;height:32px}#ward .wi.sel{border-color:#f2a33a;background:#2e3546}#ward .wn{display:inline-block;background:#f2a33a;color:#1a1a1a;border-radius:6px;font-size:.56rem;padding:0 4px}#ward .wok{margin-top:6px;width:100%;padding:7px;border-radius:10px;border:0;background:#f2a33a;color:#1a1a1a;font:700 .82rem var(--f-body);cursor:pointer}
+#ward .chrono{height:3px;background:rgba(255,255,255,.12);border-radius:2px;margin-top:8px;overflow:hidden}#ward .chrono i{display:block;height:100%;background:#f2a33a;width:100%}`;document.head.appendChild(st);
+  el=document.createElement('div');el.id='ward';el.setAttribute('role','dialog');(document.getElementById('choix').parentNode).appendChild(el);
+  el.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b||!WM.on)return;const[k,id]=b.dataset.w.split(':');const w=WD();WM.touched=true;WM.t0=tReal;
+    if(k==='t')WM.sel.t=id;else if(k==='b')WM.sel.b=id;else if(k==='ok'){WM.done=true;}w.cur={...WM.sel};wardApply();try{SFX.tap&&SFX.tap();}catch(e2){}if(k!=='ok')wardRender();});return el;}
+function wardRender(){const el=wardUI(),w=WD(),s=WM.sel,nw=w.nw||{};const row=(L,top)=>L.map(id=>{const it=(top?WTOP:WBOT)[id];return`<button type="button" class="wi${(top?s.t:s.b)===id?' sel':''}" data-w="${top?'t':'b'}:${id}"><img src="${wardIcon(id,top)}" alt=""><span class="t">${it[0]}</span>${nw[id]?'<span class="wn">nouveau</span>':''}</button>`;}).join('');
+  el.innerHTML=`<h4>👕 Qu'est-ce que Marcel met aujourd'hui? <small style="opacity:.65;font-weight:500">${tempNow()} °C${RAIN()?' · pluie':''}</small></h4><div class="wl">Chandails (${w.tops.length})</div><div class="wr">${row(w.tops,1)}</div><div class="wl">Pantalons (${w.bots.length})</div><div class="wr">${row(w.bots,0)}</div><button type="button" class="wok" data-w="ok:1">C'est parfait ✓</button><div class="chrono"><i id="wardT"></i></div>`;}
+function wardOpen(){const w=WD();WM.on=true;WM.done=false;WM.touched=false;WM.t0=tReal;WM.sel={...w.cur};const a=wardAuto();WM.auto=a;wardRender();wardUI().classList.add('on');}
+function wardClose(){const w=WD();if(!WM.touched){w.cur={...WM.auto};wardApply();}WM.on=false;wardUI().classList.remove('on');w.nw={};const it=WTOP[w.cur.t],ib=WBOT[w.cur.b];setTask('👕 S\'habille : '+it[0].toLowerCase()+' et '+ib[0].toLowerCase());}
+function wardSteps(){return[F(()=>wardOpen()),W(()=>WM.done||tReal-WM.t0>WM.dur,{a:'dress',label:'Choisit ses vêtements dans la garde-robe…',max:240,warp:.15}),F(()=>wardClose()),D('dress',2,{label:'S\'habille'})];}
+{const _ut=updateChoice;updateChoice=function(){_ut();if(WM.on){const e=document.getElementById('wardT');if(e)e.style.width=Math.max(0,100-(tReal-WM.t0)/WM.dur*100)+'%';}};}
+/* achats de vêtements */
+function wardBuy(){const w=WD();const ft=Object.keys(WTOP).filter(id=>!w.tops.includes(id)),fb=Object.keys(WBOT).filter(id=>!w.bots.includes(id));const got=[];
+  if(ft.length&&(Math.random()<.75||!fb.length)){const id=pick(ft);w.tops.push(id);got.push(WTOP[id][0]);(w.nw=w.nw||{})[id]=1;}
+  if(fb.length&&(!got.length||Math.random()<.3)){const id=pick(fb);w.bots.push(id);got.push(WBOT[id][0]);(w.nw=w.nw||{})[id]=1;}
+  if(!got.length){say(Mc,'J\'ai déjà tout ce qu\'il me faut!');return;}toast('🛍️ Nouveau dans la garde-robe : '+got.join(' et ').toLowerCase(),true);say(Mc,pick(['Je le mets demain matin!','Il me fait bien, celui-là!','Ma garde-robe s\'agrandit!']));cnt('linge');}
+{const _ft8=frTick;frTick=function(){_ft8();if(!WM.ld){WM.ld=1;try{wardApply();}catch(e){console.error(e);}}};}
 
 {const _pc=planMarcel;planMarcel=()=>{Mc.apron=null;if(flags.morning){const h=hourOf();if(h>=11||h<4)flags.morning=false;else if(Mc.area==='home'&&!Mc.job&&!LIFE.tokyo&&!flags.trip&&!Mc.inCar&&!Mc.carry){flags.morning=false;return morning();}}if(Mc.carry==='cooler'&&!Mc.job&&!LIFE.tokyo&&!flags.trip&&!Mc.inCar)return[...at('home.fridge','fridge',3,{label:'Rapporte sa glacière et range ses poissons au frigo',say:pick(['Du poisson frais pour la semaine!','Ça, c\'est mon souper!'])}),F(()=>Mc.carry=null)];return _pc();};}
 {const _pm2=projMissions;projMissions=function(){const L=_pm2();L.push({id:'gq_go',e:'🥚',n:'Aller acheter des gashapons',ok:()=>{const h=hourOf();if(h<9||h>=20)return'Les commerces sont ouverts de 9 h à 20 h';if(money<10)return'Pas assez d\'argent';if(!Object.keys(GQSPOTS).length)return'Aucune machine';return true;},
