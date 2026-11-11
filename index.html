@@ -7476,22 +7476,22 @@ function permLesson(P){const tier=P.veh,S=PST(P.c),k=S.les+1;const s=[];s.dyn=1;
   s.push({t:'drive',to:'deppark',label:'Se rend au centre de formation de Transport Boréal'});
   s.push(tr('town.dep_office',{label:'Rencontre son instructeur'}),D('talk',4,{label:'Cours '+k+'/'+P.les+' · '+P.n+' : écoute les consignes de l\'instructeur',say:pick(['Bonjour! Je suis prêt pour mon cours.','On travaille quoi aujourd\'hui?','J\'ai révisé mes angles morts!'])}));
   s.push(D('scan',3,{label:pick(['Révise la vérification avant départ','Apprend à lire la fiche de ronde de sécurité','Révise les freins à air et les signaux'])}));
-  s.push(F(()=>{parkSwap(true,tier);}),tr('town.car_depot',{label:'Monte dans le camion-école avec l\'instructeur'}),D('look',3,{label:'Ajuste ses miroirs et boucle sa ceinture',say:'Miroirs… ceinture… frein de stationnement.'}));
+  s.push(F(()=>{parkSwap(true,tier);const xf=50+TLEN[tier]/2;townSpot('perm_cab',[35.5,188.5],[[37.6,188.5],[37.6,187.4],[xf-1.3,188.0]],0);}),tr('town.perm_cab',{label:'Monte dans le camion-école avec l\'instructeur'}),D('look',3,{label:'Ajuste ses miroirs et boucle sa ceinture',say:'Miroirs… ceinture… frein de stationnement.'}));
   const pool=['usine','quai','gas','hopital','ecole','garage','rprinc','eglise'].sort(()=>Math.random()-.5).slice(0,2);
   pool.forEach((k2,i)=>s.push({t:'drive',to:k2,keep:1,label:'Cours pratique : conduit le '+CAMV[tier].toLowerCase()+' jusqu\'à '+CAMD[k2][0]},D('look',2,{label:i?'Pratique un virage serré avec l\'instructeur':'Pratique une marche arrière avec l\'instructeur',say:pick(['Doucement…','Je surveille mes miroirs.','Ouf, ça passe!'])})));
   s.push({t:'drive',to:'depot',label:'Revient au dépôt avec l\'instructeur'});
-  s.push(F(()=>{parkSwap(false);}),tr('town.dep_office',{label:'Fait le bilan du cours'}),D('talk',3,{label:'Écoute les commentaires de l\'instructeur',say:pick(['Merci pour les conseils!','Je m\'améliore!','La prochaine fois, je vais mieux faire mes virages.'])}));
+  s.push(Object.assign(F(()=>{parkSwap(false);}),{permK:1}),tr('town.dep_office',{label:'Fait le bilan du cours'}),D('talk',3,{label:'Écoute les commentaires de l\'instructeur',say:pick(['Merci pour les conseils!','Je m\'améliore!','La prochaine fois, je vais mieux faire mes virages.'])}));
   s.push(F(()=>{const S2=PST(P.c);S2.les=Math.min(P.les,S2.les+1);S2.lesD=dayN();addJobXP('camion',6);cnt('coursPermis');toast('🪪 '+P.n+' · cours '+S2.les+'/'+P.les+' terminé'+(S2.les>=P.les?' : prêt pour l\'examen!':''),true);}));
   s.push({t:'drive',to:'home',label:'Rentre à la maison en auto'});return s;}
 function permExam(P){const tier=P.veh;const s=[];s.dyn=1;
   s.push({t:'drive',to:'deppark',label:'Se rend à son examen de conduite '+P.n});
   s.push(tr('town.dep_office',{label:'Se présente à l\'évaluateur de la SAAQ'}),payF(P.ex,'Examen SAAQ · '+P.n),D('type',6,{label:'Examen théorique à l\'ordinateur ('+P.n+')',say:'Concentre-toi, Marcel…'}));
-  s.push(F(()=>{parkSwap(true,tier);}),tr('town.car_depot',{label:'Fait la ronde de sécurité devant l\'évaluateur'}),D('squat',3,{label:'Vérifie pneus, freins et feux devant l\'évaluateur'}));
+  s.push(F(()=>{parkSwap(true,tier);const xf=50+TLEN[tier]/2;townSpot('perm_cab',[35.5,188.5],[[37.6,188.5],[37.6,187.4],[xf-1.3,188.0]],0);}),tr('town.perm_cab',{label:'Fait la ronde de sécurité devant l\'évaluateur'}),D('squat',3,{label:'Vérifie pneus, freins et feux devant l\'évaluateur'}));
   const pool=['usine','quai','hopital','ecole','eglise'].sort(()=>Math.random()-.5).slice(0,2);
   pool.forEach(k2=>s.push({t:'drive',to:k2,keep:1,label:'Examen pratique : conduit le '+CAMV[tier].toLowerCase()+' jusqu\'à '+CAMD[k2][0]}));
   s.push({t:'drive',to:'depot',label:'Revient au dépôt pour le verdict'});
   const res={};
-  s.push(F(()=>{parkSwap(false);const S=PST(P.c);const l=jobInfo('camion').l;const p=Math.min(.95,.62+.12*(S.fail||0)+.015*Math.max(0,l-P.lv)+(skLv('conduite')>=20?.08:0));res.ok=Math.random()<p;}));
+  s.push(Object.assign(F(()=>{parkSwap(false);const S=PST(P.c);const l=jobInfo('camion').l;const p=Math.min(.95,.62+.12*(S.fail||0)+.015*Math.max(0,l-P.lv)+(skLv('conduite')>=20?.08:0));res.ok=Math.random()<p;}),{permK:1}));
   s.push(tr('town.dep_office',{label:'Attend le verdict de l\'évaluateur'}),D('talk',3,{label:'Écoute le verdict de l\'évaluateur'}));
   s.push(F(()=>{const S=PST(P.c);if(res.ok){S.ok=1;S.okD=fmtDay();cnt('permis');addJobXP('camion',20);toast('🎉 Permis '+P.n+' obtenu! Nouveau véhicule : '+CAMV[P.veh],true);say(Mc,'YES! J\'ai mon permis '+P.n.toLowerCase()+'!',4);try{SFX.cash();}catch(e){}}
     else{S.fail=(S.fail||0)+1;toast('😕 Examen '+P.n+' échoué. Il peut le reprendre (frais de '+P.ex+' $).',false);say(Mc,pick(['Ah non… j\'ai raté un arrêt obligatoire.','Maudit! Mon virage à droite était trop large.','La prochaine fois, c\'est la bonne.']),4);}}));
@@ -8688,7 +8688,7 @@ for(const[K,SER,ALL]of[['gacha',GSER,GALL],['gachaq',GSERQ,GALLQ]])if(MGD[K]){co
 
 
 
-{const _u6=ui;ui=()=>{_u6();try{if(MCAR.trk!=null&&!(Mc.job&&Mc.job.id==='camion'))parkSwap(false);}catch(e){}};}
+{const _u6=ui;ui=()=>{_u6();try{if(MCAR.trk!=null&&!(Mc.job&&Mc.job.id==='camion')&&!(Mc.q&&Mc.q.some(x=>x&&x.permK)))parkSwap(false);}catch(e){}};}
 {const _cr3=cellRender;cellRender=function(){if(CELL.app!=='notes')return _cr3();
   const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent='Notes et rappels';
   const key='notes|'+(CELL.nt||'')+(CELL.nw||''),keep=B.scrollTop,same=CELL._sv3===key;let h='';try{h=notesHTML();}catch(e){console.error(e);}B.innerHTML=h;CELL._sv3=key;B.scrollTop=same?keep:0;};}
