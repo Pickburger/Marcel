@@ -751,6 +751,103 @@ function faceAnim(ch,dt){const r=ch.m,F=r&&r.fx;if(!F)return;if(ch!==Mc&&r.root.
 
 
 {const _mp=makePerson;makePerson=function(o){const r=_mp(o);try{personExtra(r,o);}catch(e){console.warn('personExtra',e);}return r;};}
+/* ================= v128 : coupes de cheveux réalistes — coque continue qui épouse le crâne ================= */
+const HAIRM={};let HTEX=null;
+function hairTex(){if(HTEX)return HTEX;HTEX=ctex(256,(g,s)=>{g.fillStyle='#d6d6d6';g.fillRect(0,0,s,s);for(let i=0;i<900;i++){const x=Math.random()*s,w=.6+Math.random()*1.6,l=20+Math.random()*90,y=Math.random()*s;const v=Math.random();g.strokeStyle=v<.5?`rgba(255,255,255,${.12+Math.random()*.25})`:`rgba(40,40,40,${.1+Math.random()*.22})`;g.lineWidth=w;g.beginPath();g.moveTo(x,y);g.bezierCurveTo(x+Math.random()*4-2,y+l*.33,x+Math.random()*4-2,y+l*.66,x+Math.random()*6-3,y+l);g.stroke();if(y+l>s){g.beginPath();g.moveTo(x,y-s);g.lineTo(x,y+l-s);g.stroke();}}},true);HTEX.repeat.set(5,3);return HTEX;}
+function hairMat(col,k){const key=col+'|'+(k||'');if(HAIRM[key])return HAIRM[key];const c=C(col);let m;
+  if(k==='buzz')m=new THREE.MeshStandardMaterial({color:c.clone().lerp(C('#c8a088'),.42),roughness:.9,map:hairTex(),vertexColors:true});
+  else if(k==='flat')m=new THREE.MeshStandardMaterial({color:c,roughness:.7});
+  else if(k==='x'||k==='xg')m=new THREE.MeshStandardMaterial({color:c.clone().multiplyScalar(.95),roughness:k==='xg'?.32:.58,map:hairTex()});
+  else m=new THREE.MeshStandardMaterial({color:c.clone().multiplyScalar(1.12),roughness:k==='gloss'?.32:.58,metalness:k==='gloss'?.06:0,map:hairTex(),vertexColors:true,side:THREE.DoubleSide});
+  return HAIRM[key]=m;}
+const HSTY=[
+ ['classique','Court classique',25],['raie','Raie de côté',25],['rase','Rasé',18],['brosse','En brosse',25],['frise','Frisé court',30],['banane','Pompadour',35],
+ ['lisse','Lissé vers l\'arrière',30],['pics','En pics',30],['undercut','Dégradé (undercut)',40],['iroquois','Iroquois',40],['longueuil','Coupe Longueuil',35],['meche','Frange de côté',35],
+ ['bol','Coupe au bol',25],['afro','Afro',45],['milong','Mi-long',35],['long','Cheveux longs',40],['carre','Carré',40],['queue','Queue de cheval',35],['chignon','Chignon',35],
+ ['tresses','Tresses',55],['dreads','Dreadlocks',60],['degarni','Couronne dégarnie',20],['chauve','Crâne rasé',15]];
+const HSTYK=Object.fromEntries(HSTY.map(h=>[h[0],h]));
+const HCOL=[['','Couleur actuelle',0],['#1c1612','Noir',35],['#4a2e1c','Brun',35],['#7a5232','Châtain',35],['#c8a060','Blond',35],['#a8462a','Roux',35],['#9a9a9e','Gris',35],['#e8e0c8','Platine',45],['#2a5ad8','Bleu',45],['#d8508a','Rose',45]];
+function hairDefault(o,hs){hs=Math.abs(hs|0);if(o.bun)return'chignon';if(o.long)return['long','carre','queue','milong'][hs%4];return['classique','raie','frise','brosse','lisse','classique','banane','raie','undercut','degarni'][hs%10];}
+/* paramètres : fh ligne frontale (latitude), rec dégarnissement des tempes, sb favoris, ear dessus de l'oreille (null = oreille couverte), nape nuque,
+   tT/tS/tB épaisseurs dessus/côtés/arrière, tF relevé du devant, fl frange (latitude atteinte), sw frange balayée vers un œil, part raie (azimut),
+   L longueur pendante sous l'oreille, hf les mèches avant pendent aussi, flat dessus plat, curl boucles, spike pics, mask zone forcée */
+const HP={
+ classique:{fh:.9,tT:.035,tS:.012,tB:.018,tF:.018,nape:-.55},
+ raie:{fh:.9,tT:.034,tS:.012,tB:.018,tF:.02,part:.42,sweep:1,nape:-.55},
+ rase:{fh:.88,tT:.006,tS:.004,tB:.005,nape:-.6,buzz:1},
+ brosse:{fh:.9,tT:.05,tS:.01,tB:.014,tF:.01,flat:.17,nape:-.55},
+ frise:{fh:.88,tT:.038,tS:.022,tB:.03,tF:.014,curl:.014,nape:-.55},
+ banane:{fh:.9,tT:.03,tS:.008,tB:.014,tF:.012,pomp:.055,nape:-.55},
+ lisse:{fh:.95,tT:.026,tS:.012,tB:.022,nape:-.6,gloss:1},
+ pics:{fh:.88,tT:.03,tS:.01,tB:.016,tF:.01,spike:.05,nape:-.55},
+ undercut:{fh:.9,tT:.05,tS:.0,tB:.0,tF:.035,top:.55,nape:-.5,under:1},
+ iroquois:{fh:.9,tT:.075,tS:0,tB:.05,tF:.03,crest:.035,nape:-.55,under:1},
+ longueuil:{fh:.9,tT:.03,tS:.012,tB:.03,tF:.015,nape:-.7,L:.17,hb:2.35},
+ meche:{fh:.9,tT:.04,tS:.03,tB:.03,fl:.42,sw:.6,ear:null,sb:-.25,nape:-.7,L:.04,hb:1.5},
+ bol:{fh:.9,tT:.038,tS:.036,tB:.036,bowl:.3,fl:.6,ear:null,nape:.3},
+ afro:{fh:.86,afro:.19,ear:null,sb:-.2,nape:-.6},
+ milong:{fh:.9,tT:.032,tS:.03,tB:.034,part:.35,ear:null,sb:-.1,nape:-.4,L:.2,hf:1},
+ long:{fh:.9,tT:.03,tS:.03,tB:.034,part:0,ear:null,sb:-.1,nape:-.4,L:.46,hf:1},
+ carre:{fh:.9,tT:.032,tS:.032,tB:.036,fl:.58,ear:null,sb:-.1,nape:-.4,L:.12,hf:1,bobIn:1},
+ queue:{fh:.92,tT:.014,tS:.01,tB:.014,nape:-.5,ext:'queue'},
+ chignon:{fh:.92,tT:.014,tS:.01,tB:.014,nape:-.5,ext:'chignon'},
+ tresses:{fh:.92,tT:.014,tS:.012,tB:.014,part:0,nape:-.5,ext:'tresses'},
+ dreads:{fh:.88,tT:.04,tS:.03,tB:.035,nape:-.5,ext:'dreads'},
+ degarni:{fh:.9,tT:.016,tS:.014,tB:.018,nape:-.55,bald:1},
+ chauve:null};
+const sst=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t);};
+const HSK={cy:-.008,rx:.118,ry:.1345,rz:.1239};
+function hairLine(p,a,az){const A=Math.abs(a),ear=p.ear===undefined?.32:p.ear,sb=p.sb??-.12,nape=p.nape??-.55,fh=p.fh??.9;
+  const T=[[0,fh],[.55,fh-.04],[.85,fh-.1+(p.rec||0)],[1.12,.5],[1.27,sb]];if(ear!=null)T.push([1.37,ear],[1.8,ear],[2.05,(ear+nape)/2]);else T.push([1.6,sb],[2.05,(sb+nape)/2]);T.push([2.45,nape],[PI,nape]);
+  let v=T[T.length-1][1];for(let i=1;i<T.length;i++)if(A<=T[i][0]){const[a0,v0]=T[i-1],[a1,v1]=T[i];const k=sst(0,1,(A-a0)/(a1-a0));v=v0+(v1-v0)*k;break;}
+  if(p.fl!=null&&A<1.05){let f=p.fl;if(p.sw){f+=p.sw*sst(-.3,.5,-az)-p.sw*.15;}const k=1-sst(.75,1.05,A);v=Math.min(v,v+(f-v)*k);}
+  if(p.bowl!=null){v=A<.95?Math.min(v,p.fl??.6):p.bowl+(A<1.3?((p.fl??.6)-p.bowl)*(1-sst(.95,1.3,A)):0);}
+  return v;}
+function hairShell(p,res,hat){const W=res,H=Math.round(res*.7);const pos=[],uv=[],col=[],keep=[];const S=HSK;const latE=-.06,L=p.L||0;
+  for(let iy=0;iy<=H;iy++){const lat=PI/2-iy/H*PI;for(let ix=0;ix<=W;ix++){const az=-PI+ix/W*PI*2,A=Math.abs(az);
+    const dx=Math.cos(lat)*Math.sin(az),dy=Math.sin(lat),dz=Math.cos(lat)*Math.cos(az);let hl=hairLine(p,az,az);
+    let m=sst(hl-.05,hl+.01,lat);
+    const hang=L>0&&lat<latE&&A>(p.hb||(p.hf?1.02:1.38));if(hang)m=1;
+    if(p.top!=null)m=Math.min(m,sst(p.top-.06,p.top+.02,lat)+(A<.8?sst(hl-.05,hl+.01,lat)*sst(.5,.9,lat):0));
+    if(p.crest)m=Math.min(m,sst(p.crest+.012,p.crest-.006,Math.abs(S.rx*dx))*sst(-.2,.1,lat));
+    if(p.bald)m=Math.min(m,1-sst(.62,.74,lat)*(1-sst(1.9,2.3,A)));
+    let t;if(p.afro){t=0;}else{const top=sst(.25,1.15,lat);t=p.tB+(p.tT-p.tB)*top;const side=sst(.85,1.35,A)*(1-sst(1.9,2.5,A))*(1-sst(.55,1.1,lat));t+=(p.tS-t)*side;
+      if(p.tF&&A<1)t+=p.tF*Math.exp(-Math.pow((lat-hl-.12)/.16,2))*(1-sst(.55,1,A));
+      if(p.pomp){const ex=dx,ey=dy-.78,ez=dz-.62;t+=p.pomp*Math.exp(-(ex*ex*1.6+ey*ey+ez*ez)/.2);}
+      if(p.part!=null&&lat>.5){const g=Math.exp(-Math.pow((az-p.part)/.07,2))*sst(.5,.95,lat);t*=1-.55*g;if(p.sweep)t+=.006*(1+Math.tanh((p.part-az)*1.5))*sst(.55,1.1,lat)*(1-sst(1.9,2.6,A));}
+      if(p.curl)t+=p.curl*(.55+.45*Math.sin(az*15+Math.sin(lat*9)*2.2)*Math.sin(lat*17+az*4));
+      if(p.spike)t+=p.spike*Math.pow(Math.max(0,Math.sin(az*8.5+lat*2)*Math.sin(lat*11)),4)*sst(.45,.9,lat);
+      if(p.crest)t=p.tT*(.55+.45*sst(-.1,.9,lat))+p.tF*Math.exp(-Math.pow((lat-hl-.15)/.2,2));
+      const ramp=p.fl!=null&&A<1&&lat<p.fh+.05?.7:sst(hl-.02,hl+.3,lat);t*=.25+.75*ramp;}
+    if(hat&&lat>.12&&!hang)t=Math.min(t,.005);
+    let x,y,z;if(p.afro&&!hat){const R=p.afro*(.92+.08*sst(-.3,.6,lat))*(1+.04*Math.sin(az*11)*Math.sin(lat*13));const sk=[S.rx*dx,S.cy+S.ry*dy,S.rz*dz];const af=[dx*R,.035+dy*R*.92,-.02+dz*R];const k=sst(hl-.02,hl+.25,lat);x=sk[0]+(af[0]-sk[0])*k;y=sk[1]+(af[1]-sk[1])*k;z=sk[2]+(af[2]-sk[2])*k;if(Math.hypot(x,y-S.cy,z)<Math.hypot(...sk.map((q,i)=>i===1?q-S.cy:q)))[x,y,z]=sk;}
+    else if(hang){const s=(latE-lat)/(latE+PI/2);const tt=p.tS+.004;const cl=Math.cos(latE);let rx=(S.rx+tt)*cl*Math.sin(az),rz=(S.rz+tt)*cl*Math.cos(az);y=S.cy+(S.ry+tt)*Math.sin(latE)-s*L;
+      const fl=1+.035*Math.sin(PI*Math.min(1,s*1.4))-(p.bobIn?.1*s*s:0);rx*=fl;rz*=fl;
+      if(L>.16){const sh=sst(-.12,-.2,y);rz=rz+(Math.min(rz,-.075)-rz)*sh*(A>1.25?1:.0);if(A<=1.25){rz=rz+(Math.max(rz,.1)-rz)*sh;}rx=Math.sign(rx)*Math.min(Math.abs(rx)*(1+.25*sh),.19);}
+      const cut=p.bobIn?0:.012*Math.sin(az*23)*sst(.8,1,s);x=rx;z=rz;y+=cut;}
+    else{const tt=m>.02?t:-.012;x=(S.rx+tt)*dx;y=S.cy+(S.ry+tt)*dy;z=(S.rz+tt)*dz;
+      if(p.flat&&!hat&&y>p.flat-.01){y=p.flat-.01+(y-p.flat+.01)*.15;}}
+    pos.push(x,y,z);uv.push(ix/W,1-iy/H);const sh=hang?.82+.18*(1-(latE-lat)/(latE+PI/2)):.68+.32*sst(-.004,.03,t||0);col.push(sh,sh,sh);keep.push(m>.02);}}
+  const idx=[];for(let iy=0;iy<H;iy++)for(let ix=0;ix<W;ix++){const a=iy*(W+1)+ix,b=a+W+1,c=a+1,d=b+1;if(keep[a]||keep[b]||keep[c])idx.push(a,b,c);if(keep[b]||keep[d]||keep[c])idx.push(b,d,c);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));g.setIndex(idx);g.computeVertexNormals();return g;}
+function hairLathe(prof,seg=12){return new THREE.LatheGeometry(prof.map(q=>new THREE.Vector2(q[0],q[1])),seg);}
+function hairExtras(G,st,m,col){const add=(geo,x,y,z,rx=0,ry=0,rz=0,sx=1,sy=1,sz=1)=>{const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.rotation.set(rx,ry,rz);o.scale.set(sx,sy,sz);o.castShadow=true;G.add(o);return o;};
+  const tie=c=>new THREE.MeshStandardMaterial({color:C(c),roughness:.5});
+  if(st==='queue'){const L=.3,pr=[];for(let i=0;i<=14;i++){const s=i/14;pr.push([.001+.042*Math.sin(PI*Math.min(1,.18+s*.95))*(1-.35*s),-s*L]);}pr.reverse();add(hairLathe(pr,14),0,.0,-.135,.42,0,0,1,1,.85);const t=new THREE.Mesh(new THREE.TorusGeometry(.024,.008,6,14),tie('#c8402f'));t.position.set(0,-.012,-.14);t.rotation.x=1.1;G.add(t);}
+  if(st==='chignon'){add(new THREE.SphereGeometry(.058,16,12),0,.07,-.118,.7,0,0,1,.85,1);add(new THREE.TorusGeometry(.04,.016,8,18),0,.07,-.105,.9,0,0);}
+  if(st==='tresses'){for(const s of[1,-1]){const P=[[.1,-.02,-.035],[.125,-.12,.04],[.14,-.24,.085],[.138,-.36,.1]];const cv=new THREE.CatmullRomCurve3(P.map(q=>new THREE.Vector3(s*q[0],q[1],q[2])));for(let i=0;i<12;i++){const u=i/11,p=cv.getPoint(u),tg=cv.getTangent(u);const o=add(new THREE.SphereGeometry(.024*(1-.25*u),10,8),p.x,p.y,p.z,0,0,0,1,1.5,1);o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),tg);o.rotateY(i%2?.6:-.6);o.rotateZ(i%2?.35:-.35);}
+    const e=cv.getPoint(1);const t=new THREE.Mesh(new THREE.TorusGeometry(.013,.006,5,10),tie('#e8b53a'));t.position.copy(e);t.position.y-=.012;t.rotation.x=PI/2;G.add(t);}}
+  if(st==='dreads'){for(let i=0;i<26;i++){const az=(i%2?1:-1)*(1.5+(i>>1)/12*(PI-1.5)),L=.2+((i*37)%10)/10*.14;const r=.019;const pr=[[.001,-L],[r*.8,-L+.012],[r,-L*.5],[r,-.01],[.001,0]];
+     const x=Math.sin(az)*(HSK.rx+.02),z=Math.cos(az)*(HSK.rz+.02);const o=add(hairLathe(pr,7),x,-.02+((i*13)%5)*.012,z,-Math.cos(az)*.12+(Math.abs(az)>2.2?-.05:0),0,Math.sin(az)*.12);}}}
+function hairBuild(st,col,res,hat){const g=new THREE.Group(),T=new THREE.Group();g.add(T);g.userData.top=T;const p=HP[st];if(!p)return g;const r=res||48;
+  if(p.under||p.buzz){const b=new THREE.Mesh(hairShell({...HP.rase,nape:p.nape},r,false),hairMat(col,'buzz'));b.castShadow=true;g.add(b);if(p.buzz)return g;}
+  const m=hairMat(col,p.gloss?'gloss':'');const sh=new THREE.Mesh(hairShell(p,r,hat),m);sh.castShadow=true;g.add(sh);
+  if(p.ext&&!(hat&&p.ext==='chignon'))hairExtras(g,p.ext,hairMat(col,p.gloss?'xg':'x'),col);return g;}
+function hairSet(r,st,col){const h=r.head;if(!h)return;if(!HSTYK[st])st='classique';const old=r.hairG;if(old){h.remove(old);if(old.userData.hatG)h.remove(old.userData.hatG);old.traverse(o=>{if(o.isMesh)o.geometry.dispose();});if(old.userData.hatG)old.userData.hatG.traverse(o=>{if(o.isMesh)o.geometry.dispose();});}
+  const hi=r===(typeof Mc!=='undefined'&&Mc&&Mc.m)||r.hiRes;const g=hairBuild(st,col,hi?72:40,false);h.add(g);r.hairG=g;r.hairSt=st;r.hairCol=col;g.userData.res=hi?72:40;}
+function hairHat(r,on){const g=r.hairG;if(!g)return;const H=HP[r.hairSt];if(!H)return;if(on&&!g.userData.hatG){const hg=hairBuild(r.hairSt,r.hairCol,g.userData.res||40,true);hg.visible=false;r.head.add(hg);g.userData.hatG=hg;}
+  const hg=g.userData.hatG;if(!hg)return;g.visible=!on;hg.visible=on;}
+
 /* ================= v123 : personnages stylisés (proportions, visage, cheveux, vêtements) ================= */
 const SKOV={};function SKINOV(c){return SKOV[c]||(SKOV[c]=new THREE.MeshStandardMaterial({color:C(c),roughness:.55,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}));}
 function personStyle(r,o){const F=r.fx||{},hs=F.hs||7,rn=i=>((hs>>>(i*3+1))%100)/100;const mesh=(g,m)=>{const x=new THREE.Mesh(g,m);x.castShadow=true;return x;};
@@ -789,12 +886,8 @@ function personStyle(r,o){const F=r.fx||{},hs=F.hs||7,rn=i=>((hs>>>(i*3+1))%100)
     else if(g.type==='SphereGeometry'&&Math.abs(p.radius-.022)<.0005&&c.scale.z>1.2){c.scale.set(.8,.75,1.05);c.position.set(0,-.014,.121);}
     else if(g.type==='BoxGeometry'&&Math.abs(p.width-.054)<.001){c.scale.x=1.2;c.position.z=.131;}
     else if(g.type==='BoxGeometry'&&Math.abs(p.width-.048)<.001){c.position.y+=.008;c.position.z=.114;c.scale.set(1.05,1.25,1);}}
-  const st=o.bun?3:o.long?2:(hs%4);const H=(rad,sx,sy,sz,x,y,z)=>{const m=mesh(new THREE.SphereGeometry(rad,14,10),hair);m.scale.set(sx,sy,sz);m.position.set(x,y,z);r.head.add(m);return m;};
-  if(o.hair&&!o.bald){H(.125,1.02,.62,1.02,0,.07,-.02);H(.118,1.0,1.02,.62,0,.005,-.068);
-    if(st===0){H(.1,1.02,.36,.62,0,.088,.042);for(const s of[1,-1])H(.035,.45,1.1,1.1,s*.117,.03,-.005);}
-    else if(st===1){H(.1,1.0,.36,.62,-.012,.09,.042).rotation.z=.16;H(.035,.45,1.0,1.1,.118,.035,0);H(.035,.45,1.2,1.1,-.118,.025,-.005);}
-    else if(st===2){H(.1,1.04,.38,.62,0,.088,.042);for(const s of[1,-1])H(.05,.55,2.3,1.1,s*.112,-.06,-.01);H(.13,.98,1.5,.5,0,-.1,-.09);}
-    else{H(.1,1.02,.34,.6,0,.09,.04);for(let i=0;i<8;i++){const a=i/8*PI*2;H(.042,1,.7,1,Math.sin(a)*.08,.118,Math.cos(a)*.072-.02);}}}
+  for(const c of [...r.head.children])if(c.isMesh&&c.material===hair&&c.geometry.type==='SphereGeometry'&&!((c.geometry.parameters.thetaStart||0)>1))r.head.remove(c);
+  if(o.hair)hairSet(r,hairDefault(o,hs),o.hair);
   if(F.sh)for(const x of F.sh){x.scale.x*=1.075;x.scale.z*=1.075;}
   if(F.sh)for(const L of[r.LL,r.RL]){const hm=mesh(new THREE.CylinderGeometry(.086*W,.09*W,.05,14),pantsM);hm.scale.z=1/W;hm.position.y=-.4;hm.visible=false;L.th.add(hm);F.sh.push(hm);}
   r.fx=F;F.W=W;}
@@ -959,6 +1052,13 @@ const POND={x:80,z:-80,rx:10.5,rz:6.8};
  {const bd=ctex(128,g2=>{g2.fillStyle='#c9ced2';g2.fillRect(0,0,128,128);for(let i=0;i<10;i++){g2.fillStyle='#9aa3aa';g2.fillRect(0,i*13,128,2);}});const bm=M('#ffffff',{map:bd,r:.6,m:.3});for(const x of[-4.2,.6])bx(ga.g,bm,3.6,3.3,.08,x,0,5.06);}
  ns(bx(TR,M('#ffffff',{map:TX.asphalt,r:.9}),16,.04,3,72,0,96.6,0,4));for(let i=0;i<4;i++)cy(TR,M('#1a1a1c',{r:.85}),.34,.34,.24,62.6,i*.24,96.2,14);
  const an=shop('animal',91,91,'S',{w:10,d:8,h:4.5,mat:M('#ffffff',{map:TX.siding('#e8b86a'),r:.85}),trim:'#3a8a5a',awn:'#3a8a5a',sign:'ANIMALERIE PATTES & MUSEAUX',signBg:'#2a5a3a'});regDoor('animal',an,0);
+// --- Salon de coiffure Chez Ginette (v127)
+var COIFPOLE=[];{const co=shop('coiff',-17,-84,'W',{w:10,d:9,h:4.4,mat:M('#ffffff',{map:TX.siding('#f0d6e0'),r:.85}),trim:'#c84a8a',awn:'#d86aa0',sign:'SALON DE COIFFURE CHEZ GINETTE',signBg:'#5a2a4a'});regDoor('coiff',co,0);
+ const tx=ctex(128,(g,s)=>{g.fillStyle='#f6f4ee';g.fillRect(0,0,s,s);const cs=['#d8302f','#f6f4ee','#2a5ad8','#f6f4ee'];for(let i=-4;i<8;i++){g.fillStyle=cs[((i%4)+4)%4];g.beginPath();g.moveTo(i*s/4,s);g.lineTo(i*s/4+s/4,s);g.lineTo(i*s/4+s/4+s/2,0);g.lineTo(i*s/4+s/2,0);g.closePath();g.fill();}});tx.repeat.set(1,1.4);
+ const pg=grp(co.g,-1.75,0,co.d/2+.28);bx(pg,M('#d8dce0',{m:.7,r:.3}),.12,.06,.12,0,2.62,0);cy(pg,M('#d8dce0',{m:.7,r:.3}),.1,.1,.08,0,1.5,0,14);cy(pg,M('#d8dce0',{m:.7,r:.3}),.1,.1,.08,0,2.38,0,14);
+ const pl=new THREE.Mesh(new THREE.CylinderGeometry(.085,.085,.8,16),new THREE.MeshStandardMaterial({map:tx,roughness:.3,emissive:C('#ffffff'),emissiveIntensity:.08,emissiveMap:tx}));pl.position.y=1.98;pl.userData.ns=1;pg.add(pl);COIFPOLE.push(pl);
+ const gl=new THREE.Mesh(new THREE.CylinderGeometry(.095,.095,.8,16,1,true),M('#e8f4ff',{op:.25,r:.05}));gl.position.y=1.98;gl.userData.ns=1;pg.add(gl);cy(pg,M('#d8dce0',{m:.7,r:.3}),.03,.03,1.5,0,0,0,8);bx(TR,M('#3a3a40',{r:.9}),8.5,.03,4.6,-18.6,0,-73).receiveShadow=true;for(const z of[-75.3,-70.7])bx(TR,M('#e8e4d8',{r:.8}),3.2,.035,.1,-17.5,0,z);}
+
  {const pw=new THREE.Mesh(new THREE.CircleGeometry(.5,16),M('#3a8a5a'));pw.position.set(94.4,3.5,95.05);TR.add(pw);}}
 
 // ======== Agrandissement de la ville : bord de l'eau, services, rue Principale, zone industrielle, gare ========
@@ -2038,6 +2138,44 @@ const propMC=[];function propCar(par,x,z,ry){const g=grp(par,x,0,z,ry);carBody(g
  I.obs=[[-4.7,-4.4,2.7,-3.7],[-6,-2.6,-5.3,1.9],[-2.3,-.9,-1.3,1.7],[.1,-.9,1.1,1.7],[2.45,.25,5.15,2.75],[4.95,-3.85,5.65,-3.15],[-4.95,2.2,-2.65,3],[-4.65,-4.3,-4.15,-3.7]];
  spot(I,'entry',0,3.5,PI);spot(I,'aqua',-1,-3.1,PI);spot(I,'chiots',3.8,-.05,0);spot(I,'nourriture',-.6,.4,-PI/2);spot(I,'cages',-4.7,-.4,-PI/2);spot(I,'comptoir',-3.8,1.8,PI);
  I.staff=[{look:{skin:'#f1c29c',hair:'#5a3b2a',shirt:'#3a8a5a',pants:'#2f3442',long:1},x:-3.8,z:3.3,yaw:PI,act:'work',name:'Valérie'}];}
+// ---- Salon de coiffure Chez Ginette (v127)
+{const I=interior('coiff','coiff',11,8,0,{name:'Salon de coiffure Chez Ginette'});const r=I.root;
+ const fl=ctex(256,(g,s)=>{const n=8;for(let i=0;i<n;i++)for(let j=0;j<n;j++){g.fillStyle=(i+j)%2?'#4a4652':'#ece8e2';g.fillRect(i*s/n,j*s/n,s/n,s/n);}});fl.repeat.set(2,1.45);
+ room(I,M('#ffffff',{map:fl,r:.35}),'#f3dde6',{backWins:[],sideWins:[]});
+ const chrome=M('#d8dce0',{m:.85,r:.22}),blk=M('#1e1e24',{r:.45}),leather=M('#8a2a4a',{r:.5}),wood=M('#f4efe6',{r:.5}),mir=M('#cfe0ea',{m:.9,r:.06});
+ const chair=(P,x,z,ry,col)=>{const c=grp(P,x,0,z,ry);cy(c,chrome,.32,.36,.06,0,0,0,18);cy(c,chrome,.06,.06,.32,0,.06,0,10);bx(c,M(col||'#8a2a4a',{r:.5}),.56,.12,.54,0,.38,0,0,2);bx(c,M(col||'#8a2a4a',{r:.5}),.54,.62,.1,0,.5,.26,0,2);
+   for(const s of[-1,1]){bx(c,chrome,.05,.18,.5,s*.31,.44,-.02);bx(c,blk,.08,.04,.46,s*.31,.62,-.02);}bx(c,chrome,.42,.03,.2,0,.16,-.42);cy(c,chrome,.02,.02,.24,0,.17,-.32,6).rotation.x=.6;bx(c,blk,.22,.12,.08,0,1.04,.27,0,2);return c;};
+ for(const x of[-3.2,0,3.2]){bx(r,wood,1.7,.88,.5,x,0,-3.7);bx(r,M('#e8e2d8',{r:.3}),1.76,.05,.56,x,.88,-3.7);bx(r,M('#c84a8a',{r:.6}),1.82,1.4,.05,x,1.15,-3.97);bx(r,mir,1.5,1.2,.02,x,1.25,-3.93);
+   for(let i=0;i<5;i++)cy(r,M(pick(['#e8508a','#3ab0d8','#f2c21a','#5ac58a','#f6f4ee']),{r:.3}),.03,.035,.12+((i*7)%3)*.04,x-.6+i*.18,.93,-3.78,8);
+   cy(r,M('#2a2a30',{r:.4}),.05,.05,.04,x+.55,.93,-3.6,10);chair(r,x,-2.55,0);}
+ /* bac à shampoing */
+ {const s=grp(r,-4.95,0,1.1,PI/2);bx(s,M('#2a2a30',{r:.4}),.7,.82,.5,0,0,-.2);const bw=new THREE.Mesh(new THREE.SphereGeometry(.28,18,10,0,PI*2,PI/2,PI/2),M('#f6f4ee',{r:.2,ds:1}));bw.scale.set(1,.55,.85);bw.position.set(0,1.0,-.12);s.add(bw);
+   cy(s,chrome,.015,.015,.3,.12,.95,-.38,6);chair(s,0,.55,PI,'#2a2a30');}
+ /* sèche-cheveux sur pied */
+ {const d=grp(r,-4.7,0,-1.4,PI/2);chair(d,0,0,PI,'#5a3a6a');cy(d,chrome,.025,.025,1.45,0,0,-.5,8);const hd=new THREE.Mesh(new THREE.SphereGeometry(.28,18,12,0,PI*2,0,PI*.55),M('#f0e8f0',{r:.3,ds:1}));hd.position.set(0,1.38,-.22);hd.rotation.x=-.45;hd.castShadow=true;d.add(hd);}
+ /* comptoir-caisse */
+ bx(r,M('#c84a8a',{r:.55}),2.1,1.02,.65,3.9,0,2.3,0,3);bx(r,M('#f4efe6',{r:.3}),2.2,.05,.75,3.9,1.02,2.3);bx(r,M('#2a2a30',{r:.4}),.4,.28,.32,3.5,1.07,2.42);
+ for(let i=0;i<4;i++)cy(r,M(pick(['#e8508a','#3ab0d8','#f2c21a','#5ac58a']),{r:.3}),.035,.04,.16,4.1+i*.13,1.07,2.12,8);
+ /* présentoir de produits */
+ {const p=grp(r,5.25,0,-1.2,-PI/2);bx(p,wood,1.6,1.8,.35,0,0,0);for(let k=0;k<3;k++){bx(p,M('#e8e2d8'),1.56,.03,.36,0,.5+k*.45,0);for(let i=0;i<7;i++)cy(p,M(pick(['#e8508a','#3ab0d8','#f2c21a','#5ac58a','#8a5ad8','#f6f4ee']),{r:.3}),.04,.045,.17,-.6+i*.2,.53+k*.45,0,8);}}
+ /* salle d'attente */
+ {const b=grp(r,1.55,0,3.05,0);bx(b,M('#3a3a44',{r:.6}),2.1,.42,.55,0,0,0,0,2);bx(b,M('#e86aa0',{r:.7}),2.0,.12,.5,0,.42,0,0,2);bx(b,M('#e86aa0',{r:.7}),2.0,.5,.12,0,.5,.24,0,2);
+   bx(r,wood,.7,.42,.45,-1.3,0,3.25);for(let i=0;i<3;i++)bx(r,M(pick(['#e8508a','#3ab0d8','#f2c21a']),{r:.6}),.24,.015,.32,-1.46+i*.16,.42+i*.016,3.25,.2*i);}
+ /* affiches de coupes */
+ {const tp=ctex(256,(g,s)=>{g.fillStyle='#fff6fa';g.fillRect(0,0,s,s);g.fillStyle='#5a2a4a';g.font='bold 26px sans-serif';g.textAlign='center';g.fillText('NOS COUPES',s/2,34);const cols=['#4a2e1c','#c8a060','#1c1612','#a8462a'];
+   for(let i=0;i<4;i++){const x=(i%2)*s/2+s/4,y=Math.floor(i/2)*100+100;g.fillStyle='#e8c0a0';g.beginPath();g.arc(x,y+10,30,0,PI*2);g.fill();g.fillStyle=cols[i];g.beginPath();if(i===0){g.arc(x,y,32,PI,0);}else if(i===1){g.arc(x,y+6,36,PI*1.05,-.05);g.rect(x-36,y,12,52);g.rect(x+24,y,12,52);}else if(i===2){for(let k=0;k<5;k++){g.moveTo(x-28+k*14,y-4);g.lineTo(x-21+k*14,y-38);g.lineTo(x-14+k*14,y-4);}}else{g.arc(x,y,33,PI,0);g.arc(x+30,y+18,12,0,PI*2);}g.fill();}});
+   for(const[x,z,ry]of[[5.47,1.0,-PI/2],[-5.47,-3.0,PI/2]]){const pm=new THREE.Mesh(new THREE.PlaneGeometry(1.1,1.1),new THREE.MeshStandardMaterial({map:tp,roughness:.6}));pm.position.set(x,1.6,z);pm.rotation.y=ry;r.add(pm);}}
+ plant(r,-5,3.3,.8);plant(r,5,-3.3,.7);rug(r,0,3.3,1.6,.9,'#5a2a4a');
+ I.clip=new THREE.Group();I.dyn.add(I.clip);
+ bake(r,I.g);
+ I.obs=[[-4.1,-4,4.1,-3.4],[-3.55,-2.95,-2.85,-2.15],[-.35,-2.95,.35,-2.15],[2.85,-2.95,3.55,-2.15],[.5,-2.65,.95,-2.15],[2.25,-2.65,2.7,-2.15],[-5.5,.75,-4.65,1.45],[-5.5,-1.75,-4.4,-1.05],[2.8,1.95,5.0,2.7],[5.0,-2.1,5.5,-.3],[.45,2.75,2.65,3.4],[-1.7,3.0,-.9,3.5]];
+ spot(I,'entry',0,3.3,PI);spot(I,'comptoir',3.9,1.45,0);spot(I,'attente',1.55,3.0,PI,{seat:.45,via:[[1.55,2.3]]});
+ spot(I,'chaise',0,-2.5,PI,{seat:.5,via:[[-.6,-1.6],[-.15,-1.9]]});spot(I,'lavabo',-4.4,1.1,PI/2,{seat:.5,via:[[-3.7,1.1]]});
+ I.staff=[{look:{skin:'#efc3a2',hair:'#c8a060',shirt:'#c84a8a',pants:'#2a2a30',long:1},x:3.9,z:3.1,yaw:PI,act:'work',name:'Ginette'},
+   {look:{skin:'#d9a07a',hair:'#1c1612',shirt:'#2a2a30',pants:'#2a2a30',long:1},x:.72,z:-2.4,yaw:-PI/2,act:'look',name:'Lise',id:'lise'},
+   {look:{skin:'#8a5a3a',hair:'#1c1612',shirt:'#3ab0b8',pants:'#2f3442'},x:3.2,z:-2.5,yaw:PI,pose:'sit',seat:.5,act:'look',name:'Client'},
+   {look:{skin:'#f1c29c',hair:'#4a2e1c',shirt:'#2a2a30',pants:'#2a2a30'},x:2.48,z:-2.4,yaw:PI/2,act:'work',name:'Jessy'}];}
+
 // ---- Garage chez Réjean
 {const I=interior('garage','garage',16,10,5,{name:'Garage chez Réjean'});const r=I.root;room(I,M('#ffffff',{map:TX.concrete,r:.85}),'#d8dcdf',{backWins:[],sideWins:[0]});
  const met=M('#9aa3aa',{m:.75,r:.3}),red=M('#c8202a',{r:.4}),blk=M('#1a1b1e',{r:.8});
@@ -3393,6 +3531,7 @@ const PARKS={home:{att:[-59.1,-30],park:[-59.1,-42.8],yaw:PI,out:[[-59.1,-42.8],
 PARKS.deppark={att:[30,160.5],park:[43,160.5],yaw:PI/2,out:[[43,160.5],[35.6,160.5,'r']],inn:[[35.6,160.5]],door:[43,162.2],walk:[[37.6,188.5],[38.9,187.4],[38.9,162.2],[43,162.2]],node:[35.5,188.5]};
 PARKS.dpump={att:[30,190],park:[91,190],yaw:PI/2,out:[[91,190],[35.6,190,'r']],inn:[[35.6,190]],door:[91,192.6],walk:[[37.6,188.5],[37.6,193],[91,193],[91,192.6]],node:[35.5,188.5]};
 PARKS.depot={att:[30,190],park:[50,190],yaw:PI/2,out:[[50,190],[35.6,190,'r']],inn:[[35.6,190]],door:[47,188.5],walk:[[37.6,188.5],[47,188.5]],node:[35.5,188.5]};
+PARKS.coiff={att:[-30,-73],park:[-18,-73],yaw:PI/2,out:[[-18,-73],[-24.4,-73,'r']],inn:[[-24.4,-73]],door:[-18,-74.5],walk:[[-22.4,-74.5],[-18,-74.5]],node:[-24.5,-74.5]};
 for(const H of HOUSES){PARKS['d_'+H.k]=H.park;}
 {const RL=RD.flatMap(v=>[{h:true,v},{h:false,v}]);const at2=Object.values(PARKS).map(p=>p.att);
  for(const ln of RL){const pts=[-148,148,...RD];for(const[a,b]of at2){if(ln.h&&Math.abs(b-ln.v)<.01)pts.push(a);if(!ln.h&&Math.abs(a-ln.v)<.01)pts.push(b);}
@@ -8012,7 +8151,7 @@ function v121Tick(){if(tReal-V121.gt>.8){V121.gt=tReal;try{nbGreet();}catch(e){}
 const AMB={n:{},L:null,cic:0,cicT:0};
 const AMBP={mall:'mall',tkmagasin:'mall',cvb_mode:'shop',cvb_fleur:'shop',cvb_disques:'shop',cvb_boul:'shop',pharma:'shop',boul:'shop',poste:'shop',peche:'shop',tkdenki:'shop',tksouv:'shop',cvb_livres:'quiet',cvb_galerie:'quiet',lib:'quiet',eglise:'quiet',tkmanga:'quiet',
  cvb_creme:'resto',cvb_resto:'resto',casse:'resto',micro:'resto',tkramen:'resto',tksushi:'resto',tkizakaya:'resto',cvb_cafe:'cafe',cafe:'cafe',tkmatcha:'cafe',cvb_cine:'cine',cine:'cine',epic:'epic',dep:'epic',tkkonbini:'konbini',quinc:'quinc',electro:'arcade',arcp:'arcade',tkgame:'arcade',tkretro:'arcade',
- animal:'animal',quilles:'quilles',gym:'gym',hopital:'hopital',ecole:'ecole',office:'office',garage:'garage',gare:'gare',mstation:'gare',metro:'gare',wagon:'wagon',avion:'avion',aeroport:'aero',cdq:'depot',ski:'ski',cabane:'cabane',parcnat:'foret',campagne:'champ',tokyo:'tokyo',harajuku:'tokyo',odaiba:'tokyo',akiba:'akiba',tkneko:'neko',tkonsen:'onsen',tkgondole:'vent',maman:'maman',home:'home',etage:'home',hotel:'hotel'};
+ animal:'animal',quilles:'quilles',gym:'gym',hopital:'hopital',ecole:'ecole',office:'office',garage:'garage',gare:'gare',mstation:'gare',metro:'gare',wagon:'wagon',avion:'avion',aeroport:'aero',cdq:'depot',ski:'ski',cabane:'cabane',parcnat:'foret',campagne:'champ',tokyo:'tokyo',harajuku:'tokyo',odaiba:'tokyo',akiba:'akiba',tkneko:'neko',tkonsen:'onsen',tkgondole:'vent',maman:'maman',home:'home',etage:'home',hotel:'hotel',coiff:'coiff'};
 function ambTick(dt){const I=SFX._i;if(!I||!SFX.on)return;const t=tReal,a=VIS_AREA,out=a==='town';
   if(!AMB.L)AMB.L={leaves:I.loop('bandpass',3400,.5),cic:I.loop('bandpass',5600,10),snow:I.loop('bandpass',700,2.2),vent:I.loop('highpass',2600,.3),stream:I.loop('bandpass',1500,.7),fridge:I.loop('lowpass',115,3)};
   const set=(k,v,tc=.4)=>AMB.L[k].g.gain.setTargetAtTime(v,I.now(),tc),T=I.tone,N=I.noise;
@@ -8035,6 +8174,7 @@ function ambTick(dt){const I=SFX._i;if(!I||!SFX.on)return;const t=tReal,a=VIS_AR
   else if(P==='animal'){if(ev('ch',1.5,4))SFX.chirp();if(ev('bk',9,22))SFX.bark();if(ev('mw',14,30))SFX.meow();fr=.02;}
   else if(P==='quilles'){crowd=.05;if(ev('bw',5,11)){N(1.3,'lowpass',170,.08,0,1,330);N(.35,'bandpass',1200,.12,1.3,1);for(let i=0;i<5;i++)T(rnd(700,1100),.05,'square',.025,1.32+i*.05);}}
   else if(P==='gym'){vent=.02;fr=.03;if(ev('cg',5,12)){T(rnd(280,420),.2,'square',.03,0,-90);N(.12,'bandpass',2400,.05,0,3);}}
+  else if(P==='coiff'){crowd=.025;fr=.015;if(COIF.cut?ev('sn',.3,.8):ev('sn',4,9)){N(.025,'highpass',5600,.05);N(.025,'highpass',4900,.04,.08);}if(ev('dry',25,60))N(3.5,'bandpass',1100,.04,0,.7);}
   else if(P==='quiet'){if(ev('pg',6,14))N(.12,'highpass',2500,.016,0,.6,5200);if(a==='eglise'&&ev('ec',20,50))T(196,2.2,'sine',.015,0,0,.6);}
   else if(P==='hopital'){vent=.015;if(ev('mo',1.5,1.7))T(880,.09,'sine',.014);if(ev('pa',30,70))chime();}
   else if(P==='ecole'){crowd=h>=8&&h<15.5&&dayOf()<5?.06+.03*Math.sin(t*.9):0;vent=.008;if(crowd&&ev('kd',4,10))for(let i=0;i<3;i++)T(rnd(700,1100),.12,'triangle',.012,i*.15,rnd(-200,300));}
@@ -8069,6 +8209,64 @@ function ambTick(dt){const I=SFX._i;if(!I||!SFX.on)return;const t=tReal,a=VIS_AR
   set('leaves',lv_,.6);if(sno!=null)set('snow',sno,.8);set('cic',cic,.05);}
 {const _su=SFX.update;SFX.update=function(dt){_su.call(SFX,dt);try{ambTick(dt);}catch(e){}};
  const _st=SFX.step;SFX.step=function(out){const I=SFX._i;if(out&&I&&SFX.on){if((LIFE.snowD||0)>.2){I.noise(.1,'bandpass',1350,.055,0,.9);I.noise(.05,'highpass',3800,.02,.02);return;}if(SEASON()==='automne'&&Math.random()<.45){_st.call(SFX,out);I.noise(.07,'highpass',3200,.028,0,.7);return;}if(RAIN()){_st.call(SFX,out);I.noise(.08,'bandpass',1900,.03,0,1.5);return;}}return _st.call(SFX,out);};}
+
+/* ================= v127 : salon de coiffure — app, rendez-vous, visite ================= */
+const COIF={sel:null,th:{},img:{},cut:false,ld:0};
+const CF=()=>LIFE.coif||(LIFE.coif={st:null,col:null,pend:null,d:dayN(),n:0});
+const coifCur=()=>({st:Mc.m.hairSt||'classique',col:Mc.m.hairCol||Mc.look.hair});
+function coifApply(){const c=CF();Mc.m.hiRes=1;hairSet(Mc.m,c.st||Mc.m.hairSt,c.col||Mc.m.hairCol||Mc.look.hair);}
+const coifPrice=(st,col)=>(HSTYK[st]?HSTYK[st][2]:25)+(col?((HCOL.find(h=>h[0]===col)||[0,0,35])[2]):0);
+const coifOpen=()=>{const h=hourOf(),d=dayOf();if(d===6)return'Le salon est fermé le dimanche';const fin=d===5?16:18;return h>=9&&h<fin-.75?true:'Ouvert de 9 h à '+fin+' h'+(d===5?' le samedi':'');};
+const coifLise=()=>ALL.find(c=>c.staff&&c.staff.id==='lise');
+/* vignettes : un buste de Marcel coiffé de chaque style */
+function coifThumb(st,col){const k=st+'|'+col;if(COIF.img[k])return COIF.img[k];if(!gp3Setup())return null;
+  try{if(!COIF.sc){const sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xffffff,0x9a8a9a,.85));const d=new THREE.DirectionalLight(0xffffff,1.05);d.position.set(1.5,3,3);sc.add(d);const d2=new THREE.DirectionalLight(0xffd8e8,.45);d2.position.set(-3,1.5,-1);sc.add(d2);
+      const p=makePerson({...Mc.look});p.hiRes=1;p.root.position.set(0,0,0);sc.add(p.root);p.root.updateMatrixWorld(true);const hp=new V3();p.head.getWorldPosition(hp);COIF.sc=sc;COIF.p=p;COIF.cam=new THREE.PerspectiveCamera(26,1,.05,20);COIF.cam.position.set(hp.x+.34,hp.y+.12,hp.z+1.08);COIF.cam.lookAt(hp.x,hp.y+.03,hp.z);
+      COIF.bg=new THREE.Color('#f6e8ee');}
+    const r=GP3.r,S=132;hairSet(COIF.p,st,col);if(COIF.p.hat)COIF.p.hat.visible=false;const pw=GP3.cv.width,ph=GP3.cv.height;r.setSize(S,S,false);const oc=r.getClearColor(new THREE.Color()).clone(),oa=r.getClearAlpha();r.setClearColor(COIF.bg,1);r.render(COIF.sc,COIF.cam);
+    const url=GP3.cv.toDataURL('image/jpeg',.85);r.setClearColor(oc,oa);r.setSize(pw||S,ph||S,false);return COIF.img[k]=url;}catch(e){console.error(e);return null;}}
+function coifSteps(st,col,auto){const c=CF(),nm=HSTYK[st][1],price=coifPrice(st,col),old=coifCur(),same=st===old.st&&!col;const lise=coifLise();const cut=same?rnd(20,28):rnd(32,48);const tip=Math.round(price*.15);
+  const seat={pose:'sit',seatH:.5,yaw:PI};
+  return[F(()=>{c.pend=null;flags.coif=true;}),{t:'drive',to:'coiff',label:'Se rend au Salon de coiffure Chez Ginette'},
+   ...at('coiff.comptoir','talk',2,{label:'S\'annonce à l\'accueil',say:pick(['Bonjour Ginette! J\'ai rendez-vous.','Salut! Marcel, pour une coupe.'])}),
+   ...at('coiff.attente','read',rnd(6,12),{label:'Attend son tour en feuilletant une revue',say:pick(['« Les 10 coupes de l\'automne »… hum.','Lise est toujours à l\'heure, elle.'])}),
+   ...at('coiff.lavabo','look',rnd(7,10),{label:'Se fait laver les cheveux',say:pick(['Ahhh, l\'eau tiède… c\'est le paradis.','Je pourrais dormir ici.']),fx:{hyg:1.2,fun:.3}}),
+   ...at('coiff.chaise','talk',3,{label:'Explique la coupe voulue : '+nm.toLowerCase(),partner:lise,speaker:true,chat:same?[['m','Comme d\'habitude, juste rafraîchir.'],['p','Parfait, je connais ta tête par cœur!']]:[['m','Aujourd\'hui, je change : '+nm.toLowerCase()+(col?', et une couleur '+(HCOL.find(h=>h[0]===col)||['','nouvelle'])[1].toLowerCase()+'.':'.')],['p',pick(['Enfin du changement! Ça va t\'aller comme un gant.','Ouh, audacieux! J\'adore.','Fais-moi confiance, tu vas te reconnaître… presque.'])]]}),
+   F(()=>{COIF.cut=true;coifCape(true);if(lise){lise.act='work';}}),
+   D('look',cut,{...seat,label:(same?'Se fait rafraîchir la coupe':'Se fait couper les cheveux : '+nm.toLowerCase()),warp:2,fx:{fun:.3,social:.8},say:pick(['On jase de quoi, Lise?','Pas trop court sur les côtés!','Le hockey hier, t\'as vu ça?'])}),
+   ...(col?[D('look',rnd(18,25),{...seat,label:'Se fait faire une coloration',warp:2,fx:{social:.4},say:'Ça pique un peu, la teinture!'})]:[]),
+   F(()=>{COIF.cut=false;coifClips(old.col);hairSet(Mc.m,st,col||old.col);c.st=st;c.col=col||old.col;c.d=dayN();c.n=(c.n||0)+1;cnt('coif');if(lise)lise.act='look';try{SFX.chime&&SFX.chime();}catch(e){}}),
+   D('look',3,{...seat,label:'Se regarde dans le miroir',say:same?pick(['Comme neuf!','Propre, propre.']):pick(['Wow! C\'est moi, ça?','J\'aime ça en titi!','Julie va pas me reconnaître!','Ça me rajeunit de dix ans!'])}),
+   F(()=>{coifCape(false);toast('💈 Nouvelle coupe : '+nm+(col?' · '+HCOL.find(h=>h[0]===col)[1].toLowerCase():''),true);setTask(same?'💈 S\'est fait rafraîchir la coupe chez Ginette':'💈 A une nouvelle coupe : '+nm.toLowerCase());need.fun=Math.min(100,need.fun+(same?4:12));}),
+   ...at('coiff.comptoir','pay',2,{label:'Paie et laisse un pourboire',say:'Merci Ginette, merci Lise!'}),payF(price+tip,'Coupe chez Ginette'+(col?' et coloration':'')),
+   F(()=>{flags.coif=false;if(!same){try{msgAdd('julie','e',pick(['Ta nouvelle coupe!! J\'adore 😍','Hein?! C\'est qui ce beau gars-là? 😄','Ça te fait vraiment bien, Marcel!']),true);}catch(e){}}}),
+   {t:'drive',to:'home',label:'Rentre avec sa nouvelle coupe'}];}
+/* cape de coiffeur et mèches au sol */
+function coifCape(on){const r=Mc.m;if(!COIF.cape){const m=new THREE.MeshStandardMaterial({color:C('#3a2a4a'),roughness:.6,side:THREE.DoubleSide});const c=new THREE.Mesh(new THREE.LatheGeometry([[.4,-.03],[.36,.16],[.3,.36],[.27,.47],[.22,.53],[.12,.585],[.075,.61]].map(q=>new THREE.Vector2(q[0],q[1])),24),m);c.scale.z=.8;c.castShadow=true;const col=new THREE.Mesh(new THREE.TorusGeometry(.075,.012,6,16),M('#f6f4ee',{r:.6}));col.rotation.x=PI/2;col.position.y=.615;const g=new THREE.Group();g.add(c,col);COIF.cape=g;}
+  if(on){if(COIF.cape.parent!==r.spine)r.spine.add(COIF.cape);COIF.cape.visible=true;}else COIF.cape.visible=false;}
+function coifClips(col){const I=INT.coiff;if(!I||!I.clip)return;while(I.clip.children.length)I.clip.remove(I.clip.children[0]);const m=hairMat(col);for(let i=0;i<28;i++){const a=Math.random()*PI*2,d=.15+Math.random()*.6;const b=new THREE.Mesh(new THREE.BoxGeometry(.05+Math.random()*.05,.006,.012),m);b.position.set(Math.cos(a)*d,.006,-2.5+Math.sin(a)*d*.8);b.rotation.y=Math.random()*PI;I.clip.add(b);}}
+/* l'app Coiffure */
+function coifHTML(){const c=CF(),cur=coifCur();const sel=COIF.sel||(COIF.sel={st:cur.st,col:''});const shown=sel.col||cur.col;
+  let h=`<div class="cinfo" style="display:flex;gap:10px;align-items:center"><img src="${coifThumb(cur.st,cur.col)||''}" alt="" style="width:64px;height:64px;border-radius:12px;flex:none"><span><b>💈 Salon Chez Ginette</b><br><span class="cmut">Coupe actuelle : <b>${(HSTYK[cur.st]||['','?'])[1]}</b><br>${coifOpen()===true?'<span style="color:#2f8a4a">Ouvert maintenant</span>':coifOpen()} · lun-ven 9 h-18 h, sam 9 h-16 h</span></span></div>`;
+  if(c.pend){const p=c.pend;h+=`<div class="cinfo">📅 <b>Rendez-vous pris : ${HSTYK[p.st][1]}${p.col?' + '+HCOL.find(x=>x[0]===p.col)[1].toLowerCase():''}</b><br><span class="cmut">Marcel ira dès qu'il sera libre pendant les heures d'ouverture · ${coifPrice(p.st,p.col)} $ + pourboire</span><div class="cact"><button type="button" data-a="cfx:1">Annuler le rendez-vous</button></div></div>`;}
+  h+=`<div class="ch2">Couleur</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 8px">`+HCOL.map(([hx,n,p])=>`<button type="button" data-a="cfc:${hx}" title="${n}" style="display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;border:2px solid ${sel.col===hx?'#c84a8a':'rgba(127,127,127,.3)'};background:transparent;color:inherit;font-size:.72rem"><i style="width:14px;height:14px;border-radius:50%;background:${hx||cur.col};display:inline-block;${hx?'':'outline:1px dashed #888'}"></i>${n}${p?' +'+p+' $':''}</button>`).join('')+`</div>`;
+  h+=`<div class="ch2">Choisis une coupe</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px">`;
+  for(const[k,n,p]of HSTY){const on=sel.st===k,url=coifThumb(k,shown);h+=`<button type="button" data-a="cfs:${k}" style="padding:4px;border-radius:12px;border:2px solid ${on?'#c84a8a':'rgba(127,127,127,.25)'};background:${on?'rgba(200,74,138,.12)':'transparent'};color:inherit;display:flex;flex-direction:column;align-items:center;gap:2px">${url?`<img src="${url}" alt="${n}" style="width:100%;aspect-ratio:1;border-radius:9px;display:block">`:'<div style="aspect-ratio:1;width:100%">✂️</div>'}<span style="font-size:.7rem;line-height:1.15;text-align:center">${n}</span><span class="cmut" style="font-size:.66rem">${k===cur.st?'actuelle · ':''}${p} $</span></button>`;}
+  h+=`</div>`;const pr=coifPrice(sel.st,sel.col);const same=sel.st===cur.st&&!sel.col;
+  h+=`<div class="cinfo" style="position:sticky;bottom:0"><b>${HSTYK[sel.st][1]}${sel.col?' · '+HCOL.find(x=>x[0]===sel.col)[1]:''}</b> — ${pr} $ + pourboire<div class="cact"><button type="button" class="pri" data-a="cfr:1"${money<pr+5?' disabled':''}>${same?'✂️ Juste rafraîchir':'📅 Prendre rendez-vous'}</button></div>${money<pr+5?'<span class="cmut">Pas assez d\'argent</span>':''}</div>`;return h;}
+CAPPS.push(['coiffure','💈','Coiffure','linear-gradient(135deg,#e86aa0,#7a2a5a)']);
+{const _cr9=cellRender;cellRender=function(){if(CELL.app!=='coiffure')return _cr9();const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent='Coiffure';const keep=B.scrollTop;let h='';try{h=coifHTML();}catch(e){console.error(e);h='<div class="cmut">Erreur d\'affichage</div>';}B.innerHTML=h;B.scrollTop=keep;};}
+$('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-a]');if(!t)return;const a=t.dataset.a,i=a.indexOf(':');if(i<0)return;const k=a.slice(0,i),v=a.slice(i+1);const c=CF();
+  if(k==='cfs'){COIF.sel=COIF.sel||{st:'classique',col:''};COIF.sel.st=v;}else if(k==='cfc'){COIF.sel=COIF.sel||{st:coifCur().st,col:''};COIF.sel.col=v;}
+  else if(k==='cfr'){const s=COIF.sel;c.pend={st:s.st,col:s.col};toast('📅 Rendez-vous pris chez Ginette : '+HSTYK[s.st][1],true);}else if(k==='cfx'){c.pend=null;}else return;try{cellRender();}catch(e2){}});
+/* rendez-vous et visites */
+function coifReady(){const c=CF();if(flags.coif)return null;const o=coifOpen()===true;if(!o)return null;if(c.pend){if(money<coifPrice(c.pend.st,c.pend.col)+5)return null;return c.pend;}
+  if(dayN()-(c.d??dayN())>=30&&Math.random()<.15&&money>80)return{st:coifCur().st,col:'',auto:1};return null;}
+{const _pc7=planMarcel;planMarcel=()=>{try{if(v121Free()){const p=coifReady();if(p)return coifSteps(p.st,p.col,p.auto);}}catch(e){console.error(e);}return _pc7();};}
+{const _pm7=projMissions;projMissions=function(){const L=_pm7();try{L.push({id:'coif_go',e:'💈',n:'Aller chez la coiffeuse',ok:()=>{const o=coifOpen();if(o!==true)return o;const p=CF().pend||{st:coifCur().st,col:''};if(money<coifPrice(p.st,p.col)+5)return'Pas assez d\'argent';return Mc.job?'Marcel est au travail':true;},go:()=>{const p=CF().pend||{st:coifCur().st,col:''};return coifSteps(p.st,p.col);}});}catch(e){}return L;};}
+{const _ft7=frTick;frTick=function(){_ft7();if(!COIF.ld){COIF.ld=1;try{coifApply();}catch(e){console.error(e);}}};}
+{const _fa=faceAnim;faceAnim=function(ch,dt){const r=ch.m;if(r&&r.hairG&&r.hat){const on=r.hat.visible;if(on!==!!r._hatOn){r._hatOn=on;hairHat(r,on);}}return _fa(ch,dt);};}
+{const _ue=updateEnv;updateEnv=function(dt){const r=_ue.apply(this,arguments);if(VIS_AREA==='town')for(const p of COIFPOLE)p.material.map.offset.y-=dt*.25;return r;};}
 
 {const _pc=planMarcel;planMarcel=()=>{Mc.apron=null;if(flags.morning){const h=hourOf();if(h>=11||h<4)flags.morning=false;else if(Mc.area==='home'&&!Mc.job&&!LIFE.tokyo&&!flags.trip&&!Mc.inCar&&!Mc.carry){flags.morning=false;return morning();}}if(Mc.carry==='cooler'&&!Mc.job&&!LIFE.tokyo&&!flags.trip&&!Mc.inCar)return[...at('home.fridge','fridge',3,{label:'Rapporte sa glacière et range ses poissons au frigo',say:pick(['Du poisson frais pour la semaine!','Ça, c\'est mon souper!'])}),F(()=>Mc.carry=null)];return _pc();};}
 {const _pm2=projMissions;projMissions=function(){const L=_pm2();L.push({id:'gq_go',e:'🥚',n:'Aller acheter des gashapons',ok:()=>{const h=hourOf();if(h<9||h>=20)return'Les commerces sont ouverts de 9 h à 20 h';if(money<10)return'Pas assez d\'argent';if(!Object.keys(GQSPOTS).length)return'Aucune machine';return true;},
