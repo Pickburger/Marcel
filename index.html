@@ -1057,7 +1057,7 @@ var COIFPOLE=[];{const co=shop('coiff',-17,-84,'W',{w:10,d:9,h:4.4,mat:M('#fffff
  const tx=ctex(128,(g,s)=>{g.fillStyle='#f6f4ee';g.fillRect(0,0,s,s);const cs=['#d8302f','#f6f4ee','#2a5ad8','#f6f4ee'];for(let i=-4;i<8;i++){g.fillStyle=cs[((i%4)+4)%4];g.beginPath();g.moveTo(i*s/4,s);g.lineTo(i*s/4+s/4,s);g.lineTo(i*s/4+s/4+s/2,0);g.lineTo(i*s/4+s/2,0);g.closePath();g.fill();}});tx.repeat.set(1,1.4);
  const pg=grp(co.g,-1.75,0,co.d/2+.28);bx(pg,M('#d8dce0',{m:.7,r:.3}),.12,.06,.12,0,2.62,0);cy(pg,M('#d8dce0',{m:.7,r:.3}),.1,.1,.08,0,1.5,0,14);cy(pg,M('#d8dce0',{m:.7,r:.3}),.1,.1,.08,0,2.38,0,14);
  const pl=new THREE.Mesh(new THREE.CylinderGeometry(.085,.085,.8,16),new THREE.MeshStandardMaterial({map:tx,roughness:.3,emissive:C('#ffffff'),emissiveIntensity:.08,emissiveMap:tx}));pl.position.y=1.98;pl.userData.ns=1;pg.add(pl);COIFPOLE.push(pl);
- const gl=new THREE.Mesh(new THREE.CylinderGeometry(.095,.095,.8,16,1,true),M('#e8f4ff',{op:.25,r:.05}));gl.position.y=1.98;gl.userData.ns=1;pg.add(gl);cy(pg,M('#d8dce0',{m:.7,r:.3}),.03,.03,1.5,0,0,0,8);bx(TR,M('#3a3a40',{r:.9}),8.5,.03,4.6,-18.6,0,-73).receiveShadow=true;for(const z of[-75.3,-70.7])bx(TR,M('#e8e4d8',{r:.8}),3.2,.035,.1,-17.5,0,z);}
+ const gl=new THREE.Mesh(new THREE.CylinderGeometry(.095,.095,.8,16,1,true),M('#e8f4ff',{op:.25,r:.05}));gl.position.y=1.98;gl.userData.ns=1;pg.add(gl);cy(pg,M('#d8dce0',{m:.7,r:.3}),.03,.03,1.5,0,0,0,8);}
 
  {const pw=new THREE.Mesh(new THREE.CircleGeometry(.5,16),M('#3a8a5a'));pw.position.set(94.4,3.5,95.05);TR.add(pw);}}
 
@@ -3531,7 +3531,7 @@ const PARKS={home:{att:[-59.1,-30],park:[-59.1,-42.8],yaw:PI,out:[[-59.1,-42.8],
 PARKS.deppark={att:[30,160.5],park:[43,160.5],yaw:PI/2,out:[[43,160.5],[35.6,160.5,'r']],inn:[[35.6,160.5]],door:[43,162.2],walk:[[37.6,188.5],[38.9,187.4],[38.9,162.2],[43,162.2]],node:[35.5,188.5]};
 PARKS.dpump={att:[30,190],park:[91,190],yaw:PI/2,out:[[91,190],[35.6,190,'r']],inn:[[35.6,190]],door:[91,192.6],walk:[[37.6,188.5],[37.6,193],[91,193],[91,192.6]],node:[35.5,188.5]};
 PARKS.depot={att:[30,190],park:[50,190],yaw:PI/2,out:[[50,190],[35.6,190,'r']],inn:[[35.6,190]],door:[47,188.5],walk:[[37.6,188.5],[47,188.5]],node:[35.5,188.5]};
-PARKS.coiff={att:[-30,-73],park:[-18,-73],yaw:PI/2,out:[[-18,-73],[-24.4,-73,'r']],inn:[[-24.4,-73]],door:[-18,-74.5],walk:[[-22.4,-74.5],[-18,-74.5]],node:[-24.5,-74.5]};
+PARKS.coiff=PARKS.poste;/* le côté est de la rue est la voie de l'autobus 12 : on se stationne au bureau de poste, en face */
 for(const H of HOUSES){PARKS['d_'+H.k]=H.park;}
 {const RL=RD.flatMap(v=>[{h:true,v},{h:false,v}]);const at2=Object.values(PARKS).map(p=>p.att);
  for(const ln of RL){const pts=[-148,148,...RD];for(const[a,b]of at2){if(ln.h&&Math.abs(b-ln.v)<.01)pts.push(a);if(!ln.h&&Math.abs(a-ln.v)<.01)pts.push(b);}
@@ -8264,7 +8264,7 @@ function coifReady(){const c=CF();if(flags.coif)return null;const o=coifOpen()==
   if(dayN()-(c.d??dayN())>=30&&Math.random()<.15&&money>80)return{st:coifCur().st,col:'',auto:1};return null;}
 {const _pc7=planMarcel;planMarcel=()=>{try{if(v121Free()){const p=coifReady();if(p)return coifSteps(p.st,p.col,p.auto);}}catch(e){console.error(e);}return _pc7();};}
 {const _pm7=projMissions;projMissions=function(){const L=_pm7();try{L.push({id:'coif_go',e:'💈',n:'Aller chez la coiffeuse',ok:()=>{const o=coifOpen();if(o!==true)return o;const p=CF().pend||{st:coifCur().st,col:''};if(money<coifPrice(p.st,p.col)+5)return'Pas assez d\'argent';return Mc.job?'Marcel est au travail':true;},go:()=>{const p=CF().pend||{st:coifCur().st,col:''};return coifSteps(p.st,p.col);}});}catch(e){}return L;};}
-{const _ft7=frTick;frTick=function(){_ft7();if(!COIF.ld){COIF.ld=1;try{coifApply();}catch(e){console.error(e);}}};}
+{const _ft7=frTick;frTick=function(){_ft7();try{const st=Mc.q&&Mc.q[0];if(st&&st.t==='cardrive'&&st.pts&&st.pts.length&&MCAR.bt>60&&PARKS[st.to]&&PARKS[st.to].park){const Pk=PARKS[st.to];MCAR.x=Pk.park[0];MCAR.z=Pk.park[1];st.pts=[];MCAR.bt=0;toast('🚗 Marcel s\'est sorti du bouchon par un autre chemin',true);}}catch(e){}if(!COIF.ld){COIF.ld=1;try{coifApply();}catch(e){console.error(e);}}};}
 {const _fa=faceAnim;faceAnim=function(ch,dt){const r=ch.m;if(r&&r.hairG&&r.hat){const on=r.hat.visible;if(on!==!!r._hatOn){r._hatOn=on;hairHat(r,on);}}return _fa(ch,dt);};}
 {const _ue=updateEnv;updateEnv=function(dt){const r=_ue.apply(this,arguments);if(VIS_AREA==='town')for(const p of COIFPOLE)p.material.map.offset.y-=dt*.25;return r;};}
 
