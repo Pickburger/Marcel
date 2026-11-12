@@ -606,7 +606,7 @@ function bake(root,parent){
   for(const {m,cs,list,n} of groups.values()){let parts=[list];
     if(isTown&&n>9000){const by=new Map();for(const g of list){if(!g.boundingBox)g.computeBoundingBox();const b=g.boundingBox;const big=(b.max.x-b.min.x)>CELL_*1.5||(b.max.z-b.min.z)>CELL_*1.5;const k=big?'big':Math.floor((b.min.x+b.max.x)/2/CELL_)+','+Math.floor((b.min.z+b.max.z)/2/CELL_);if(!by.has(k))by.set(k,[]);by.get(k).push(g);}
       parts=[];let small=[];for(const l of by.values()){let c=0;for(const g of l)c+=g.attributes.position.count;if(c<1500)small.push(...l);else parts.push(l);}if(small.length)parts.push(small);}
-    for(const l of parts){const geo=THREE.BufferGeometryUtils.mergeBufferGeometries(l,false);geoSlim(geo,m);geo.userData.bk=1;if(isTown&&GEOFREE){geo.computeBoundingSphere();geo.computeBoundingBox();for(const k in geo.attributes)geo.attributes[k].onUpload(GEOFREE);}const mesh=new THREE.Mesh(geo,m);mesh.castShadow=cs&&!m.transparent;mesh.receiveShadow=true;parent.add(mesh);}}
+    for(const l of parts){const geo=THREE.BufferGeometryUtils.mergeBufferGeometries(l,false);geoSlim(geo,m);geo.userData.bk=1;const mesh=new THREE.Mesh(geo,m);mesh.castShadow=cs&&!m.transparent;mesh.receiveShadow=true;parent.add(mesh);}}
 }
 const ns=m=>{m.userData.ns=1;return m;};
 function GEOFREE(){this.array=null;}
@@ -3634,7 +3634,7 @@ function showChoice(q,opts,sub){CHOICE={opts,done:false,pick:null,t0:tReal,dur:2
   const B=$('choixB');B.innerHTML='';opts.forEach(o=>{const b=document.createElement('button');b.type='button';if(o.none)b.className='non';b.innerHTML='<span>'+o.t+'</span>'+(o.sub?'<small>'+o.sub+'</small>':'');b.onclick=()=>{if(!CHOICE||CHOICE.done)return;CHOICE.pick=o;CHOICE.done=true;SFX.tap&&SFX.tap();};B.appendChild(b);});
   $('choix').classList.toggle('on',true);}
 function updateChoice(){if(!CHOICE)return;const el=tReal-CHOICE.t0;$('choixT').style.width=Math.max(0,100-el/CHOICE.dur*100)+'%';if(!CHOICE.done&&el>CHOICE.dur)CHOICE.done=true;}
-function choiceSteps(q,opts,o={}){return[F(()=>showChoice(q,opts,o.sub)),W(()=>!CHOICE||CHOICE.done,{a:o.a||'scratch',label:o.label||'Se demande quoi faire…',max:240,warp:.15,phone:o.phone,pose:o.pose,seatH:o.seatH,yaw:o.yaw}),
+function choiceSteps(q,opts,o={}){return[F(()=>{if(typeof TODO==='function'&&TODO().length){CHOICE={opts,done:true,pick:null,t0:tReal,dur:0,auto:1};return;}showChoice(q,opts,o.sub);}),W(()=>!CHOICE||CHOICE.done,{a:o.a||'scratch',label:o.label||'Se demande quoi faire…',max:240,warp:.15,phone:o.phone,pose:o.pose,seatH:o.seatH,yaw:o.yaw}),
   F(()=>{const c=CHOICE;CHOICE=null;$('choix').classList.toggle('on',false);if(!c)return;let p=c.pick;if(!p){const L2=c.opts.filter(x=>!x.none);p=(o.autoNone&&Math.random()<(o.noneP??.5))?c.opts.find(x=>x.none):pick(L2);}if(!p||p.none){if(p)say(Mc,pick(['Non, pas aujourd\'hui.','Je reste tranquille.']));return;}
     if(c.pick)say(Mc,pick(['Bonne idée!','OK, c\'est parti!','Pourquoi pas!']),2);const st=p.fn();if(st&&st.length)Mc.q.unshift(...st);})];}
 const CHN={quai:'🌊 Se promener au bord de l\'eau',rprinc:'🛍️ Flâner sur la rue Principale',bingo:'🎱 Jouer au bingo de la paroisse',puces:'🏷️ Marché aux puces de la paroisse',benev:'📚 Aide aux devoirs à l\'école',trains:'🚆 Regarder passer les trains',pompiers:'🚒 Portes ouvertes à la caserne',ski:'⛷️ Aller skier au Mont Sainte-Neige',cabane:'🍁 Aller à la cabane à sucre',parcnat:'🏕️ Visiter le parc national',patin:'⛸️ Aller patiner au parc',bonhomme:'☃️ Faire un bonhomme de neige',choco:'☕ Boire un chocolat chaud',quilles:'🎳 Jouer aux quilles',micro:'🍺 Aller à la microbrasserie',animal:'🐾 Aller à l\'animalerie',garage:'🔧 Passer au garage',mall:'🛍️ Aller aux Galeries (centre commercial)',electroO:'🕹️ Aller chez Électro-Jeux',arcadeO:'👾 Aller à l\'Arcade Pixel',hockey:'🏒 Regarder le hockey',baseball:'⚾ Regarder le baseball',film:'🎬 Regarder un film',tvshow:'📺 Regarder la télé',pcgame:'🎮 Jouer à l\'ordi',ecoute:'🎧 Écouter de la musique',read:'📖 Lire un roman',guitar:'🎸 Jouer de la guitare',callmom:'📞 Appeler Maman',calljulie:'📞 Appeler Julie',
@@ -3642,7 +3642,7 @@ const CHN={quai:'🌊 Se promener au bord de l\'eau',rprinc:'🛍️ Flâner sur
   walk:'🚶 Aller marcher',cafe:'☕ Aller au café',ducks:'🦆 Nourrir les canards',lib:'📚 Aller à la bibliothèque',peche:'🎣 Aller pêcher',gym:'💪 Aller au gym',jog:'🏃 Jogging autour de l\'étang',muscmaison:'🏋️ S\'entraîner à la maison',velo:'🚲 Faire du vélo',dep:'🏪 Aller au dépanneur',
   casse:'🍟 Manger chez Ti-Guy',boul:'🥖 Aller à la boulangerie',arcade:'🕹️ Jouer à l\'arcade du salon',vinyle:'🎶 Écouter un vinyle',massage:'💺 Fauteuil massant',console:'🎮 Jouer à la console',vr:'🥽 Réalité virtuelle',bench:'🌳 S\'asseoir au parc',photo:'📷 Prendre des photos',
   resto:'🍕 Commander du resto',spa:'♨️ Se détendre dans le spa',tread:'🏃 Courir sur le tapis roulant',cuir:'🛋️ Relaxer dans son sofa en cuir',pcweb:'🖥️ Naviguer sur Internet',quiz:'❓ Regarder un jeu-questionnaire',telescope:'🔭 Observer les étoiles',kayak:'🛶 Faire du kayak'};
-function actChoice(){const h=hourOf(),canOut=h>=8&&h<20.7;const pool=A.filter(a=>CHN[a.id]&&(!a.out||canOut)&&(powerOn()||!POW.has(a.id))).map(a=>({a,w:a.w(h)*(HIST.slice(-4).includes(a.id)?.05:1)})).filter(o=>o.w>0);
+function actChoice(){if(typeof TODO==='function'&&TODO().length)return null;const h=hourOf(),canOut=h>=8&&h<20.7;const pool=A.filter(a=>CHN[a.id]&&(!a.out||canOut)&&(powerOn()||!POW.has(a.id))).map(a=>({a,w:a.w(h)*(HIST.slice(-4).includes(a.id)?.05:1)})).filter(o=>o.w>0);
   const ext=[];if(h>=13&&h<21&&money>40)ext.push({t:'🍿 Aller au cinéma',fn:()=>cinemaOuting()});if(h>=9&&h<16.5&&weather!=='pluie'&&money>80)ext.push({t:'⛳ Aller au golf',fn:()=>golfOuting()});
   const picks=[];for(let k=0;k<3&&pool.length;k++){let tot=pool.reduce((s2,o)=>s2+o.w,0),r=Math.random()*tot,i=0;for(;i<pool.length-1;i++){r-=pool[i].w;if(r<=0)break;}const o=pool.splice(i,1)[0];picks.push({t:CHN[o.a.id],fn:()=>{HIST.push(o.a.id);if(HIST.length>20)HIST.shift();return o.a.f();}});}
   if(ext.length&&Math.random()<.5)picks[picks.length-1]=pick(ext);if(picks.length<2)return null;
@@ -5513,7 +5513,7 @@ function fxInit(w,h){try{const gl2=R.capabilities.isWebGL2;const o={minFilter:TH
     return true;}catch(e){console.warn('fx',e);FXS.fail=true;return false;}}
 const _fxV=new THREE.Vector2();
 function fxFree(){if(FXS.rt){FXS.rt.dispose();FXS.a.dispose();FXS.b.dispose();FXS.rt=null;FXS.w=0;FXS.h=0;}}
-try{R.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();FXS.lost=true;},false);R.domElement.addEventListener('webglcontextrestored',()=>{try{saveGame();}catch(e){}try{location.reload();}catch(e){}return;FXS.lost=false;FXS.rt=null;FXS.w=0;FXS.h=0;FXS.ek='';FXS.pm=null;try{R.shadowMap.needsUpdate=true;}catch(e){}},false);}catch(e){}
+try{R.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();FXS.lost=true;try{CRASH.lost=(CRASH.lost||0)+1;crashMark();}catch(x){}},false);R.domElement.addEventListener('webglcontextrestored',()=>{try{CRASH.rest=(CRASH.rest||0)+1;crashMark();}catch(x){}FXS.lost=false;FXS.rt=null;FXS.w=0;FXS.h=0;FXS.ek='';FXS.pm=null;try{R.shadowMap.needsUpdate=true;}catch(e){}},false);}catch(e){}
 function fxRender(){if(FXS.lost)return;if(!FXS.on||FXS.fail){R.setRenderTarget(null);R.render(scene,cam);return;}
   R.getDrawingBufferSize(_fxV);const w=_fxV.x,h=_fxV.y;if(w<2||h<2)return;if(w!==FXS.w||h!==FXS.h||!FXS.rt){if(!fxInit(w,h)){R.render(scene,cam);return;}}
   try{const q=FXS.quad,au=R.shadowMap.autoUpdate;R.setRenderTarget(FXS.rt);R.render(scene,cam);const nu=R.shadowMap.needsUpdate;
@@ -6837,11 +6837,16 @@ function mapDests(){const L=[];const H=()=>hourOf();
 function mapJobs(){const h=hourOf();return[...JOBS,...JOBS2].filter(J=>!J.hid).map(J=>{const need=J.need&&skLv(J.need[0])<J.need[1]?'Niveau '+J.need[1]+' requis en '+(SKILLS.find(S=>S.k===J.need[0])||{n:J.need[0]}).n:null;
     const ok=()=>{const hh=hourOf();if(need)return need;if(J.cond&&!J.cond(hh))return'Pas d\'embauche en ce moment';if(hh<6||hh>17.5)return'Trop tard pour un quart';return true;};
     return{id:'job_'+J.id,e:J.t.split(' ')[0],n:J.t.slice(J.t.indexOf(' ')+1),J,ok,go:()=>{flags.jobOff=true;LIFE.jobAskD=dayN();const hh=hourOf();return jobShift(J,Math.max(2,Math.min(4,Math.floor(20-hh))));}};});}
+const TDEF={loto:2,cv:4.5,metro:1.5,cine:3,golf:4.5,casino:3.5};
+function todoEst(id){const m=LIFE.tdur&&LIFE.tdur[id];if(m)return m;if(/^job_/.test(id))return 5;return TDEF[id]||2.5;}
+function todoLoad(){return TODO().reduce((a,t)=>a+todoEst(t.id),0)+(Mc.q&&Mc.q.length?.5:0);}
+function dayLeft(){const h=hourOf();if(h>=22.5||h<5)return 16.5;return Math.max(0,22.5-Math.max(h,6));}
+function todoFull(id){return todoLoad()+todoEst(id)>dayLeft();}
 const mapOk=d=>{try{return typeof d.ok==='function'?d.ok():true;}catch(e){return'Indisponible';}};
-{const _p=planMarcel;planMarcel=()=>{const L=TODO();if(L.length){const h=hourOf();
+{const _p=planMarcel;planMarcel=()=>{const L=TODO();if(LIFE.tcur){const d=(gm-LIFE.tcur.g)/60;if(d>.2&&d<14){LIFE.tdur=LIFE.tdur||{};const o=LIFE.tdur[LIFE.tcur.id];LIFE.tdur[LIFE.tcur.id]=Math.round((o?o*.5+d*.5:d)*10)/10;}LIFE.tcur=null;}if(L.length){const h=hourOf();
    if(!LIFE.tokyo&&!Mc.inCar&&!Mc.job&&!Mc.carry&&!flags.morning&&Mc.area!=='route'&&h>=5&&h<22.6){
     for(let i=0;i<L.length;i++){const d=todoFind(L[i].id);if(!d){L.splice(i,1);i--;continue;}
-     if(mapOk(d)===true){L.splice(i,1);try{const st=d.go();if(st&&st.length){say(Mc,pick(['Bonne idée, j\'y vais!','OK, direction : '+d.n.toLowerCase()+'!','Allons-y!']),2.8);return st;}}catch(e){console.error(e);}i--;}}}}
+     if(mapOk(d)===true){L.splice(i,1);try{const st=d.go();if(st&&st.length){LIFE.tcur={id:d.id,g:gm};say(Mc,pick(['Bonne idée, j\'y vais!','OK, direction : '+d.n.toLowerCase()+'!','Allons-y!']),2.8);return st;}}catch(e){console.error(e);}i--;}}}}
   return _p();};}
 function cellOpen(){if(MG.on||CELL.on)return;CELL.on=true;PAUSE.phone=true;CELL.app=null;$('cell').hidden=false;$('cellB').classList.add('on');cellRender();pauseUI();try{SFX.tap&&SFX.tap();}catch(e){}}
 function cellClose(){if(!CELL.on)return;CELL.edit=false;if(CELL.skSet){skOpen=null;CELL.skSet=false;}CELL.on=false;PAUSE.phone=false;$('cell').hidden=true;$('cellB').classList.remove('on');pauseUI();}
@@ -6861,7 +6866,7 @@ function cellRender(){const scr=document.querySelector('.cscr'),B=$('cBody');$('
     h=`<div class="cchips" role="tablist"><button type="button" data-a="tab:lieux" class="${CELL.tab==='lieux'?'on':''}">📍 Lieux</button><button type="button" data-a="tab:travail" class="${CELL.tab==='travail'?'on':''}">💼 Travail</button></div>`;
     if(CELL.tab==='lieux')h+=`<div class="cchips">`+MAPCATS.map(([k,n])=>`<button type="button" data-a="cat:${k}" class="${CELL.cat===k?'on':''}">${n}</button>`).join('')+`</div>`;
     h+=`<div class="cmap">${cellMapSVG(list)}</div>`;
-    {const L=TODO();h+=L.length?`<div class="cban" style="display:block"><b>📋 À faire (${L.length})</b><span class="cmut"> · dans l'ordre, rien n'est oublié</span>`+L.map((t,i)=>{const d=todoFind(t.id);const r=d?mapOk(d):'Indisponible';return`<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:3px 0"><span>${i+1}. ${d?(d.e||'')+' '+d.n:t.id}${r===true?'':'<small class="cmut"> · attend : '+r+'</small>'}</span><button type="button" data-a="rm:${t.id}">✕</button></div>`;}).join('')+`</div>`:`<div class="cmut" style="margin:4px 0 8px">Touche des lieux pour les ajouter à la liste de Marcel. Il les fait un à un, dès qu'il a fini son activité en cours (<b>${(($('now').textContent)||'').slice(0,60)}</b>).</div>`;}
+    {const L=TODO();h+=L.length?`<div class="cban" style="display:block"><b>📋 À faire (${L.length})</b><span class="cmut"> · dans l'ordre · ≈ ${Math.round(todoLoad()*2)/2} h sur ${Math.round(dayLeft()*2)/2} h libres${todoLoad()>=dayLeft()-.01?' · <b style="color:#f0a050">journée pleine</b>':''}</span>`+L.map((t,i)=>{const d=todoFind(t.id);const r=d?mapOk(d):'Indisponible';return`<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:3px 0"><span>${i+1}. ${d?(d.e||'')+' '+d.n:t.id}${r===true?'':'<small class="cmut"> · attend : '+r+'</small>'}</span><button type="button" data-a="rm:${t.id}">✕</button></div>`;}).join('')+`</div>`:`<div class="cmut" style="margin:4px 0 8px">Touche des lieux pour les ajouter à la liste de Marcel. Il les fait un à un, dès qu'il a fini son activité en cours (<b>${(($('now').textContent)||'').slice(0,60)}</b>).</div>`;}
     h+=list.map(d=>{const ok=mapOk(d);const sel=todoHas(d.id);const sub=d.J?cNum(Math.round(d.J.r*(1+.02*jobInfo(d.J.id).l)))+' $/h · niveau '+jobInfo(d.J.id).l:'';return`<button type="button" class="crow${sel?' sel':''}${ok===true?'':' no'}" data-a="dest:${d.id}"><span>${d.e} ${d.n}${ok===true?(sub?'<small>'+sub+' · quart de 2 à 4 h</small>':''):'<small>'+ok+'</small>'}</span><em>${sel?'✓ Dans la liste':ok===true?'Ajouter ›':''}</em></button>`;}).join('')||'<div class="cmut">Aucun lieu dans cette catégorie.</div>';}
   else if(app==='banque'){const tot=fixTotal();h=`<div class="cmut" style="text-align:center">Solde du compte chèques</div><div class="cgros" style="color:${money<0?'#c0392b':'#1f8a4c'}">${cNum(money)} $</div>
     <div class="ch2">🧾 Dépenses fixes</div><div class="cmut" style="margin-bottom:6px">Prélevées aux 7 jours. Prochain prélèvement : <b>${nextBillTxt()}</b>.</div><div class="cinfo">`+FIXED.filter(x=>Math.round(x.v())>0).map(x=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:2px 0"><span>${x.e} ${x.n}</span><b>−${Math.round(x.v())} $</b></div>`).join('')+`<div style="display:flex;justify-content:space-between;border-top:1px solid #e3dfd2;margin-top:4px;padding-top:5px"><b>Total par semaine</b><b style="color:#c0392b">−${tot} $</b></div></div>`;
@@ -6943,7 +6948,7 @@ $('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.close
   else if(k==='rm'){LIFE.todo=TODO().filter(t=>t.id!==v);toast('Tâche retirée',false);cellRender();}
   else if(k==='gocarte'){CELL.app='carte';CELL.tab='travail';cellRender();}
   else if(k==='jobsall'){CELL.app='jobs';cellRender();}
-  else if(k==='dest'){const d=todoFind(v);if(!d)return;const r=mapOk(d);if(todoHas(v)){LIFE.todo=TODO().filter(t=>t.id!==v);toast('Tâche retirée : '+d.n,false);cellRender();return;}if(r!==true)toast('📍 '+d.n+' ajouté (attend : '+r+')',false);else toast('📍 Ajouté à la liste : '+d.n,true);TODO().push({id:v,t:dayN()});try{SFX.ping();}catch(er){}cellRender();}});
+  else if(k==='dest'){const d=todoFind(v);if(!d)return;const r=mapOk(d);if(todoHas(v)){LIFE.todo=TODO().filter(t=>t.id!==v);toast('Tâche retirée : '+d.n,false);cellRender();return;}if(todoFull(v)){toast('📅 Journée pleine : les tâches en attente remplissent déjà la journée de Marcel',false);try{SFX.tap&&SFX.tap();}catch(er){}return;}if(r!==true)toast('📍 '+d.n+' ajouté (attend : '+r+')',false);else toast('📍 Ajouté à la liste : '+d.n,true);TODO().push({id:v,t:dayN()});try{SFX.ping();}catch(er){}cellRender();}});
 if(document.addEventListener)document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CELL.on&&!(e.target&&/INPUT|TEXTAREA/.test(e.target.tagName)))cellClose();});
 {const _u=ui;ui=()=>{_u();try{const due=LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1&&LIFE.fixSeen!==LIFE.fixNext;$('cellB').classList.toggle('alert',(due||frUnread()>0)&&!CELL.on);}catch(e){}};}
 
@@ -8862,7 +8867,15 @@ try{compactAll();}catch(e){console.error(e);}
 const UMWS={on:false};{const _u=THREE.Object3D.prototype.updateMatrixWorld;THREE.Object3D.prototype.updateMatrixWorld=function(force){if(UMWS.on&&!this.visible&&!this.isCamera&&!this.isLight&&this.parent){this._umwS=true;return;}if(this._umwS){this._umwS=false;force=true;}return _u.call(this,force);};
  const _bk=bake;bake=function(a,b){const o=UMWS.on;UMWS.on=false;try{return _bk(a,b);}finally{UMWS.on=o;}};}
 UMWS.on=true;
-resize();const LOADED=loadGame();chooseShot();shot={type:'piece',t:0,dur:9,seed:.6,cut:true,ctx:shotCtx()};if(LOADED)setTimeout(()=>toast('Partie reprise : '+fmtDay(),true),600);else setTimeout(()=>toast('Nouvelle partie : lundi 1er juin',true),600);
+/* v139 : journal de plantage (diagnostic iPhone) */
+var CRASH={};const CKEY='marcel_crash';
+function crashMark(clean){try{const m=performance.memory;const o={v:139,t:Date.now(),gm:fmt(gm),day:fmtDay(),now:($('now')||{}).textContent||'',area:Mc.area,mg:MG.on&&MG.G?MG.G.id:'',lost:CRASH.lost||0,rest:CRASH.rest||0,clean:!!clean,perf:PERF.lvl,heap:m?Math.round(m.usedJSHeapSize/1e6):0};localStorage.setItem(CKEY,JSON.stringify(o));}catch(e){}}
+function crashCheck(){let o=null;try{o=JSON.parse(localStorage.getItem(CKEY)||'null');}catch(e){}if(!o||o.clean)return;const dt=Math.round((Date.now()-o.t)/1000);
+  const kind=o.lost?'perte du contexte graphique ('+o.lost+'×)':'fermeture de la page par le téléphone';
+  const msg='⚠️ Dernière session interrompue vers '+o.gm+' — '+(o.now||'?').replace(/^Marcel /,'')+(o.mg?' [mini-jeu '+o.mg+']':'')+' · '+kind;
+  setTimeout(()=>{try{toast(msg,true);clearTimeout(toast.h);toast.h=setTimeout(()=>$('toast').className='',10000);}catch(e){}},2600);try{LIFE.crashLog=(LIFE.crashLog||[]).slice(-9);LIFE.crashLog.push(o);}catch(e){}console.warn('CRASH',o,dt);}
+setInterval(()=>crashMark(false),2000);addEventListener('pagehide',()=>crashMark(true));document.addEventListener('visibilitychange',()=>crashMark(document.hidden));
+resize();const LOADED=loadGame();crashCheck();chooseShot();shot={type:'piece',t:0,dur:9,seed:.6,cut:true,ctx:shotCtx()};if(LOADED)setTimeout(()=>toast('Partie reprise : '+fmtDay(),true),600);else setTimeout(()=>toast('Nouvelle partie : lundi 1er juin',true),600);
 enhanceWorld();$('chargement').hidden=true;requestAnimationFrame(tick);initCloud();
 })();
 </script>
