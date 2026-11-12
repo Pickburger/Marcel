@@ -263,7 +263,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
    super(small,...a);if(ref){const self=this;Object.defineProperty(this,'needsUpdate',{configurable:true,set(v){if(v===true){const src=ref.deref();if(src&&self.image===small){try{shrink(src,small);}catch(e){}}self.version++;}}});}}}
  THREE.CanvasTexture=CT;})();</script>
 <script>
-var GAME_VER=144;
+var GAME_VER=145;
 (()=>{
 const $=id=>document.getElementById(id);
 const sceneEl=$('scene');
@@ -6914,6 +6914,7 @@ const mapOk=d=>{try{return typeof d.ok==='function'?d.ok():true;}catch(e){return
    if(!LIFE.tokyo&&!Mc.inCar&&!Mc.job&&!Mc.carry&&!flags.morning&&Mc.area!=='route'&&h>=5&&h<22.6){
     for(let i=0;i<L.length;i++){const d=todoFind(L[i].id);if(!d){L.splice(i,1);i--;continue;}
      if(mapOk(d)===true){L.splice(i,1);try{const st=d.go();if(st&&st.length){LIFE.tcur={id:d.id,g:gm};say(Mc,pick(['Bonne idée, j\'y vais!','OK, direction : '+d.n.toLowerCase()+'!','Allons-y!']),2.8);return st;}}catch(e){console.error(e);}i--;}}}}
+  if(L.length){const K=['jobOff','searched','gig','traiteur'],sv={};for(const k of K){sv[k]=flags[k];flags[k]=true;}let r;try{r=_p();}finally{for(const k of K)flags[k]=sv[k];}return r;}
   return _p();};}
 function cellOpen(){if(MG.on||CELL.on)return;CELL.on=true;PAUSE.phone=true;CELL.app=null;$('cell').hidden=false;$('cellB').classList.add('on');cellRender();pauseUI();try{SFX.tap&&SFX.tap();}catch(e){}}
 function cellClose(){if(!CELL.on)return;CELL.edit=false;if(CELL.skSet){skOpen=null;CELL.skSet=false;}CELL.on=false;PAUSE.phone=false;$('cell').hidden=true;$('cellB').classList.remove('on');pauseUI();}
