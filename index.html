@@ -263,7 +263,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
    super(small,...a);if(ref){const self=this;Object.defineProperty(this,'needsUpdate',{configurable:true,set(v){if(v===true){const src=ref.deref();if(src&&self.image===small){try{shrink(src,small);}catch(e){}}self.version++;}}});}}}
  THREE.CanvasTexture=CT;})();</script>
 <script>
-var GAME_VER=146;
+var GAME_VER=147;
 (()=>{
 const $=id=>document.getElementById(id);
 const sceneEl=$('scene');
@@ -275,7 +275,7 @@ const PI=Math.PI;
 
 /* ================= Rendu ================= */
 const R=new THREE.WebGLRenderer({canvas:$('cv'),antialias:true,powerPreference:'high-performance'});
-R.setPixelRatio(Math.min(1.75,window.devicePixelRatio||1));
+R.setPixelRatio(Math.min(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)?1.5:1.75,window.devicePixelRatio||1));
 R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;R.shadowMap.autoUpdate=false;
 R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.05;
 const scene=new THREE.Scene();
@@ -286,7 +286,7 @@ window.addEventListener('resize',resize);
 
 const hemi=new THREE.HemisphereLight(0xbcd8f5,0x5a4a3a,.6);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xfff4e0,1.2);sun.castShadow=true;
-sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-30,right:30,top:30,bottom:-30,near:1,far:200});
+{const sm=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&/Mac/.test(navigator.platform))?1024:2048;sun.shadow.mapSize.set(sm,sm);}Object.assign(sun.shadow.camera,{left:-30,right:30,top:30,bottom:-30,near:1,far:200});
 sun.shadow.camera.updateProjectionMatrix();sun.shadow.bias=-.0004;sun.shadow.normalBias=.05;scene.add(sun);scene.add(sun.target);
 const roomLight=new THREE.PointLight(0xffd6a0,0,22,1.6);scene.add(roomLight);
 const LPOOL=[];for(let i=0;i<8;i++){const l=new THREE.PointLight(0xffc98a,0,22,1.8);scene.add(l);LPOOL.push(l);}
@@ -5797,7 +5797,7 @@ function fxInit(w,h){try{const gl2=R.capabilities.isWebGL2;const o={minFilter:TH
     return true;}catch(e){console.warn('fx',e);FXS.fail=true;return false;}}
 const _fxV=new THREE.Vector2();
 function fxFree(){if(FXS.rt){FXS.rt.dispose();FXS.a.dispose();FXS.b.dispose();FXS.rt=null;FXS.w=0;FXS.h=0;}}
-try{R.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();FXS.lost=true;try{CRASH.lost=(CRASH.lost||0)+1;crashMark();}catch(x){}},false);R.domElement.addEventListener('webglcontextrestored',()=>{try{CRASH.rest=(CRASH.rest||0)+1;crashMark();}catch(x){}FXS.lost=false;FXS.rt=null;FXS.w=0;FXS.h=0;FXS.ek='';FXS.pm=null;try{R.shadowMap.needsUpdate=true;}catch(e){}},false);}catch(e){}
+try{R.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();FXS.lost=true;try{CRASH.lost=(CRASH.lost||0)+1;crashMark();}catch(x){}try{toast('🖥️ Graphismes perdus par le téléphone — récupération…',false);}catch(x){}try{saveGame(true);}catch(x){}clearTimeout(FXS.lostT);FXS.lostT=setTimeout(()=>{if(!FXS.lost)return;let last=0;try{last=+sessionStorage.getItem('marcel_glr')||0;}catch(x){}if(Date.now()-last<25000){try{toast('🖥️ Graphismes perdus : ferme les autres onglets, puis recharge la page',false);}catch(x){}return;}try{sessionStorage.setItem('marcel_glr',String(Date.now()));}catch(x){}try{saveGame(true);}catch(x){}try{crashMark(true);}catch(x){}location.reload();},3500);},false);R.domElement.addEventListener('webglcontextrestored',()=>{try{CRASH.rest=(CRASH.rest||0)+1;crashMark();}catch(x){}clearTimeout(FXS.lostT);FXS.lost=false;FXS.rt=null;FXS.w=0;FXS.h=0;FXS.ek='';FXS.pm=null;try{toast('🖥️ Graphismes récupérés',true);}catch(x){}try{R.shadowMap.needsUpdate=true;}catch(e){}},false);}catch(e){}
 function fxRender(){if(FXS.lost)return;if(!FXS.on||FXS.fail){R.setRenderTarget(null);R.render(scene,cam);return;}
   R.getDrawingBufferSize(_fxV);const w=_fxV.x,h=_fxV.y;if(w<2||h<2)return;if(w!==FXS.w||h!==FXS.h||!FXS.rt){if(!fxInit(w,h)){R.render(scene,cam);return;}}
   try{const q=FXS.quad,au=R.shadowMap.autoUpdate;R.setRenderTarget(FXS.rt);R.render(scene,cam);const nu=R.shadowMap.needsUpdate;
@@ -5820,7 +5820,7 @@ let last=performance.now(),uiT=0,FRN=0;
 const PERF={acc:0,n:0,lvl:0,t:0,good:0};
 function perfAdapt(raw){PERF.acc+=raw;PERF.n++;PERF.t+=raw;if(PERF.t<2.5)return;const avg=PERF.acc/PERF.n;PERF.acc=0;PERF.n=0;PERF.t=0;
   if(avg>.024&&PERF.lvl<3){PERF.lvl++;PERF.good=0;perfApply();}else if(avg<.0145&&PERF.lvl>0){if(++PERF.good>=4){PERF.lvl--;PERF.good=0;perfApply();}}else PERF.good=0;}
-function perfApply(){const L=PERF.lvl,dpr=window.devicePixelRatio||1;FXS.on=L<=1;envSet(L<=0);R.setPixelRatio(Math.min([1.75,1.4,1.15,1][L],dpr));const ms=L>=2?1024:2048;if(sun.shadow.mapSize.x!==ms){sun.shadow.mapSize.set(ms,ms);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}R.shadowMap.type=L>=3?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;try{resize();}catch(e){}}
+function perfApply(){const L=PERF.lvl,dpr=window.devicePixelRatio||1;FXS.on=L<=1;envSet(L<=0);R.setPixelRatio(Math.min((FXS.mob?[1.5,1.3,1.15,1]:[1.75,1.4,1.15,1])[L],dpr));const ms=(L>=2||FXS.mob)?1024:2048;if(sun.shadow.mapSize.x!==ms){sun.shadow.mapSize.set(ms,ms);if(sun.shadow.map){sun.shadow.map.dispose();sun.shadow.map=null;}}R.shadowMap.type=L>=3?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;try{resize();}catch(e){}}
 function visibility(){const a=VIS_AREA=trans?(trans.kind==='in'?(trans.ph<1?'town':trans.I.key):(trans.ph<1?trans.I.key:'town')):Mc.area;
   town.visible=a==='town';for(const k in INT)INT[k].g.visible=k===a;
   for(const ch of ALL){if(ch.area==='none'){ch.m.root.visible=false;continue;}ch.m.root.visible=ch.area===a&&!(ch===Mc&&(Mc.inCar||Mc.inBus||Mc.hid));if(ch.dog)ch.dog.visible=a==='town';}}
