@@ -8658,8 +8658,13 @@ function gp3Build(S,key){if(GP3.key===key&&GP3.mach)return;if(GP3.mach){GP3.sc.r
   const shine=new THREE.Mesh(new THREE.PlaneGeometry(.22,H*.92),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.13,depthWrite:false}));shine.position.set(-.45,y0+H/2,.505);shine.rotation.z=.08;shine.renderOrder=6;g.add(shine);
   const shine2=shine.clone();shine2.scale.x=.35;shine2.position.x=-.25;g.add(shine2);
   B(body,1.66,.22,1.14,0,y0+H,0);const top=new THREE.Mesh(new THREE.PlaneGeometry(1.4,.18),signMat('GASHAPON · ガチャ','#ffffff','#e53935',1024,132,'900 96px system-ui,sans-serif'));top.material.emissiveIntensity=.4;top.position.set(0,y0+H+.11,.572);g.add(top);
+  // trou de distribution sous l'hélice
+  const HX=.28,HZ=.27,HR=.19;{const hole=new THREE.Mesh(new THREE.CircleGeometry(HR,32),new THREE.MeshBasicMaterial({color:0x050608,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));hole.rotation.x=-PI/2;hole.position.set(HX,y0+.01,HZ);hole.renderOrder=2;g.add(hole);
+    const tube=new THREE.Mesh(new THREE.CylinderGeometry(HR,HR,.3,28,1,true),new THREE.MeshStandardMaterial({color:C('#0c0d12'),roughness:.8,side:THREE.BackSide}));tube.position.set(HX,y0-.15,HZ);g.add(tube);
+    const rim=new THREE.Mesh(new THREE.TorusGeometry(HR+.012,.018,8,36),chrome);rim.rotation.x=PI/2;rim.position.set(HX,y0+.01,HZ);g.add(rim);
+    const fl=new THREE.Mesh(new THREE.PlaneGeometry(1.5,1.0),new THREE.MeshStandardMaterial({color:C('#d9dde2'),metalness:.5,roughness:.35}));fl.rotation.x=-PI/2;fl.position.set(0,y0+.002,0);g.add(fl);}
   // agitateur au fond
-  const stir=new THREE.Group();stir.position.set(0,y0+.05,0);g.add(stir);const blade=new THREE.Mesh(new THREE.BoxGeometry(1.1,.05,.12),chrome);stir.add(blade);const bl2=blade.clone();bl2.rotation.y=PI/2;bl2.scale.x=.75;stir.add(bl2);
+  const stir=new THREE.Group();stir.position.set(0,y0+.06,0);g.add(stir);const blade=new THREE.Mesh(new THREE.BoxGeometry(1.1,.05,.12),chrome);stir.add(blade);const bl2=blade.clone();bl2.rotation.y=PI/2;bl2.scale.x=.75;stir.add(bl2);
   // capsules
   const R=.165,hemT=new THREE.SphereGeometry(R,22,12,0,PI*2,0,PI/2),hemB=new THREE.SphereGeometry(R,22,12,0,PI*2,PI/2,PI/2),ring=new THREE.TorusGeometry(R*.99,.008,6,28);
   const clear=new THREE.MeshStandardMaterial({color:C('#f4f1ea'),roughness:.3,metalness:.02,side:THREE.DoubleSide}),rmat=new THREE.MeshStandardMaterial({color:C('#dddddd'),roughness:.4});
@@ -8667,39 +8672,43 @@ function gp3Build(S,key){if(GP3.key===key&&GP3.mach)return;if(GP3.mach){GP3.sc.r
   const balls=[];for(let i=0;i<20;i++){const cg=mkCap(GPCOL[i%GPCOL.length]);const p=new THREE.Vector3(rnd(-.55,.55),y0+.3+Math.floor(i/6)*.34+rnd(0,.1),rnd(-.3,.3));cg.position.copy(p);cg.quaternion.setFromEuler(new THREE.Euler(rnd(0,6),rnd(0,6),rnd(0,6)));g.add(cg);balls.push({g:cg,v:new THREE.Vector3(),on:true});}
   const out=mkCap(S[2]);out.visible=false;g.add(out);const fig=new THREE.Group();fig.visible=false;g.add(fig);
   const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex,color:0xffe9a8,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));glow.visible=false;g.add(glow);
-  Object.assign(GP3,{ck,stir,balls,out,fig,glow,R,y0,H,flap,mkCap,bounds:{x:.75-.03-R,z:.5-.03-R,y0:y0+R,y1:y0+H-R}});}
-function gp3Kick(w){const bd=GP3.bounds,R=GP3.R;const s=clamp(w,-8,8);for(const b of GP3.balls){if(!b.on)continue;const p=b.g.position;const hg=(p.y-bd.y0)/(2*R);if(hg>.9)continue;const k=1-hg/.9;const r=Math.hypot(p.x,p.z)||.01;const tv=s*Math.min(r+.12,.55)*1.05;
-    b.v.x+=(-p.z/r*tv-b.v.x)*k*.55;b.v.z+=(p.x/r*tv-b.v.z)*k*.55;if(b.v.y<1.5)b.v.y+=Math.abs(s)*.22*k;}}
-function gp3Phys(dt){const B=GP3.balls,R=GP3.R,bd=GP3.bounds;const n=5,h=Math.min(dt,.05)/n,GR=26;const ax=new THREE.Vector3(),q=new THREE.Quaternion();const A=B.filter(b=>b.on);
-  for(let s=0;s<n;s++){for(const b of A){const p=b.g.position,v=b.v;v.y-=GR*h;const dm=1-.8*h;v.x*=dm;v.y*=dm;v.z*=dm;const sp=v.length();if(sp>5)v.multiplyScalar(5/sp);p.addScaledVector(v,h);b.rest=false;
+  Object.assign(GP3,{ck,stir,balls,out,fig,glow,R,y0,H,flap,mkCap,hole:{x:HX,z:HZ},bounds:{x:.75-.03-R,z:.5-.03-R,y0:y0+R,y1:y0+H-R}});for(let i=0;i<150;i++)gp3Phys(1/30);for(const b of balls)b.v.set(0,0,0);}
+function gp3Kick(w){const bd=GP3.bounds,R=GP3.R;const s=clamp(w,-5,5);for(const b of GP3.balls){if(!b.on||b.kin)continue;const p=b.g.position;const hg=(p.y-bd.y0)/(2*R);const k=hg<.5?.5:hg<1.4?.18:.06;const r=Math.hypot(p.x,p.z)||.01;const tv=s*Math.min(r,.5)*.55;
+    b.v.x+=(-p.z/r*tv-b.v.x)*k;b.v.z+=(p.x/r*tv-b.v.z)*k;}}
+function gp3Phys(dt){const B=GP3.balls,R=GP3.R,bd=GP3.bounds;const n=5,h=Math.min(dt,.05)/n,GR=26;const ax=new THREE.Vector3(),q=new THREE.Quaternion();const A=B.filter(b=>b.on||b.kin);
+  for(let s=0;s<n;s++){for(const b of A){if(b.kin)continue;const p=b.g.position,v=b.v;v.y-=GR*h;const dm=1-2.2*h;v.x*=dm;v.y*=dm;v.z*=dm;const sp=v.length();if(sp>5)v.multiplyScalar(5/sp);p.addScaledVector(v,h);b.rest=false;
       if(p.x<-bd.x){p.x=-bd.x;v.x=Math.abs(v.x)*.2;}if(p.x>bd.x){p.x=bd.x;v.x=-Math.abs(v.x)*.2;}if(p.z<-bd.z){p.z=-bd.z;v.z=Math.abs(v.z)*.2;}if(p.z>bd.z){p.z=bd.z;v.z=-Math.abs(v.z)*.2;}
-      if(p.y<bd.y0){p.y=bd.y0;if(v.y<0)v.y=v.y<-1.8?-v.y*.22:0;const f=1-4*h;v.x*=f;v.z*=f;b.rest=true;}if(p.y>bd.y1){p.y=bd.y1;v.y=-Math.abs(v.y)*.2;}}
+      if(p.y<bd.y0){p.y=bd.y0;if(v.y<0)v.y=0;const f=1-7*h;v.x*=f;v.z*=f;b.rest=true;}if(p.y>bd.y1){p.y=bd.y1;v.y=-Math.abs(v.y)*.2;}}
     A.sort((a,b)=>a.g.position.y-b.g.position.y);
     for(let it=0;it<3;it++)for(let i=0;i<A.length;i++){const a=A[i];for(let j=i+1;j<A.length;j++){const c=A[j];const dx=c.g.position.x-a.g.position.x,dy=c.g.position.y-a.g.position.y,dz=c.g.position.z-a.g.position.z;const d2=dx*dx+dy*dy+dz*dz,m=2*R;if(d2>=m*m||d2<1e-8)continue;const d=Math.sqrt(d2),nx=dx/d,ny=dy/d,nz=dz/d,pen=m-d;
-      const sup=a.rest&&ny>.35;const wa=sup?.15:.5,wc=1-wa;a.g.position.x-=nx*pen*wa;a.g.position.y-=ny*pen*wa;a.g.position.z-=nz*pen*wa;c.g.position.x+=nx*pen*wc;c.g.position.y+=ny*pen*wc;c.g.position.z+=nz*pen*wc;
-      const rx=c.v.x-a.v.x,ry=c.v.y-a.v.y,rz=c.v.z-a.v.z;const rv=rx*nx+ry*ny+rz*nz;if(rv<0){const j2=-(rv<-1.8?1.2:1)*rv;a.v.x-=j2*wa*nx;a.v.y-=j2*wa*ny;a.v.z-=j2*wa*nz;c.v.x+=j2*wc*nx;c.v.y+=j2*wc*ny;c.v.z+=j2*wc*nz;
+      const sup=a.rest&&ny>.35;let wa=sup?.15:.5;if(a.kin)wa=0;else if(c.kin)wa=1;const wc=1-wa;a.g.position.x-=nx*pen*wa;a.g.position.y-=ny*pen*wa;a.g.position.z-=nz*pen*wa;c.g.position.x+=nx*pen*wc;c.g.position.y+=ny*pen*wc;c.g.position.z+=nz*pen*wc;
+      const rx=c.v.x-a.v.x,ry=c.v.y-a.v.y,rz=c.v.z-a.v.z;const rv=rx*nx+ry*ny+rz*nz;if(rv<0){const j2=-rv;a.v.x-=j2*wa*nx;a.v.y-=j2*wa*ny;a.v.z-=j2*wa*nz;c.v.x+=j2*wc*nx;c.v.y+=j2*wc*ny;c.v.z+=j2*wc*nz;
         const fx=(rx-rv*nx)*.08,fy=(ry-rv*ny)*.08,fz=(rz-rv*nz)*.08;a.v.x+=fx;a.v.y+=fy;a.v.z+=fz;c.v.x-=fx;c.v.y-=fy;c.v.z-=fz;}
       if(sup)c.rest=true;}}
-    for(const b of A){const p=b.g.position;if(p.y<bd.y0)p.y=bd.y0;if(p.x<-bd.x)p.x=-bd.x;if(p.x>bd.x)p.x=bd.x;if(p.z<-bd.z)p.z=-bd.z;if(p.z>bd.z)p.z=bd.z;}}
-  for(const b of A){const v=b.v;if(b.rest){const l2=v.lengthSq();if(l2<.09)v.multiplyScalar(l2<.02?0:.5);}const sp=Math.hypot(v.x,v.z);if(sp>.08){ax.set(v.z,0,-v.x).normalize();q.setFromAxisAngle(ax,sp*dt/R);b.g.quaternion.premultiply(q);}}}
+    for(const b of A){if(b.kin)continue;const p=b.g.position;if(p.y<bd.y0)p.y=bd.y0;if(p.x<-bd.x)p.x=-bd.x;if(p.x>bd.x)p.x=bd.x;if(p.z<-bd.z)p.z=-bd.z;if(p.z>bd.z)p.z=bd.z;}}
+  for(const b of A){if(b.kin)continue;const v=b.v;if(b.rest){const l2=v.lengthSq();if(l2<.09)v.multiplyScalar(l2<.02?0:.5);}const sp=Math.hypot(v.x,v.z);if(sp>.08){ax.set(v.z,0,-v.x).normalize();q.setFromAxisAngle(ax,sp*dt/R);b.g.quaternion.premultiply(q);}}}
 function gp3Init(G){G.g3={rot:0,kick:0,t:0,camT:0,dropT:0,outP:null,refill:0};}
 function gp3Up(G,dt){const Z=G.g3||(gp3Init(G),G.g3);G.k+=dt;Z.t+=dt;const target=(G.tr+(G.st==='drop'||G.st==='cap'||G.st==='open'?3:0))*PI*2/3;const pr=Z.rot;Z.rot+=(target-Z.rot)*Math.min(1,dt*7);const dr=Z.rot-pr;
   if(GP3.balls){if(Math.abs(dr)>.002&&dt>0)gp3Kick(-dr/dt*1.6);GP3.stir.rotation.y-=dr*1.6;gp3Phys(dt);}
-  if(G.st==='drop'&&!Z.dropped&&GP3.balls){Z.dropped=1;const L=GP3.balls.filter(b=>b.on).sort((a,b)=>(a.g.position.y+Math.abs(a.g.position.x)*.4)-(b.g.position.y+Math.abs(b.g.position.x)*.4));if(L[0]){L[0].on=false;L[0].g.visible=false;try{GP3.out.userData.t.material.color.copy(L[0].g.userData.t.material.color);}catch(e){}}GP3.out.visible=false;Z.dropT=0;}
-  if(G.st==='drop'){Z.dropT+=dt;if(Z.dropT>.35){GP3.out.visible=true;}if(G.k>.95)G.st='cap';}
+  if(G.st==='drop'&&!Z.dropped&&GP3.balls){Z.dropped=1;const Hh=GP3.hole,bd=GP3.bounds;const L=GP3.balls.filter(b=>b.on).sort((a,b)=>{const f=x=>(x.g.position.y-bd.y0)*3+Math.hypot(x.g.position.x-Hh.x,x.g.position.z-Hh.z);return f(a)-f(b);});
+    const b=L[0];if(b){b.on=false;b.kin=true;b.v.set(0,0,0);Z.dk={b,p0:b.g.position.clone()};try{GP3.out.userData.t.material.color.copy(b.g.userData.t.material.color);}catch(e){}}GP3.out.visible=false;Z.dropT=0;}
+  if(G.st==='drop'){Z.dropT+=dt;const K=Z.dk;if(K&&K.b.kin){const Hh=GP3.hole,bd=GP3.bounds,p=K.b.g.position,t=Z.dropT;
+      if(t<.55){const u=t/.55,e=u*u*(3-2*u);p.set(lerp(K.p0.x,Hh.x,e),Math.max(bd.y0,lerp(K.p0.y,bd.y0,Math.min(1,u*1.6))),lerp(K.p0.z,Hh.z,e));K.b.g.rotateX(dt*3);}
+      else{const u=(t-.55)/.35;p.set(Hh.x,bd.y0-u*u*GP3.R*3.2,Hh.z);if(u>=1){K.b.kin=false;K.b.g.visible=false;}}}
+    if(Z.dropT>.95){GP3.out.visible=true;}if(G.k>1.65)G.st='cap';}
   if(G.st==='open'&&G.k>2.9){G.c--;Z.rot=0;Z.dropped=0;Z.opened=0;G.tr=0;if(GP3.out)GP3.out.visible=false;if(GP3.fig)GP3.fig.visible=GP3.glow.visible=false;if(G.c<=0){G.end=1;return;}G.st='crank';
     if(GP3.balls&&GP3.balls.filter(b=>b.on).length<12)GP3.balls.forEach(b=>{if(!b.on){b.on=true;b.g.visible=true;b.g.position.set(rnd(-.5,.5),GP3.y0+GP3.H-.3,rnd(-.25,.25));b.v.set(0,-1,0);}});}}
 function gp3Draw(G,g,SER,ALL,ownSet){const w=G.w,h=G.h,S=SER[G.si];if(!gp3Setup())return false;const Z=G.g3||(gp3Init(G),G.g3);gp3Build(S,(SER===GSERQ?'q':'j')+G.si);
   const dp=G.dp||1;const W=Math.round(w*dp),H=Math.round(h*dp);
   GP3.ck.rotation.z=-Z.rot;
   // capsule de sortie
-  const O=GP3.out;if(O.visible){let p;if(G.st==='drop'){const u=Math.min(1,(Z.dropT-.35)/.55);p=new THREE.Vector3(0,.3-u*.12+Math.abs(Math.sin(u*PI*2.2))*.12*(1-u),.5+u*.3);O.rotation.x+=.25;}else{p=new THREE.Vector3(0,.19+.012*Math.sin(Z.t*3),.8);O.rotation.set(-.35,0,Math.sin(Z.t*2)*.12);}O.position.copy(p);
+  const O=GP3.out;if(O.visible){let p;if(G.st==='drop'){const u=Math.min(1,(Z.dropT-.95)/.55);p=new THREE.Vector3(0,.3-u*.12+Math.abs(Math.sin(u*PI*2.2))*.12*(1-u),.5+u*.3);O.rotation.x+=.25;}else{p=new THREE.Vector3(0,.19+.012*Math.sin(Z.t*3),.8);O.rotation.set(-.35,0,Math.sin(Z.t*2)*.12);}O.position.copy(p);
     const T=O.userData.t;if(G.st==='open'){const u=Math.min(1,G.k/.5);T.position.y=u*.17;T.rotation.x=-u*.85;T.position.z=-u*.16;O.rotation.set(-.2,0,0);}else{T.position.set(0,0,0);T.rotation.set(0,0,0);}}
   if(G.st==='open'&&G.it){if(!Z.opened){Z.opened=1;while(GP3.fig.children.length)GP3.fig.remove(GP3.fig.children[0]);GP3.fig.add(toyBuild(G.it));}const u=Math.min(1,G.k/.7),e3=1-Math.pow(1-u,3);GP3.fig.visible=true;const sc=.1+e3*.3;GP3.fig.position.set(0,.22+e3*.3,.8);GP3.fig.scale.setScalar(sc);GP3.fig.rotation.y=-.5+(1-e3)*4+Math.max(0,G.k-.7)*.9;
     GP3.glow.visible=true;GP3.glow.position.set(0,.36+u*.2,.5);const gs=(G.it.r?1.4:.9)*(.6+u*.4)+Math.sin(Z.t*5)*.05;GP3.glow.scale.set(gs,gs,1);GP3.glow.material.color.set(G.it.r?0xffd54f:0xbfe0ff);}
   // caméra
   const zoom=G.st==='cap'||G.st==='open'?1:0;Z.camT+=(zoom-Z.camT)*.06;const asp=w/h;const far=asp<.75?7.6:5.6;
-  const cx=lerp(Math.sin(Z.t*.35)*.45,0,Z.camT),cy=lerp(1.9,1.25,Z.camT),cz=lerp(far,3.4,Z.camT);GP3.cam.position.set(cx,cy,cz);GP3.cam.lookAt(0,lerp(1.38,.55,Z.camT),lerp(0,.55,Z.camT));GP3.cam.aspect=asp;GP3.cam.updateProjectionMatrix();
+  Z.camD=(Z.camD||0)+(((G.st==='drop'&&Z.dropT<1)?1:0)-(Z.camD||0))*.1;const cx=lerp(lerp(Math.sin(Z.t*.35)*.45,.2,Z.camD),0,Z.camT),cy=lerp(1.9+Z.camD*1.6,1.25,Z.camT),cz=lerp(far,3.4,Z.camT);GP3.cam.position.set(cx,cy,cz);GP3.cam.lookAt(lerp(Z.camD*.15,0,Z.camT),lerp(1.38-Z.camD*.05,.55,Z.camT),lerp(0,.55,Z.camT));GP3.cam.aspect=asp;GP3.cam.updateProjectionMatrix();
   {const m=miniRender(GP3.sc,GP3.cam,W,H,0x141a2c);g.drawImage(m[0],m[1],m[2],m[3],m[4],0,0,w,h);}
   // interface 2D par-dessus
   mgR(g,w/2-Math.min(160,w/2-10),8,Math.min(320,w-20),32,16,'rgba(0,0,0,.45)');mgT(g,S[1]+' Série : '+S[0],w/2,24,14,'#fff');
