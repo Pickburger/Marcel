@@ -272,7 +272,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
    super(small,...a);if(ref){const self=this;Object.defineProperty(this,'needsUpdate',{configurable:true,set(v){if(v===true){const src=ref.deref();if(src&&self.image===small){try{shrink(src,small);}catch(e){}}self.version++;}}});}}}
  THREE.CanvasTexture=CT;})();</script>
 <script>
-var GAME_VER=151;
+var GAME_VER=153;
 (()=>{
 const $=id=>document.getElementById(id);
 const sceneEl=$('scene');
@@ -5132,7 +5132,7 @@ function runChar(ch,dt){
     if(!step.pts.length){ch.q.shift();ch.pose='stand';if(step.dest&&step.dest.yaw!=null)ch.tyaw=step.dest.yaw;}
     return .35;}
   if(step.t==='do'||step.t==='wait'){
-    if(!step.started){step.started=true;step.t0=gm;step.r0=tReal;
+    if(!step.started){step.started=true;step.t0=gm;step.r0=tReal;if(ch===Mc&&step.t==='do'&&typeof dfAct==='function')try{dfAct(step.a||'idle',step.label||'');}catch(e){}
       if(step.t==='do'){step.end=step.until!=null?step.until:gm+(step.dur||1)*(ch===Mc?skSpeed(step.a):1);if(step.end<=gm)step.end=gm+1;}
       const kSit=!step.pose&&!step.lie&&ch.pose==='sit'&&ch.seatH!=null;ch.pose=step.pose||(kSit?'sit':'stand');ch.act=step.a||'idle';ch.show=step.show||null;ch.swimY=step.swimY||0;ch.zap=!!step.zap;ch.zapAt=0;ch.seatH=step.seatH??(kSit?ch.seatH:null);if(step.yaw!=null)ch.tyaw=step.yaw;
       if(step.lie){ch.lie=step.lie;ch.lieFrom={...ch.pos};ch.pose='lie';ch.pos={x:step.lie.x,z:step.lie.z};}
@@ -6979,7 +6979,7 @@ TROPHIES.push(['derby3','🏇','Roi de l\'hippodrome','Gagner les 3 courses d\'u
 
 /* ---------- Pause ---------- */
 const PAUSE={user:false,jour:false,phone:false};
-const isPaused=()=>PAUSE.user||PAUSE.jour||PAUSE.phone||!!(CHOICE&&!CHOICE.done);
+const isPaused=()=>PAUSE.user||PAUSE.jour||PAUSE.phone||PAUSE.dfp||!!(CHOICE&&!CHOICE.done);
 function pauseFrame(dt){tReal+=dt;if((PAUSE.user||PAUSE.phone)&&CHOICE&&!CHOICE.done)CHOICE.t0+=dt;if(PAUSE.jour&&skOpen!=='__jour')PAUSE.jour=false;updateChoice();mgTick();try{updateCamera(dt);}catch(e){}pauseUI();}
 let pauseLast=null;function pauseUI(){const p=isPaused();const k=(PAUSE.user?'u':'')+(p?'p':'');if(k===pauseLast)return;pauseLast=k;const b=$('pauseB');b.classList.toggle('on',PAUSE.user);b.textContent=PAUSE.user?'▶':'⏸';if(b.setAttribute)b.setAttribute('aria-label',PAUSE.user?'Reprendre':'Mettre en pause');b.title=PAUSE.user?'Reprendre':'Pause';
  $('pauseTag').hidden=!PAUSE.user;}
@@ -9220,6 +9220,91 @@ try{compactAll();}catch(e){console.error(e);}
 const UMWS={on:false};{const _u=THREE.Object3D.prototype.updateMatrixWorld;THREE.Object3D.prototype.updateMatrixWorld=function(force){if(UMWS.on&&!this.visible&&!this.isCamera&&!this.isLight&&this.parent){this._umwS=true;return;}if(this._umwS){this._umwS=false;force=true;}return _u.call(this,force);};
  const _bk=bake;bake=function(a,b){const o=UMWS.on;UMWS.on=false;try{return _bk(a,b);}finally{UMWS.on=o;}};}
 UMWS.on=true;
+/* v152 : défis du jour, paliers de collection, « Presque! » */
+const DFACT=[['cook','🍳','Cuisiner {n} repas',2,60],['eat','🍽️','Prendre {n} repas',2,40],['talk','💬','Jaser avec {n} personnes',4,50],['tv','📺','Regarder la télé',1,30],['text','📱','Texter un ami',1,30],['shower','🚿','Prendre une douche',1,25],['stretch','🧘','Faire des étirements',1,35],['water','🪴','Arroser les plantes',1,35],['pet','🐾','Flatter un animal',1,45],['arcade','🕹️','Jouer à un jeu d\'arcade',1,55]];
+const DFCNT=[['fish','🐟','Attraper {n} poisson',1,80,'peche'],['gacha','🥚','Faire tourner un gashapon',1,70,'mall'],['contrat','💻','Livrer un contrat',1,90,null],['gym','💪','S\'entraîner au gym',1,70,'gym']];
+const DFVIS=['cine','casino','boul','casse','peche','quilles','micro','animal','mall','gym','dep','cafe','lib'];
+const DFS={pm:null};
+function DF(){const d=LIFE.df=LIFE.df||{d:-1,L:[],earn:0,st:0,last:-9,bonus:0};return d;}
+function dfGen(){const D=DF(),day=dayN();if(D.d===day)return D;if(D.last<day-1)D.st=0;
+  D.d=day;D.earn=0;D.bonus=0;D.base=Object.assign({},LIFE.cnt||{});const L=[];
+  /* 1. une action de la vie courante */
+  const a=pick(DFACT);L.push({k:'a',a:a[0],e:a[1],t:a[2].replace('{n}',a[3]),n:a[3],c:0,rw:a[4]});
+  /* 2. un lieu à visiter (via la Carte) ou un compteur */
+  if(Math.random()<.65){const ok=mapDests().filter(d=>DFVIS.includes(d.id)&&INT[d.id]);const d=pick(ok.length?ok:mapDests().filter(d=>INT[d.id]));if(d)L.push({k:'v',v:d.id,e:d.e||'📍',t:'Visiter : '+((INT[d.id]&&INT[d.id].name)||d.n),n:1,c:0,rw:Math.round(rnd(70,120)/5)*5,hint:d.id});}
+  else{const c=pick(DFCNT);L.push({k:'c',v:c[0],e:c[1],t:c[2].replace('{n}',c[3]),n:c[3],c:0,rw:c[4],hint:c[5]});}
+  /* 3. de l'argent */
+  const lv=Math.max(1,...(typeof JOBS!=='undefined'?JOBS.map(j=>{try{return jobInfo(j.id).l;}catch(e){return 0;}}):[1]));const tgt=Math.round(Math.min(900,180+lv*18)/50)*50;
+  L.push({k:'m',e:'💵',t:'Gagner '+cNum(tgt)+' $',n:tgt,c:0,rw:Math.round(tgt*.15/5)*5});
+  D.L=L;return D;}
+function dfDone(x){const D=DF();x.ok=1;dfPay(x.rw,'Défi du jour : '+x.t);toast('🎯 Défi réussi : '+x.e+' '+x.t+' · +'+x.rw+' $',true);try{SFX.ping();}catch(e){}
+  if(D.L.every(y=>y.ok)&&!D.bonus){D.bonus=1;D.st=(D.last===D.d-1?D.st:0)+1;D.last=D.d;const b=100+25*Math.min(D.st-1,6);setTimeout(()=>{dfPay(b,'Défis du jour complétés');toast('🔥 Les 3 défis du jour! Série de '+D.st+' jour'+(D.st>1?'s':'')+' · +'+b+' $',true);try{SFX.cash&&SFX.cash();}catch(e){}},1800);cnt('defis3');}}
+function dfPay(n,l){addMoney(n,l);DFS.pm=money;}
+function dfAct(a,label){const D=DF();if(D.d!==dayN())return;for(const x of D.L)if(!x.ok&&x.k==='a'&&x.a===a){x.c++;if(x.c>=x.n)dfDone(x);}}
+function dfTick(){const D=dfGen();const m=money;if(DFS.pm!=null&&m>DFS.pm)D.earn+=m-DFS.pm;DFS.pm=m;
+  for(const x of D.L){if(x.ok)continue;if(x.k==='v'&&Mc.area===x.v){x.c=1;dfDone(x);}else if(x.k==='m'){x.c=Math.min(x.n,Math.round(D.earn));if(D.earn>=x.n)dfDone(x);}else if(x.k==='c'){x.c=Math.max(0,(LIFE.cnt&&LIFE.cnt[x.v]||0)-((D.base||{})[x.v]||0));if(x.c>=x.n)dfDone(x);}}}
+/* ---- paliers de collection ---- */
+const CTIERS={g:{n:'Figurines de gashapon',e:'🥚',cur:()=>gOwn().filter(n=>GALL.some(x=>x.n===n)).length,T:[[10,50,'Petite tablette de figurines'],[30,150,'Tablette à deux étages'],[60,600,'Vitrine complète et capsule dorée']]},
+  c:{n:'Cartes de hockey',e:'🃏',cur:()=>LIFE.cartes?cardCount():0,T:[[25,50,'Cadre de 4 cartes'],[75,150,'Cadre de 9 cartes'],[150,400,'Grand cadre doré'],[200,800,'Cadre lumineux de collectionneur']]},
+  f:{n:'Espèces de poissons',e:'🐟',cur:()=>FISH.filter(f=>C_('f_'+f.k)>=1).length,T:[[5,50,'Perchaude empaillée'],[15,150,'Truite empaillée'],[37,600,'Maskinongé doré empaillé']]}};
+function CTS(){return LIFE.ctier=LIFE.ctier||{g:0,c:0,f:0};}
+function ctCheck(){const S=CTS();let ch=0;for(const k in CTIERS){const C=CTIERS[k];let v=0;try{v=C.cur();}catch(e){continue;}while(S[k]<C.T.length&&v>=C.T[S[k]][0]){const t=C.T[S[k]];S[k]++;ch=1;dfPay(t[1],'Palier de collection : '+C.n);setTimeout(()=>toast('🏅 Palier '+C.e+' '+C.n+' ('+t[0]+') : '+t[2]+' ajouté(e) au meuble de collection du salon · +'+t[1]+' $',true),900);}}if(ch)colDeco(true);}
+let COLG=null,COLsig='';
+function colDeco(force){const I=INT.home;if(!I)return;const S=CTS(),sig=S.g+','+S.c+','+S.f;if(!force&&sig===COLsig&&COLG)return;COLsig=sig;if(COLG){I.dyn.remove(COLG);}if(!S.g&&!S.c&&!S.f){COLG=null;return;}
+  const G=COLG=new THREE.Group();G.position.set(-6.45,0,-1.2);I.dyn.add(G);const wd=M('#6a4228',{r:.55}),wd2=M('#8a5a36',{r:.5}),gold=M('#e2b23a',{r:.25,m:.8}),B=(p,w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;p.add(o);return o;},E=(p,m,x,y,z,sx,sy,sz)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(1,16,10),m);o.position.set(x,y,z);o.scale.set(sx,sy,sz);o.castShadow=true;p.add(o);return o;};
+  /* meuble : base + panneau */
+  B(G,2.3,.7,.44,wd,0,.35,0);B(G,2.34,.04,.48,wd2,0,.72,0);for(const sx of[-.575,.575])B(G,.5,.5,.02,wd2,sx,.36,.225);for(const sx of[-.32,.32])B(G,.04,.04,.03,gold,sx,.38,.24);B(G,2.3,1.4,.05,wd,0,1.44,-.2);B(G,2.38,.08,.12,wd2,0,2.16,-.16);
+  {const pl=new THREE.Mesh(new THREE.PlaneGeometry(1.2,.16),signMat('MES COLLECTIONS','#3a2416','#e2c27a',512,68,'800 40px "Bricolage Grotesque", sans-serif'));pl.position.set(0,2.0,-.17);G.add(pl);}
+  if(S.f){const g=new THREE.Group();g.position.set(-.6,1.42,-.16);G.add(g);const t=S.f;const pl=new THREE.Mesh(new THREE.CylinderGeometry(.26+t*.04,.26+t*.04,.04,24),wd2);pl.rotation.x=PI/2;pl.scale.set(1.75,1,.92);g.add(pl);
+    const col=t>=3?gold:M(t>=2?'#8aa0a0':'#9a9a3a',{r:.5});const L=.22+t*.06;const f=new THREE.Group();f.position.set(0,.02,.05);g.add(f);E(f,col,0,0,0,L,.07+t*.02,.045);const tl=new THREE.Mesh(new THREE.ConeGeometry(.07+t*.015,.13+t*.02,4),col);tl.rotation.z=PI/2;tl.position.x=-L-.04;f.add(tl);
+    const fin=new THREE.Mesh(new THREE.ConeGeometry(.04,.1,3),col);fin.position.set(0,.08+t*.02,0);f.add(fin);E(f,M('#111',{r:.3}),L*.72,.025,.035,.015,.015,.01);if(t>=2){for(let i=0;i<4;i++)E(f,M(t>=3?'#a8761a':'#c8506a'),-L*.4+i*L*.25,0,.04,.032,.025,.01);}
+    const lab=new THREE.Mesh(new THREE.PlaneGeometry(.34,.075),signMat(['','PERCHAUDE','TRUITE','MASKINONGÉ'][t],'#2a1a10','#e2c27a',256,56,'800 30px "Bricolage Grotesque", sans-serif'));lab.position.set(0,-.2-t*.025,.03);g.add(lab);}
+  if(S.c){const g=new THREE.Group();g.position.set(.55,1.42,-.16);G.add(g);const t=S.c;const cols=[0,2,3,4,5][t],rows=[0,2,3,3,3][t];const cw=.12,chh=.16,gap=.025;const W=cols*(cw+gap)+.08,H=rows*(chh+gap)+.08;
+    B(g,W+.05,H+.05,.035,t>=3?gold:wd2,0,0,0);B(g,W,H,.02,M(t>=3?'#1a2a4a':'#efe6d2',{r:.8}),0,0,.02);const tc=['#c8102e','#0038a8','#f2c21a','#0a7a3a','#1a1a1a','#e86a1a'];
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const x=-W/2+.04+cw/2+c*(cw+gap),y=H/2-.04-chh/2-r*(chh+gap);B(g,cw,chh,.006,M('#fafafa',{r:.6}),x,y,.035);B(g,cw-.02,chh*.55,.006,M(tc[(r*cols+c)%6],{r:.6}),x,y+.02,.04);}
+    if(t>=4){const lt=new THREE.PointLight(0xffe6a0,.6,2.2);lt.position.set(0,.4,.5);g.add(lt);B(g,W+.08,.025,.05,glw('#ffe6a0'),0,H/2+.05,.03);}}
+  if(S.g){const t=S.g;const pal=['#ff8fb1','#7ad0ff','#ffd24a','#9ef0a0','#c8a0ff','#ff9a5a'];const row=(y,n,z0)=>{for(let i=0;i<n;i++){const cx=-(n-1)*.13+i*.26,c=pal[(i+Math.round(y*10))%6];E(G,M(c,{r:.35}),cx,y+.075,z0,.065,.065,.065);E(G,M('#f6f4ee',{r:.3}),cx,y+.08,z0,.066,.034,.066);}};
+    row(.74,t>=2?8:5,.02);if(t>=2){B(G,2.2,.03,.16,wd2,0,.86,-.1);row(.875,8,-.1);}
+    if(t>=3){E(G,gold,0,2.33,-.16,.11,.11,.11);E(G,M('#fff6d8',{r:.2,m:.3}),0,2.34,-.16,.112,.055,.112);const lt=new THREE.PointLight(0xffd88a,.5,1.8);lt.position.set(0,2.5,.3);G.add(lt);}}
+  if(!I.__colObs){I.__colObs=1;I.obs.push([-7.65,-1.47,-5.25,-.95]);I.G=null;I.grid=null;}}
+/* ---- « Presque! » ---- */
+function nearList(){const R=[];
+  try{for(const T of TROPHIES){if(LIFE.tro&&LIFE.tro[T[0]])continue;const src=String(T[4]);let m=src.match(/^\(\)=>C_\('([^']+)'\)>=(\d+)$/);let v,n;if(m){n=+m[2];v=C_(m[1]);}else if((m=src.match(/^\(\)=>\(LIFE\.(\w+)\|\|0\)>=(\d+)$/))){n=+m[2];v=LIFE[m[1]]||0;}else continue;if(n<3||v<=0||v>=n)continue;R.push({e:T[1],t:'Trophée « '+T[2]+' »',d:T[3],v,n,r:v/n});}}catch(e){}
+  try{const S=CTS();for(const k in CTIERS){const C=CTIERS[k];if(S[k]>=C.T.length)continue;const t=C.T[S[k]],v=C.cur();if(v>0)R.push({e:C.e,t:'Palier '+C.n,d:t[2]+' · +'+t[1]+' $',v,n:t[0],r:v/t[0]});}}catch(e){}
+  try{const j=jobInfo('camion');for(const P of PERMS){if(!P.lv||hasPerm(P.c)||j.l>=P.lv||j.l<=0)continue;R.push({e:'🚚',t:'Formation '+P.n,d:'Niveau '+P.lv+' requis en camionnage',v:j.l,n:P.lv,r:j.l/P.lv});break;}}catch(e){}
+  try{const D=DF();for(const x of D.L)if(!x.ok&&x.n>1&&x.c>0)R.push({e:x.e,t:'Défi : '+x.t,d:'+'+x.rw+' $',v:x.c,n:x.n,r:x.c/x.n});}catch(e){}
+  return R.filter(x=>x.r>=.4).sort((a,b)=>b.r-a.r||(a.n-a.v)-(b.n-b.v));}
+const bar=(r,c)=>`<div style="height:6px;border-radius:9px;background:#e3dfd2;margin-top:4px;overflow:hidden"><div style="height:100%;width:${Math.round(Math.min(1,r)*100)}%;background:${c||'#3d8bfd'};border-radius:9px"></div></div>`;
+function dfHTML(){const D=dfGen();const nd=D.L.filter(x=>x.ok).length;let h=`<div class="ch2">🎯 Défis du jour <span class="cmut" style="font-weight:600">${nd}/3${D.st?' · 🔥 série de '+D.st+' jour'+(D.st>1?'s':''):''}</span></div>`;
+  h+=D.L.map(x=>{const r=x.ok?1:x.c/x.n;const hint=!x.ok&&x.hint&&mapDests().some(d=>d.id===x.hint)?`<button type="button" data-a="dest:${x.hint}" class="crow${todoHas(x.hint)?' sel':''}" style="margin:6px 0 0;padding:5px 8px;background:#f6f2e8"><span style="font-size:.7rem">${todoHas(x.hint)?'✓ Dans la liste de Marcel':'📍 Ajouter le lieu à la liste'}</span></button>`:'';
+    return`<div class="cinfo" style="margin-bottom:6px;${x.ok?'opacity:.75':''}"><div style="display:flex;justify-content:space-between;gap:8px"><b>${x.ok?'✅':x.e} ${x.t}</b><b style="color:#1f8a4c;white-space:nowrap">+${x.rw} $</b></div>${x.k==='m'?'<small class="cmut">'+cNum(Math.min(x.c,x.n))+' / '+cNum(x.n)+' $</small>':x.n>1?'<small class="cmut">'+Math.min(x.c,x.n)+' / '+x.n+'</small>':''}${bar(r,x.ok?'#1f8a4c':null)}${hint}</div>`;}).join('');
+  h+=`<div class="cmut" style="margin:2px 0 10px">Les 3 défis : <b>+${100+25*Math.min(D.last===D.d-1?D.st:0,6)} $</b> de bonus. Une série de jours consécutifs augmente le bonus. Nouveaux défis à minuit.</div>`;
+  const N=nearList();h+=`<div class="ch2">⏳ Presque!</div>`+(N.length?N.slice(0,6).map(x=>`<div class="cinfo" style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;gap:8px"><b>${x.e} ${x.t}</b><span class="cmut" style="white-space:nowrap">${cNum(x.v)} / ${cNum(x.n)}</span></div><small class="cmut">${x.d} · encore ${cNum(x.n-x.v)}</small>${bar(x.r,'#f0a23b')}</div>`).join(''):'<div class="cmut">Rien n\'est encore à moitié fait. Continue!</div>');
+  const S=CTS();h+=`<div class="ch2">🏅 Paliers de collection</div>`+Object.entries(CTIERS).map(([k,C])=>{let v=0;try{v=C.cur();}catch(e){}const nx=C.T[S[k]];return`<div class="cinfo" style="margin-bottom:6px"><b>${C.e} ${C.n}</b> <span class="cmut">· ${v} · palier ${S[k]}/${C.T.length}</span>${nx?`<br><small class="cmut">Prochain : ${nx[0]} → ${nx[2]} · +${nx[1]} $</small>${bar(v/nx[0],'#8a6bd6')}`:'<br><small style="color:#1f8a4c;font-weight:700">Collection au maximum!</small>'}</div>`;}).join('')+`<div class="cmut" style="margin-bottom:8px">Les récompenses sont exposées au salon, dans le meuble de collection.</div>`;
+  return h;}
+CAPPS.push(['defis','🎯','Défis','linear-gradient(135deg,#ff7a59,#e2503c)']);
+{const _cd=cellRender;cellRender=function(){if(CELL.app!=='defis')return _cd();const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.remove('home');$('cTitle').textContent='Défis';B.innerHTML=dfHTML();};}
+{const _ft=frTick;frTick=function(){_ft();try{dfTick();}catch(e){}if(tReal>(DFS.ct||0)){DFS.ct=tReal+3;try{ctCheck();}catch(e){}}try{colDeco();}catch(e){}};}
+/* v153 : pop-up des défis du jour */
+function dfPopEl(){let el=document.getElementById('dfpop');if(el)return el;const st=document.createElement('style');st.textContent=`#dfpop{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(6,8,14,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);padding:14px}
+#dfpop.on{display:flex;animation:dfpIn .35s ease}@keyframes dfpIn{from{opacity:0}to{opacity:1}}
+#dfpop .dfc{width:min(360px,100%);max-height:calc(100% - 20px);overflow:auto;background:#f6f2e8;color:#1d1d1f;border-radius:22px;padding:16px 14px 14px;box-shadow:0 18px 50px rgba(0,0,0,.5);animation:dfpUp .4s cubic-bezier(.2,1.3,.4,1)}@keyframes dfpUp{from{transform:translateY(24px) scale(.96)}to{transform:none}}
+#dfpop h3{margin:0 0 2px;font:800 1.25rem var(--f-titre,var(--f-body));text-align:center}#dfpop .dfs{text-align:center;font:600 .78rem var(--f-body);color:#7a7a82;margin-bottom:10px}
+#dfpop .dfi{background:#fff;border-radius:14px;padding:10px 11px;margin-bottom:8px;font:600 .82rem var(--f-body)}#dfpop .dfi .r{display:flex;justify-content:space-between;gap:8px;align-items:center}#dfpop .dfi b.g{color:#1f8a4c;white-space:nowrap}
+#dfpop .dfi button{margin-top:7px;width:100%;border:1.5px solid #e3dfd2;background:#f6f2e8;border-radius:10px;padding:6px 8px;font:700 .74rem var(--f-body);cursor:pointer;color:#1d1d1f}#dfpop .dfi button.sel{border-color:#3d8bfd;background:#eaf2ff;color:#1a5ac8}
+#dfpop .dfb{font:600 .74rem/1.4 var(--f-body);color:#5a5a62;text-align:center;margin:4px 2px 12px}#dfpop .go{display:block;width:100%;border:0;border-radius:14px;padding:12px;font:800 1rem var(--f-body);background:linear-gradient(135deg,#ff7a59,#e2503c);color:#fff;cursor:pointer;box-shadow:0 6px 16px rgba(226,80,60,.35)}`;document.head.appendChild(st);
+  el=document.createElement('div');el.id='dfpop';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','Défis du jour');($('scene')||document.body).appendChild(el);
+  el.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-p]');if(!t)return;const a=t.dataset.p;if(a==='go'){dfPopClose();return;}
+    if(a.startsWith('dest:')){const v=a.slice(5),d=todoFind(v);if(!d)return;if(todoHas(v)){LIFE.todo=TODO().filter(x=>x.id!==v);}else{if(todoFull(v)){toast('📅 Journée pleine : les tâches en attente remplissent déjà la journée de Marcel',false);return;}TODO().push({id:v,t:dayN()});const r=mapOk(d);toast(r===true?'📍 Ajouté à la liste : '+d.n:'📍 '+d.n+' ajouté (attend : '+r+')',true);}try{SFX.tap&&SFX.tap();}catch(er){}dfPopRender();}});return el;}
+function dfPopRender(){const el=dfPopEl(),D=dfGen();const bon=100+25*Math.min(D.last===D.d-1?D.st:0,6);
+  el.innerHTML=`<div class="dfc"><h3>🎯 Défis du jour</h3><div class="dfs">${fmtDay()}${D.st?' · 🔥 série de '+D.st+' jour'+(D.st>1?'s':''):''}</div>`+
+   D.L.map(x=>{const r=x.ok?1:x.c/x.n;const btn=!x.ok&&x.hint&&mapDests().some(d=>d.id===x.hint)?`<button type="button" data-p="dest:${x.hint}" class="${todoHas(x.hint)?'sel':''}">${todoHas(x.hint)?'✓ Dans la liste de Marcel':'📍 Ajouter le lieu à la liste de Marcel'}</button>`:'';
+     return`<div class="dfi"><div class="r"><span>${x.ok?'✅':x.e} ${x.t}</span><b class="g">+${x.rw} $</b></div>${x.c>0&&!x.ok?bar(r):''}${btn}</div>`;}).join('')+
+   `<div class="dfb">Les 3 défis réussis : <b>+${bon} $</b> de bonus${D.st?' (série en cours!)':''}.<br>Tu peux les revoir dans le cell : Progrès → Défis.</div><button type="button" class="go" data-p="go">C'est parti!</button></div>`;}
+function dfPopOpen(){const D=dfGen();D.seen=D.d;dfPopRender();dfPopEl().classList.add('on');PAUSE.dfp=true;pauseUI();try{SFX.ping&&SFX.ping();}catch(e){}setTimeout(()=>{try{dfPopEl().querySelector('.go').focus();}catch(e){}},50);}
+function dfPopClose(){const el=document.getElementById('dfpop');if(el)el.classList.remove('on');PAUSE.dfp=false;pauseUI();}
+function dfPopCheck(){if(PAUSE.dfp||tReal<4)return;const D=dfGen();if(D.seen===D.d)return;const h=hourOf();if(h<6||h>=23.5)return;if(MG.on||CELL.on||(CHOICE&&!CHOICE.done))return;const w=document.getElementById('ward');if(w&&w.classList.contains('on'))return;if(document.getElementById('lvl')&&document.getElementById('lvl').classList.contains('on'))return;dfPopOpen();}
+{const _ft=frTick;frTick=function(){_ft();try{dfPopCheck();}catch(e){}};}
 /* v149 : cellulaire simplifié — 8 apps regroupées, dock, ligne « Aujourd'hui » */
 const CGRP=[['carte','🗺️','Carte','linear-gradient(135deg,#6bc17a,#3d8bfd)',['carte','tokyo']],
  ['msg','💬','Messages','linear-gradient(135deg,#4cd964,#1f9d4a)',['messages','voisins']],
@@ -9227,13 +9312,13 @@ const CGRP=[['carte','🗺️','Carte','linear-gradient(135deg,#6bc17a,#3d8bfd)'
  ['argent','🏦','Argent','linear-gradient(135deg,#2f9d62,#1c6b4a)',['banque','bourse','crypto','loto']],
  ['agenda','📅','Agenda','linear-gradient(135deg,#ff8a5c,#e2503c)',['agenda','meteo','saisons','journal']],
  ['marcel','❤️','Marcel','linear-gradient(135deg,#ff6b8b,#c2306a)',['marcel','coiffure','reves','projets']],
- ['progres','🏆','Progrès','linear-gradient(135deg,#f1c84b,#c9962a)',['comp','trophees','stats']],
+ ['progres','🏆','Progrès','linear-gradient(135deg,#f1c84b,#c9962a)',['defis','comp','trophees','stats']],
  ['loisirs','🎒','Loisirs','linear-gradient(135deg,#8a6bd6,#5a3fa8)',['collect','cartes','peche']]];
 const CDOCK=['carte','msg','travail','argent'];
 function cgOf(app){return CGRP.find(g=>g[4].includes(app))||null;}
 function cgTabs(g){const L=g[4].filter(k=>CAPPS.some(a=>a[0]===k));if(g[0]==='loisirs')for(const a of CAPPS)if(a[0]!=='reglages'&&a[0]!=='notes'&&!CGRP.some(x=>x[4].includes(a[0]))&&!L.includes(a[0]))L.push(a[0]);return L;}
 function cgBadge(k){try{if(k==='messages')return frUnread()||0;if(k==='banque')return(LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1&&LIFE.fixSeen!==LIFE.fixNext)?1:0;}catch(e){}return 0;}
-function cgToday(){const P=[];try{const L=TODO();if(L.length){const d=todoFind(L[0].id);P.push('📋 <b>'+L.length+' tâche'+(L.length>1?'s':'')+'</b>'+(d?' · ensuite : '+(d.e||'')+' '+d.n:''));}}catch(e){}
+function cgToday(){const P=[];try{const D=dfGen(),nd=D.L.filter(x=>x.ok).length;const nx=D.L.find(x=>!x.ok);P.push('🎯 Défis <b>'+nd+'/3</b>'+(D.st?' · 🔥 '+D.st:'')+(nx?' · '+nx.e+' '+nx.t:' · tous réussis!'));const N=nearList()[0];if(N)P.push('⏳ Presque : '+N.e+' '+N.t.replace(/^Trophée /,'')+' ('+cNum(N.v)+'/'+cNum(N.n)+')');}catch(e){}try{const L=TODO();if(L.length){const d=todoFind(L[0].id);P.push('📋 <b>'+L.length+' tâche'+(L.length>1?'s':'')+'</b>'+(d?' · ensuite : '+(d.e||'')+' '+d.n:''));}}catch(e){}
   try{if(Mc.job)P.push('💼 Au travail : <b>'+(Mc.job.n||Mc.job.id)+'</b>');}catch(e){}
   try{const u=frUnread();if(u)P.push('💬 <b>'+u+'</b> message'+(u>1?'s':'')+' non lu'+(u>1?'s':''));}catch(e){}
   try{if(cgBadge('banque'))P.push('🧾 Dépenses fixes '+nextBillTxt());}catch(e){}
