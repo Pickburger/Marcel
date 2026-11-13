@@ -182,6 +182,15 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #cellX{position:absolute;top:-6px;right:-6px;width:34px;height:34px;border-radius:50%;border:1px solid var(--trait);background:#232b3a;color:var(--craie);cursor:pointer;font-size:.9rem;z-index:2}
 .chorl{text-align:center;margin:4px 0 2px}.chorl b{display:block;font:800 2rem var(--f-display);letter-spacing:-.02em}.chorl span{font-size:.78rem;opacity:.8}
 .cicons{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px;padding:8px 6px}
+.gic{display:flex;flex-direction:column;align-items:center;gap:5px;background:transparent;border:0;color:inherit;font:600 .72rem var(--f-body);cursor:pointer;position:relative;padding:0}
+.gic i{font-style:normal;width:54px;height:54px;border-radius:15px;display:grid;place-items:center;font-size:1.6rem;box-shadow:0 4px 10px rgba(0,0,0,.35)}
+.gic u{position:absolute;top:-4px;right:calc(50% - 38px);min-width:18px;height:18px;border-radius:99px;background:#e2503c;color:#fff;font:800 .62rem/18px var(--f-body);text-align:center;text-decoration:none;padding:0 4px}
+.ggrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 4px;padding:10px 4px}
+.gdock{position:sticky;bottom:0;margin:14px -6px -6px;padding:10px 4px 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:rgba(255,255,255,.14);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:22px}
+.gdock .gic{font-size:.66rem}
+.gtop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.gset{background:rgba(255,255,255,.14);border:0;border-radius:12px;width:38px;height:38px;font-size:1.15rem;cursor:pointer;color:inherit;flex:none}
+.gtoday{margin:6px 4px 2px;padding:8px 10px;border-radius:14px;background:rgba(255,255,255,.12);color:#e9ecff;font:600 .74rem/1.45 var(--f-body)}.gtoday b{color:#fff}
+.gtabs{position:sticky;top:-6px;z-index:3;margin:-6px -6px 8px!important;padding:8px 6px!important;background:inherit;overflow-x:auto;flex-wrap:nowrap!important;scrollbar-width:none}.gtabs::-webkit-scrollbar{display:none}.gtabs button{flex:none;white-space:nowrap;position:relative}.gtabs u{display:inline-block;margin-left:4px;min-width:16px;height:16px;border-radius:99px;background:#e2503c;color:#fff;font:800 .6rem/16px var(--f-body);text-align:center;text-decoration:none;padding:0 4px}
 .cic{display:flex;flex-direction:column;align-items:center;gap:5px;background:transparent;border:0;color:inherit;font:600 .7rem var(--f-body);cursor:pointer;position:relative;padding:0}
 .cic i{font-style:normal;width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;box-shadow:0 4px 10px rgba(0,0,0,.35)}
 .cic u{position:absolute;top:-4px;right:calc(50% - 36px);min-width:18px;height:18px;border-radius:99px;background:#e2503c;color:#fff;font:800 .62rem/18px var(--f-body);text-align:center;text-decoration:none;padding:0 4px}
@@ -263,7 +272,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
    super(small,...a);if(ref){const self=this;Object.defineProperty(this,'needsUpdate',{configurable:true,set(v){if(v===true){const src=ref.deref();if(src&&self.image===small){try{shrink(src,small);}catch(e){}}self.version++;}}});}}}
  THREE.CanvasTexture=CT;})();</script>
 <script>
-var GAME_VER=148;
+var GAME_VER=149;
 (()=>{
 const $=id=>document.getElementById(id);
 const sceneEl=$('scene');
@@ -9210,6 +9219,37 @@ try{compactAll();}catch(e){console.error(e);}
 const UMWS={on:false};{const _u=THREE.Object3D.prototype.updateMatrixWorld;THREE.Object3D.prototype.updateMatrixWorld=function(force){if(UMWS.on&&!this.visible&&!this.isCamera&&!this.isLight&&this.parent){this._umwS=true;return;}if(this._umwS){this._umwS=false;force=true;}return _u.call(this,force);};
  const _bk=bake;bake=function(a,b){const o=UMWS.on;UMWS.on=false;try{return _bk(a,b);}finally{UMWS.on=o;}};}
 UMWS.on=true;
+/* v149 : cellulaire simplifié — 8 apps regroupées, dock, ligne « Aujourd'hui » */
+const CGRP=[['carte','🗺️','Carte','linear-gradient(135deg,#6bc17a,#3d8bfd)',['carte','tokyo']],
+ ['msg','💬','Messages','linear-gradient(135deg,#4cd964,#1f9d4a)',['messages','voisins']],
+ ['travail','💼','Travail','linear-gradient(135deg,#f0a23b,#c46f1a)',['emplois','jobs','livraison','camion']],
+ ['argent','🏦','Argent','linear-gradient(135deg,#2f9d62,#1c6b4a)',['banque','bourse','crypto','loto']],
+ ['agenda','📅','Agenda','linear-gradient(135deg,#ff8a5c,#e2503c)',['agenda','meteo','saisons','journal']],
+ ['marcel','❤️','Marcel','linear-gradient(135deg,#ff6b8b,#c2306a)',['marcel','coiffure','reves','projets']],
+ ['progres','🏆','Progrès','linear-gradient(135deg,#f1c84b,#c9962a)',['comp','trophees','stats']],
+ ['loisirs','🎒','Loisirs','linear-gradient(135deg,#8a6bd6,#5a3fa8)',['collect','cartes','peche']]];
+const CDOCK=['carte','msg','travail','argent'];
+function cgOf(app){return CGRP.find(g=>g[4].includes(app))||null;}
+function cgTabs(g){const L=g[4].filter(k=>CAPPS.some(a=>a[0]===k));if(g[0]==='loisirs')for(const a of CAPPS)if(a[0]!=='reglages'&&a[0]!=='notes'&&!CGRP.some(x=>x[4].includes(a[0]))&&!L.includes(a[0]))L.push(a[0]);return L;}
+function cgBadge(k){try{if(k==='messages')return frUnread()||0;if(k==='banque')return(LIFE.fixNext!=null&&LIFE.fixNext-dayN()<=1&&LIFE.fixSeen!==LIFE.fixNext)?1:0;}catch(e){}return 0;}
+function cgToday(){const P=[];try{const L=TODO();if(L.length){const d=todoFind(L[0].id);P.push('📋 <b>'+L.length+' tâche'+(L.length>1?'s':'')+'</b>'+(d?' · ensuite : '+(d.e||'')+' '+d.n:''));}}catch(e){}
+  try{if(Mc.job)P.push('💼 Au travail : <b>'+(Mc.job.n||Mc.job.id)+'</b>');}catch(e){}
+  try{const u=frUnread();if(u)P.push('💬 <b>'+u+'</b> message'+(u>1?'s':'')+' non lu'+(u>1?'s':''));}catch(e){}
+  try{if(cgBadge('banque'))P.push('🧾 Dépenses fixes '+nextBillTxt());}catch(e){}
+  try{const n=(($('now')||{}).textContent||'').trim();if(n)P.push('👤 '+n.replace(/^Marcel /,'').slice(0,70));}catch(e){}
+  return P.length?P.join('<br>'):'Rien de prévu pour l\'instant.';}
+{const _cg=cellRender;cellRender=function(){CELL.gt=CELL.gt||{};CELL.edit=false;const app=CELL.app;
+  if(!app){const scr=document.querySelector('.cscr'),B=$('cBody');$('cTime').textContent=fmt(gm);scr.classList.add('home');$('cTitle').textContent='';
+    const ic=g=>{const t=cgTabs(g);const k=CELL.gt[g[0]]&&t.includes(CELL.gt[g[0]])?CELL.gt[g[0]]:t[0];const b=t.reduce((a,x)=>a+cgBadge(x),0);return`<button type="button" class="gic" data-a="app:${k}" aria-label="${g[2]}"><i style="background:${g[3]}">${g[1]}</i>${g[2]}${b?'<u>'+b+'</u>':''}</button>`;};
+    B.innerHTML=`<div class="gtop"><div class="chorl" style="flex:1"><b>${fmt(gm)}</b><span>${DAYS[dayOf()]} · ${cNum(money)} $</span></div><button type="button" class="gset" data-a="app:reglages" aria-label="Réglages">⚙️</button></div>`+
+      `<div class="gtoday"><b>Aujourd'hui</b><br>${cgToday()}</div>`+
+      `<div class="ggrid">${CGRP.filter(g=>!CDOCK.includes(g[0])).map(ic).join('')}</div>`+
+      `<div class="cmut" style="color:#c9cdea;text-align:center;font-size:.68rem;margin-top:4px">Le jeu est en pause tant que le cellulaire est ouvert.</div>`+
+      `<div class="gdock">${CDOCK.map(k=>ic(CGRP.find(g=>g[0]===k))).join('')}</div>`;return;}
+  _cg();const g=cgOf(app);if(!g)return;CELL.gt[g[0]]=app;const t=cgTabs(g);$('cTitle').textContent=g[2];if(t.length<2)return;
+  const B=$('cBody');if(B.querySelector('.gtabs'))return;
+  B.insertAdjacentHTML('afterbegin',`<div class="cchips gtabs" role="tablist">`+t.map(k=>{const a=CAPPS.find(x=>x[0]===k);const b=cgBadge(k);return`<button type="button" role="tab" data-a="app:${k}" class="${k===app?'on':''}" aria-selected="${k===app}">${a[1]} ${a[2]}${b?'<u>'+b+'</u>':''}</button>`;}).join('')+`</div>`);
+  const on=B.querySelector('.gtabs .on');if(on)try{on.scrollIntoView({block:'nearest',inline:'center'});}catch(e){}};}
 /* v139 : journal de plantage (diagnostic iPhone) */
 var CRASH={};const CKEY='marcel_crash';
 function crashMark(clean){try{const m=performance.memory;const o={v:GAME_VER,t:Date.now(),gm:fmt(gm),day:fmtDay(),now:($('now')||{}).textContent||'',area:Mc.area,mg:MG.on&&MG.G?MG.G.id:'',lost:CRASH.lost||0,rest:CRASH.rest||0,clean:!!clean,perf:PERF.lvl,heap:m?Math.round(m.usedJSHeapSize/1e6):0};localStorage.setItem(CKEY,JSON.stringify(o));}catch(e){}}
