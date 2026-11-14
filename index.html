@@ -278,7 +278,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
    super(small,...a);if(ref){const self=this;Object.defineProperty(this,'needsUpdate',{configurable:true,set(v){if(v===true){const src=ref.deref();if(src&&self.image===small){try{shrink(src,small);}catch(e){}}self.version++;}}});}}}
  THREE.CanvasTexture=CT;})();</script>
 <script>
-var GAME_VER=159;
+var GAME_VER=160;
 (()=>{
 const $=id=>document.getElementById(id);
 const sceneEl=$('scene');
@@ -3894,6 +3894,14 @@ const PARKS={home:{att:[-59.1,-30],park:[-59.1,-42.8],yaw:PI,out:[[-59.1,-42.8],
 PARKS.deppark={att:[30,160.5],park:[43,160.5],yaw:PI/2,out:[[43,160.5],[35.6,160.5,'r']],inn:[[35.6,160.5]],door:[43,162.2],walk:[[37.6,188.5],[38.9,187.4],[38.9,162.2],[43,162.2]],node:[35.5,188.5]};
 PARKS.dpump={att:[30,190],park:[91,190],yaw:PI/2,out:[[91,190],[35.6,190,'r']],inn:[[35.6,190]],door:[91,192.6],walk:[[37.6,188.5],[37.6,193],[91,193],[91,192.6]],node:[35.5,188.5]};
 PARKS.depot={att:[30,190],park:[50,190],yaw:PI/2,out:[[50,190],[35.6,190,'r']],inn:[[35.6,190]],door:[47,188.5],walk:[[37.6,188.5],[47,188.5]],node:[35.5,188.5]};
+/* v160 : stationnements des commerces */
+PARKS.mall={att:[13,-105],park:[13,-93.4],yaw:0,out:[[13,-93.4],[13,-99.4,'r']],inn:[[13,-99.4]],door:[11.4,-93.4],walk:[[11.4,-99.2],[11.4,-93.4]]};
+PARKS.arcp={att:[38,-105],park:[38,-108.4],yaw:-PI/2,out:[[38,-108.4]],inn:[],door:[38,-109.9]};
+PARKS.electro={att:[-38,-105],park:[-38,-108.4],yaw:-PI/2,out:[[-38,-108.4]],inn:[],door:[-38,-109.9]};
+PARKS.micro={att:[-56,105],park:[-56,101.6],yaw:-PI/2,out:[[-56,101.6]],inn:[],door:[-56,100.1]};
+PARKS.foire={att:[-12,105],park:[-12,101.6],yaw:-PI/2,out:[[-12,101.6]],inn:[],door:[-12,100.1]};
+PARKS.arena={att:[56,30],park:[56,33.4],yaw:-PI/2,out:[[56,33.4]],inn:[],door:[56,34.9]};
+PARKS.fripe={att:[30,-11],park:[33.4,-11],yaw:0,out:[[33.4,-11]],inn:[],door:[34.9,-11]};
 PARKS.coiff=PARKS.poste;/* le côté est de la rue est la voie de l'autobus 12 : on se stationne au bureau de poste, en face */
 for(const H of HOUSES){PARKS['d_'+H.k]=H.park;}
 {const RL=RD.flatMap(v=>[{h:true,v},{h:false,v}]);const at2=Object.values(PARKS).map(p=>p.att);
@@ -4346,7 +4354,7 @@ function quillesOuting(){LIFE.quillesD=Math.floor(gm/1440);const s=[{t:'drive',t
   for(let i=0;i<3;i++)s.push(...at('quilles.allee','bowl',rnd(10,16),{label:i===0?'Joue une partie de quilles':undefined,warp:3,fx:{fun:.9},say:pick(['STRIKE!','Une réserve, pas pire!','Ah non, dans le dalot…','Allez, roule!'])}),...(i<2?at('quilles.banc','talk',rnd(3,6),{say:pick(['C\'est à qui?','J\'ai un bon bras ce soir.'])}):[]));
   s.push(F(()=>{const sc=Math.round(rnd(110,190)+skLv('sports')*1.5);say(Mc,'Pointage final : '+sc+'!');LIFE.lastOuting={kind:'jouer aux quilles'};if(sc>180){LIFE.bowl300=(LIFE.bowl300||0)+1;cnt('bowl180');}}),{t:'drive',to:'home',label:'Rentre des quilles'});return s;}
 function microOuting(){LIFE.microD=Math.floor(gm/1440);const b=pick(BEERS),b2=pick(BEERS.filter(x=>x!==b));const quiz=dayOf()===3;
-  const s=[...busTo('S3','Attend l\'autobus pour aller à la microbrasserie'),...at('micro.bar','order',2,{label:'Arrive à la Microbrasserie La Brume',say:'Une '+b+', svp!'}),payF(8,'Microbrasserie La Brume'),
+  const s=[...busTo('S3','Attend l\'autobus pour aller à la microbrasserie',false),...at('micro.bar','order',2,{label:'Arrive à la Microbrasserie La Brume',say:'Une '+b+', svp!'}),payF(8,'Microbrasserie La Brume'),
     ...at('micro.bar','drink',rnd(20,30),{label:'Déguste une '+b+' au comptoir',warp:3,fx:{fun:.6,social:.5},say:pick(['Wow, elle est bonne!','Des notes d\'agrumes…','Santé!'])}),
     ...at('micro.table','drink',rnd(20,35),{label:quiz?'Participe au quiz du jeudi à la micro':'Jase avec des habitués en buvant une '+b2,warp:3,fx:{fun:.6,social:1},say:quiz?pick(['La réponse, c\'est 1608!','Équipe Marcel en tête!']):pick(['Vous venez souvent ici?','Celle-là est brassée sur place!'])}),payF(8,'Microbrasserie La Brume')];
   if(quiz)s.push(F(()=>{if(Math.random()<.4){addMoney(50,'Prix du quiz à la micro');say(Mc,'On a gagné le quiz!');}else say(Mc,'Deuxième place au quiz!');}));
@@ -4554,7 +4562,7 @@ function fishSession(n){const s=[];for(let i=0;i<n;i++){s.push(D('fish',rnd(6,13
     CATCH.push({k:r.f.k,kg:+r.kg.toFixed(2)});cnt('fish');cnt('f_'+r.f.k);if(pondFrozen())cnt('glace');if(DS)DS.fish++;INV[r.f.k]=(INV[r.f.k]||0)+1;addXP('peche',4+r.kg*2.5);toast('🎣 '+r.f.n+' de '+kgs(r.kg)+' kg!',true);
     if(!LIFE.bigFish||r.kg>LIFE.bigFish.kg){LIFE.bigFish={n:r.f.n,kg:r.kg};}Mc.q.unshift(D('reel',2.6,{label:'Remonte '+(['perchaude','truite'].includes(r.f.k)?'une':'un')+' '+r.f.n.toLowerCase()+' de '+kgs(r.kg)+' kg',say:r.kg>3?'WOW! Un monstre!':pick(['Je l\'ai!','Belle prise!','Hé, regarde-moi ça!'])}));}));}
   return s;}
-function fishingOuting(){if(!pondFrozen()&&SEASON()!=='hiver'&&OWN.canne&&Math.random()<.3)return marinaFish();flags.peche=true;LIFE.pecheD=Math.floor(gm/1440);const bus=Math.random()<.25;const s=bus?[...busTo('S5','Attend l\'autobus pour le parc des Saules')]:[{t:'drive',to:'etang',label:'Prend son auto pour aller pêcher au parc des Saules'}];
+function fishingOuting(){if(!pondFrozen()&&SEASON()!=='hiver'&&OWN.canne&&Math.random()<.3)return marinaFish();flags.peche=true;LIFE.pecheD=Math.floor(gm/1440);const bus=Math.random()<.1;const s=bus?[...busTo('S5','Attend l\'autobus pour le parc des Saules')]:[{t:'drive',to:'etang',label:'Prend son auto pour aller pêcher au parc des Saules'}];
   const gear=!OWN.canne?GEAR[0]:(Math.random()<.5?GEAR.find(g=>!OWN[g.id]&&money>g.prix+300&&skLv('peche')>=(g.lv||0)&&(!g.fly||OWN.canne_mouche)):null);const FB0=pickBait(pondFrozen()?'glace':'etang');FISHNEXT=FB0;const FBn=FB0.nat?FB0.n:'Hameçons et plombs',FBp=FB0.nat?FB0.prix:4;
   if(Math.random()<.55)s.push(...at('peche.cannes','browse',rnd(3,6),{label:'Regarde les cannes chez Pêche & Plein Air',say:pick(['Wow, celle-là est belle!','Un jour, je vais m\'acheter un bateau.'])}));
   s.push(...at('peche.comptoir','pay',3,{label:gear?'Achète : '+gear.nom.toLowerCase():'Achète : '+FBn.toLowerCase(),say:gear?'Je vais prendre ça, Réal!':FB0.nat?FBn+', s\'il vous plaît, Réal!':'Des hameçons et des plombs, Réal!'}),payF(gear?gear.prix:FBp,gear?gear.nom:FBn),F(()=>{if(gear){OWN[gear.id]=true;say(Mc,'Hâte de l\'essayer!');}}));
@@ -4849,7 +4857,7 @@ const A=[
   {id:'busk',out:1,w:h=>skLv('musique')>=10&&!flags.busk&&h>=11&&h<19&&!RAIN()?.8:0,f:()=>{flags.busk=true;const y=TOWN_SPOTS.b_cafe.yaw+PI;const t=skTier('musique');return[...at('town.b_cafe','guitar',rnd(30,50),{label:'Joue de la guitare devant le Café Lune',yaw:y,warp:3,fx:{fun:.6,social:.4},say:pick(['♪ Une petite toune pour les passants ♪','Merci! Bonne journée!'])}),F(()=>addMoney(Math.round(rnd(20,55)*(t>=3?1.8:1)*tipMult()),'Pourboires des passants'))];}},
   {id:'vendart',w:()=>skLv('crea')>=10&&!flags.vendart?.6:0,f:()=>{flags.vendart=true;const t=skTier('crea');return[...at('home.desk','type',rnd(10,16),{label:'Vend ses photos et créations en ligne',show:'magasin',warp:2}),F(()=>{if(Math.random()<.7)addMoney(Math.round(rnd(40,140)*(t>=3?1.7:1)),'Vente de créations en ligne');else say(Mc,'Pas de vente aujourd\'hui… ça viendra!');})];}},
   {id:'concours',w:h=>skLv('culture')>=10&&!flags.concours&&h>8&&h<20?.5:0,f:()=>{flags.concours=true;const t=skTier('culture');return[...at('home.sofaL','call',3,{label:'Appelle un concours à la radio',say:'Oui, oui! La réponse, c\'est Jacques Cartier!'}),F(()=>{if(Math.random()<.5){addMoney(Math.round(rnd(50,200)*(t>=3?2:1)),'Concours radio');say(Mc,'J\'ai gagné!!');}else say(Mc,'Ah non, quelqu\'un a été plus rapide.');})];}},
-  {id:'tournoi',out:1,w:h=>skLv('jeux')>=10&&!flags.tournoi&&h>=12&&h<20?.6:0,f:()=>{flags.tournoi=true;const t=skTier('jeux');return[...busTo('S2','Attend l\'autobus pour un tournoi à l\'Arcade Pixel'),...at('arcp.borne','arcade',rnd(30,45),{label:'Participe à un tournoi d\'arcade',warp:3,fx:{fun:1},say:pick(['Concentration…','Combo!'])}),F(()=>{if(Math.random()<.45){addMoney(Math.round(rnd(60,180)*(t>=3?2:1)),'Tournoi d\'arcade');say(Mc,'Première place!');}else say(Mc,'Deuxième… la prochaine fois!');}),...busHome('S2')];}},
+  {id:'tournoi',out:1,w:h=>skLv('jeux')>=10&&!flags.tournoi&&h>=12&&h<20?.6:0,f:()=>{flags.tournoi=true;const t=skTier('jeux');return[...busTo('S2','Attend l\'autobus pour un tournoi à l\'Arcade Pixel','arcp'),...at('arcp.borne','arcade',rnd(30,45),{label:'Participe à un tournoi d\'arcade',warp:3,fx:{fun:1},say:pick(['Concentration…','Combo!'])}),F(()=>{if(Math.random()<.45){addMoney(Math.round(rnd(60,180)*(t>=3?2:1)),'Tournoi d\'arcade');say(Mc,'Première place!');}else say(Mc,'Deuxième… la prochaine fois!');}),...busHome('S2')];}},
   {id:'golftournoi',out:1,w:h=>skLv('sports')>=10&&!flags.golft&&dayOf()>=5&&h>=9&&h<15&&!RAIN()?1:0,f:()=>{flags.golft=true;const t=skTier('sports');return[{t:'drive',to:'golf',label:'Part au tournoi de golf du week-end'},tr('town.golf',{label:'Tournoi de golf Les Érables'}),payF(40,'Inscription tournoi de golf'),D('golf',rnd(60,90),{yaw:PI,warp:2,fx:{fun:.8},say:pick(['Birdie!','Dans le trou!','Oups, le lac…'])}),F(()=>{if(Math.random()<.4){addMoney(Math.round(rnd(120,300)*(t>=3?2:1)),'Prix du tournoi de golf');say(Mc,'J\'ai gagné le tournoi!');}else say(Mc,'Belle journée quand même.');}),{t:'drive',to:'home',label:'Rentre du tournoi de golf'}];}},
   {id:'piano',w:()=>OWN.piano?1:0,f:()=>at('home.piano','piano',rnd(15,30),{label:'Joue du piano',warp:2,fx:{fun:.7},say:pick(['La lettre à Élise… presque.','♪ Do ré mi ♪','J\'improvise!'])})},
   {id:'fauteuil',w:()=>OWN.fauteuil?.9:0,f:()=>at('home.fauteuil','read',rnd(20,40),{label:'Lit dans son fauteuil de lecture',warp:2,fx:{fun:.5},say:'Ah, le confort.'})},
@@ -5108,18 +5116,21 @@ function updateFW(dt){const on=fwActive();FW.m.visible=on&&VIS_AREA==='town';if(
   FW.g.attributes.position.needsUpdate=true;FW.g.attributes.color.needsUpdate=true;}
 function fireworksOuting(){const nm=MON()===11?'du Nouvel An':MON()===5?'de la Fête nationale':'de la fête du Canada';const T=dayStart()+23.25*60;
   return[tr('town.benchA',{label:'Va au parc pour les feux d\'artifice '+nm}),D('stars',0,{until:T,pose:'sit',seatH:.47,yaw:PI/4,label:'Regarde les feux d\'artifice '+nm,say:'Wow! Regarde celui-là!',fx:{fun:.8}})];}
-function busTo(stopId,label){return[tr('town.bus_S1',{label:'Marche jusqu\'à l\'arrêt d\'autobus Principale'}),{t:'bus',from:'S1',to:stopId,label}];}
-function busHome(stopId){return[tr('town.bus_'+stopId,{label:'Retourne à l\'arrêt d\'autobus'}),{t:'bus',from:stopId,to:'S1',label:'Attend l\'autobus pour rentrer'}];}
+var BUSMODE='bus';const BUSPARK={S2:'mall',S3:'foire',S5:'etang'};
+/* v160 : Marcel prend surtout son auto ; l'autobus reste pour la micro (bière) ou une fois de temps en temps */
+function busTo(stopId,label,dest){const pk=dest===false?null:(dest||BUSPARK[stopId]);if(pk&&PARKS[pk]&&Math.random()<.88){BUSMODE='car';return[{t:'drive',to:pk,label:String(label||'').replace(/Attend l'autobus pour( aller)?/,'Part en auto pour')||'Part en auto'}];}
+  BUSMODE='bus';return[tr('town.bus_S1',{label:'Marche jusqu\'à l\'arrêt d\'autobus Principale'}),{t:'bus',from:'S1',to:stopId,label}];}
+function busHome(stopId){if(BUSMODE==='car'){BUSMODE='bus';return[{t:'drive',to:'home',label:'Rentre à la maison en auto'}];}return[tr('town.bus_'+stopId,{label:'Retourne à l\'arrêt d\'autobus'}),{t:'bus',from:stopId,to:'S1',label:'Attend l\'autobus pour rentrer'}];}
 function mallOuting(){cnt('mall');LIFE.mallD=Math.floor(gm/1440);const buy=money>200&&Math.random()<.6;return[...busTo('S2','Attend l\'autobus pour Les Galeries'),
   ...at('mall.fontaine','look',3,{label:'Se promène aux Galeries du Quartier',say:'Il y a du monde aujourd\'hui!'}),...at('mall.mode','browse',rnd(10,18),{label:'Magasine des vêtements chez Mode Plus',say:pick(['Ce chandail-là est beau!','Trop cher pour une chemise…'])}),
   ...(buy?[payF(Math.round(rnd(45,90)),'Mode Plus'),F(()=>wardBuy())]:[]),
   ...at('mall.livres','browse',rnd(6,10),{say:'Le nouveau polar est sorti!'}),...at('mall.comptoir','pay',3,{label:'Commande à l\'aire de restauration',say:pick(['Un pad thaï, svp!','Une poutine et un Coke!'])}),payF(14,'Aire de restauration'),
   ...at('mall.table','eat',rnd(15,22),{label:'Mange à l\'aire de restauration',fx:{food:2.5,fun:.4}}),...at('mall.brew','pay',2,{say:'Un latte glacé pour la route!'}),F(()=>Mc.carry='coffee'),...busHome('S2'),F(()=>{LIFE.lastOuting={kind:'aux Galeries'};})];}
 function electroOuting(){const opts=[];if(!OWN.console&&money>650)opts.push(['console','Console de jeux',499,'🎮']);if(!OWN.vr&&money>750)opts.push(['vr','Casque de réalité virtuelle',599,'🥽']);const it=opts.length&&Math.random()<.6?pick(opts):null;
-  return[...busTo('S2','Attend l\'autobus pour Électro-Jeux'),...at('electro.teles','look',rnd(5,8),{label:'Regarde les télés chez Électro-Jeux',say:'Wow, l\'image est incroyable!'}),...at('electro.jeux','browse',rnd(6,10),{label:'Fouille dans les jeux vidéo',say:pick(['Le nouveau jeu de hockey!','Celui-là a l\'air bon.'])}),
+  return[...busTo('S2','Attend l\'autobus pour Électro-Jeux','electro'),...at('electro.teles','look',rnd(5,8),{label:'Regarde les télés chez Électro-Jeux',say:'Wow, l\'image est incroyable!'}),...at('electro.jeux','browse',rnd(6,10),{label:'Fouille dans les jeux vidéo',say:pick(['Le nouveau jeu de hockey!','Celui-là a l\'air bon.'])}),
     ...at('electro.demo','game',rnd(8,14),{label:'Essaie la console en démonstration',fx:{fun:.6}}),...at('electro.caisse','pay',3,{label:it?'Achète : '+it[1].toLowerCase():'Achète un jeu vidéo',say:it?'Je la prends!':'Juste ce jeu-là, merci.'}),
     payF(it?it[2]:69,it?'Électro-Jeux · '+it[1]:'Électro-Jeux · jeu vidéo'),F(()=>{if(it){OWN[it[0]]=true;LIFE.lastBuy={nom:it[1],emo:it[3]};}else LIFE.lastBuy={nom:'Nouveau jeu vidéo',emo:'🎮'};Mc.carry='box';}),...busHome('S2'),F(()=>{Mc.carry=null;LIFE.lastOuting={kind:'chez Électro-Jeux'};})];}
-function arcadeOuting(){LIFE.arcD=Math.floor(gm/1440);return[...busTo('S2','Attend l\'autobus pour l\'Arcade Pixel'),...at('arcp.caisse','pay',2,{label:'Achète des jetons à l\'Arcade Pixel',say:'Vingt dollars de jetons, svp!'}),payF(20,'Arcade Pixel'),
+function arcadeOuting(){LIFE.arcD=Math.floor(gm/1440);return[...busTo('S2','Attend l\'autobus pour l\'Arcade Pixel','arcp'),...at('arcp.caisse','pay',2,{label:'Achète des jetons à l\'Arcade Pixel',say:'Vingt dollars de jetons, svp!'}),payF(20,'Arcade Pixel'),
   ...at('arcp.borne','arcade',rnd(10,16),{label:'Joue à un vieux jeu d\'arcade',fx:{fun:1},say:pick(['Nouveau record!','Ah non, game over!'])}),...at('arcp.hockey','arcade',rnd(6,10),{label:'Joue au hockey sur table',fx:{fun:.8},say:'But! Un à zéro!'}),
   ...at('arcp.pince','arcade',4,{label:'Tente sa chance à la machine à pince',say:'Allez… allez…'}),F(()=>say(Mc,Math.random()<.25?'J\'ai gagné un toutou!':'Il a glissé encore!')),...at('arcp.borne2','arcade',rnd(8,14),{fx:{fun:.8}}),...busHome('S2'),F(()=>{LIFE.lastOuting={kind:'à l\'arcade'};})];}
 function fairOuting(){return[...busTo('S3','Attend l\'autobus pour La Petite Foire'),tr('town.f_bil',{label:'Achète des billets à La Petite Foire'}),D('pay',2,{say:'Un bracelet pour la journée, svp!'}),payF(25,'La Petite Foire'),
@@ -9639,6 +9650,14 @@ MAPCAT.commerces.push('fripe');MAPCAT.nature.push('lac');MAPCAT.maison.push('pet
 Object.assign(TDEF,{patinlibre:2.5,ligue:4,fripe:2,lac:7,petfeed:.5,petplay:.5,petwalk:1,vet:2.5,adopt:2.5});
 DFVIS.push('fripe');
 {const _ft=frTick;frTick=function(){_ft();try{if(ARENAM!=='match'&&Mc.area!=='arena')ARENAM='match';if(!PETB){PETB=1;petInit();}petTick();}catch(e){console.error(e);}};}
+/* v160 : auto plutôt qu'à pied pour l'aréna et la friperie ; stationnement des Galeries */
+{const W=(fn,pk,lab)=>function(){const s=fn.apply(this,arguments);return[{t:'drive',to:pk,label:lab},...s,{t:'drive',to:'home',label:'Rentre à la maison en auto'}];};
+ patinLibre=W(patinLibre,'arena','Part en auto vers l\'aréna');ligueOuting=W(ligueOuting,'arena','Part en auto pour la ligue du mardi');fripeOuting=W(fripeOuting,'fripe','Part en auto vers la friperie');}
+{const g=new THREE.Group();const asph=M('#3a3d42',{r:.95}),wl=M('#f2f2ee',{r:.6});const pl=(w,d,x,z,m,y)=>{const q=new THREE.Mesh(new THREE.PlaneGeometry(w,d),m);q.rotation.x=-PI/2;q.position.set(x,y,z);q.receiveShadow=true;g.add(q);return q;};
+ pl(17.6,7.4,11.6,-93.1,asph,.035);for(let x=3.2;x<=20.1;x+=2.8)pl(.1,5,x,-93.6,wl,.045);pl(17,.1,11.6,-96.15,wl,.045);
+ {const sg=grp(g,20.6,0,-97);cy(sg,M('#6b6f74',{m:.6}),.05,.05,2.3,0,0,0,6);const pm=new THREE.Mesh(new THREE.PlaneGeometry(1.5,.75),signMat('P · LES GALERIES','#2a5ab8','#ffffff',512,256,'800 56px "Bricolage Grotesque", sans-serif'));pm.position.set(0,2.0,.04);sg.add(pm);}
+ for(const[x,c]of[[4.6,'#c8473b'],[7.4,'#e8eef0'],[18.6,'#2b2f38']]){const q=grp(g,x,0,-93.4,0);carBody(q,c,pick(['berline','compacte','vus']));}
+ g.traverse(o=>{if(o.isMesh)o.castShadow=o.castShadow||false;});town.add(g);}
 /* v149 : cellulaire simplifié — 8 apps regroupées, dock, ligne « Aujourd'hui » */
 const CGRP=[['carte','🗺️','Carte','linear-gradient(135deg,#6bc17a,#3d8bfd)',['carte','tokyo']],
  ['msg','💬','Messages','linear-gradient(135deg,#4cd964,#1f9d4a)',['messages','voisins']],
