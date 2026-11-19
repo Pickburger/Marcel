@@ -278,7 +278,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
    super(small,...a);if(ref){const self=this;Object.defineProperty(this,'needsUpdate',{configurable:true,set(v){if(v===true){const src=ref.deref();if(src&&self.image===small){try{shrink(src,small);}catch(e){}}self.version++;}}});}}}
  THREE.CanvasTexture=CT;})();</script>
 <script>
-var GAME_VER=161;
+var GAME_VER=162;
 (()=>{
 const $=id=>document.getElementById(id);
 const sceneEl=$('scene');
@@ -1397,7 +1397,7 @@ const PARK={pond:{x:6,z:6,r:6}};
  const rim=new THREE.Mesh(new THREE.TorusGeometry(6.1,.22,6,40),M('#9a9286',{r:1}));rim.rotation.x=-PI/2;rim.position.set(6,.08,6);TR.add(rim);
  for(let i=0;i<9;i++){const a=i/9*PI*2;sp(TR,M('#4c7a3a',{flat:1}),.25,6+Math.cos(a)*6.3,.1,6+Math.sin(a)*6.3,0);}
  // bancs
- const bench=(x,z,ry)=>{const g=grp(TR,x,0,z,ry);const w=M('#8a5b33',{r:.8}),mt=M('#2a2b2e',{m:.6,r:.4});for(let i=0;i<3;i++)bx(g,w,1.8,.05,.12,0,.45,-.18+i*.14);for(let i=0;i<2;i++)bx(g,w,1.8,.12,.05,0,.62+i*.16,-.3);
+ const bench=(x,z,ry)=>{benchReg(x,z,ry);const g=grp(TR,x,0,z,ry);const w=M('#8a5b33',{r:.8}),mt=M('#2a2b2e',{m:.6,r:.4});for(let i=0;i<3;i++)bx(g,w,1.8,.05,.12,0,.45,-.18+i*.14);for(let i=0;i<2;i++)bx(g,w,1.8,.12,.05,0,.62+i*.16,-.3);
    for(const s of[-1,1]){bx(g,mt,.06,.45,.5,s*.8,0,-.05);bx(g,mt,.06,.5,.06,s*.8,.45,-.32);}};
  bench(-4.9,-4.9,PI/4);bench(-12,10,PI/2);bench(14,-12,-PI/2+.3);
  // kiosque
@@ -4603,7 +4603,7 @@ function traiteur(){flags.traiteur=true;const d=pick(GIG_DST);const pay=Math.rou
  const HYD=[[-38,-40],[22,-38.2],[38.2,22],[-22,38.2],[38.2,-62],[-62,38.2],[-38.2,62],[62,-38.2],[-24,-46]];
  const hyd=(x,z)=>{cy(SF,red,.13,.15,.55,x,0,z,10);cy(SF,red,.16,.16,.08,x,.55,z,10);sp(SF,red,.12,x,.68,z,1);for(const sd of[-1,1]){const n2=cy(SF,M('#e8e2d0'),.05,.05,.12,x+sd*.14,.4,z,6);n2.rotation.z=PI/2;}HYD.push([x,z]);};
  const bin=(x,z)=>{cy(SF,grn,.25,.22,.9,x,0,z,12);cy(SF,M('#2a3a2a'),.27,.27,.06,x,.9,z,12);};
- const bench=(x,z,ry)=>{const g=grp(SF,x,0,z,ry);const w=M('#8a5b33',{r:.8});for(let i=0;i<3;i++)bx(g,w,1.6,.05,.12,0,.45,-.15+i*.14);bx(g,w,1.6,.3,.05,0,.6,-.28);for(const sd of[-1,1])bx(g,dark,.06,.45,.45,sd*.7,0,-.05);};
+ const bench=(x,z,ry)=>{benchReg(x,z,ry);const g=grp(SF,x,0,z,ry);const w=M('#8a5b33',{r:.8});for(let i=0;i<3;i++)bx(g,w,1.6,.05,.12,0,.45,-.15+i*.14);bx(g,w,1.6,.3,.05,0,.6,-.28);for(const sd of[-1,1])bx(g,dark,.06,.45,.45,sd*.7,0,-.05);};
  // poteaux électriques en bois + fils (côté opposé aux lampadaires)
  const wood=M('#6b5440',{r:1}),cer=M('#d8dcdf',{r:.3});const POLES=[],WS=[];
  for(const c of RD)for(const ax of[0,1]){let prev=null;for(let t=-140;t<=140;t+=30){const x=ax?t:c-7.9,z=ax?c+7.9:t;
@@ -9789,6 +9789,62 @@ document.addEventListener('click',e=>{if(!ctrlOn())return;const t=e.target.close
 /* réglages : choix du mode */
 $('cBody').addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-a="ctrlmode"]');if(!t)return;LIFE.autoMode=!LIFE.autoMode;if(!LIFE.autoMode){Mc.q=[{t:'manual'}];CTRL.busy=false;}else{if(Mc.q[0]&&Mc.q[0].t==='manual')Mc.q=[];if(Mc.inCar)carOut();}toast(LIFE.autoMode?'🎬 Mode spectateur : Marcel vit sa vie tout seul':'🕹️ Mode contrôle : joystick et menu d\'actions',true);try{cellRender();}catch(er){}});
 {const _cr=cellRender;cellRender=function(){_cr();try{if(CELL.app==='reglages'){const B=$('cBody');const d=document.createElement('div');d.innerHTML=`<div class="ch2">🕹️ Contrôle</div><div class="cset"><button type="button" data-a="ctrlmode" class="${ctrlOn()?'on':''}">🕹️ Joystick (je contrôle Marcel)</button><button type="button" data-a="ctrlmode" class="${ctrlOn()?'':'on'}">🎬 Spectateur</button></div><div class="cmut">Glisse le doigt n'importe où sur la scène pour faire marcher Marcel (ou conduire). Touche Marcel pour voir ce qu'il peut faire.</div>`;B.prepend(d);}}catch(e){}};}
+/* v162 : interactions un peu partout (gens, voisins, bancs, arbres, maison, auto, soi-même) */
+const JOKES=[["Pourquoi les plongeurs plongent toujours vers l'arrière? Sinon ils tombent dans le bateau!","Hahaha! Elle est bonne, celle-là!"],["Sais-tu pourquoi le livre de maths est triste? Il a trop de problèmes.","Pfff… hahaha!"],["Qu'est-ce qui est jaune et qui attend? Jonathan!","Hein? … Hahaha, je l'avais pas vue venir!"],["Comment on appelle un chien qui fait de la magie? Un labracadabrador!","Ayoye! Hahaha!"],["Pourquoi les poissons détestent l'ordinateur? À cause du Net!","Hahaha, pas pire!"],["Que dit un oignon quand il se cogne? Aïe!","…Celle-là, je vais la raconter à ma blonde. Haha!"]];
+const THINK=['Qu\'est-ce que je vais faire de ma fin de semaine…','Faudrait bien que j\'appelle ma mère.','Je me demande si je devrais me mettre au yoga.','Pas pire, ma vie, dans le fond.','Hmm… j\'ai-tu barré la porte?','Un jour, j\'vais aller au Japon. Ah, attends…'];
+function talkTo(c,lab,lines,fx){const ya=Math.atan2(c.pos.x-Mc.pos.x,c.pos.z-Mc.pos.z);const chat=lines||genTalk(c.staff?'generic':'voisin',3);const dur=Math.max(4,chat.length*1.6);
+  return[F(()=>{try{if(c.staff){c.yaw=c.tyaw=ya+PI;}else c.q.unshift(D('talk',dur,{yaw:ya+PI,warp:.3}));}catch(e){}}),D('talk',dur,{yaw:ya,warp:.3,speaker:true,chat,partner:c,label:lab,fx:fx||{social:1.1}}),
+    F(()=>{cnt('jase');const k=CONTACTS.find(x=>x.ch===c);if(k)try{frXP(k.id,8);}catch(e){}})];}
+function benchReg(x,z,ry){(benchReg.L||(benchReg.L=[])).push([x,z,ry||0]);}
+function nearPeople(r){return ALL.filter(c=>c!==Mc&&c.area===Mc.area&&c.m&&c.m.root.visible!==false&&!c.hid&&Math.hypot(c.pos.x-Mc.pos.x,c.pos.z-Mc.pos.z)<r).sort((a,b)=>Math.hypot(a.pos.x-Mc.pos.x,a.pos.z-Mc.pos.z)-Math.hypot(b.pos.x-Mc.pos.x,b.pos.z-Mc.pos.z));}
+function selfOpts(add){const a=Mc.area;
+  add({id:'_selfie',e:'📸',n:'Prendre un selfie',ok:true,fn:()=>ctrlRun([D('scroll',2.5,{label:'Prend un selfie',say:pick(['Souris, Marcel!','Celle-là va sur Instagram.','Mon meilleur profil!'])}),F(()=>{cnt('photo');})])});
+  add({id:'_dance',e:'💃',n:'Danser',ok:true,fn:()=>ctrlRun([D('dance',rnd(5,9),{label:'Danse comme si personne le regardait',fx:{fun:.9},say:pick(['Ouh ouh!','J\'ai le rythme dans le sang!',null])})])});
+  const ks=CONTACTS.filter(k=>!k.hide);if(ks.length)add({id:'_call',e:'📞',n:'Appeler quelqu\'un',ok:true,fn:()=>{const k=pick(ks);ctrlRun([D('call',rnd(5,9),{label:'Appelle '+k.n.split(' ')[0]+' au téléphone',fx:{social:1.2},say:'Allô '+k.n.split(' ')[0]+'? C\'est Marcel!'}),F(()=>{try{frXP(k.id,6);}catch(e){}})]);}});
+  add({id:'_think',e:'🤔',n:'Réfléchir à la vie',ok:true,fn:()=>ctrlRun([D('look',3.5,{label:'Réfléchit',say:pick(THINK)})])});}
+{const _co=ctrlOptions;ctrlOptions=function(){const O=_co();const add=o=>{if(o&&!O.some(x=>x.id===o.id))O.push(o);};const a=Mc.area,P=Mc.pos;
+  if(Mc.inCar){if(Math.abs(MCAR.v)<1){add({id:'_radio',e:'📻',n:'Changer de poste de radio',ok:true,fn:()=>{RADIO=null;try{updateMusicState();}catch(e){}}});
+      const G=PARKS.gas;if(G&&MCAR.trk==null&&Math.hypot(G.door[0]-MCAR.x,G.door[1]-MCAR.z)<12){const cost=Math.round((1-MCAR.fuel)*50*1.75+3);add({id:'_gas',e:'⛽',n:'Faire le plein ('+cost+' $)',ok:MCAR.fuel>.97?'Le réservoir est plein':money>=cost?true:'Pas assez d\'argent',fn:()=>{carOut();ctrlRun([D('fuel',4,{label:'Fait le plein à la station-service',yaw:MCAR.yaw+PI/2}),F(()=>{addMoney(-cost,'Essence');MCAR.fuel=1;try{SFX.cash();}catch(e){}}),...carIn()]);}});}}
+    return O;}
+  if(!CTRL.busy){
+    /* gens */
+    const np=nearPeople(2.6)[0];if(np){const k=CONTACTS.find(x=>x.ch===np);const nm=k?k.n.split(' ')[0]:(np.name&&np.name!=='Client'?np.name:(np.staff?'l\'employé':'ce passant'));
+      add({id:'_talk',e:'💬',n:'Jaser avec '+nm,ok:true,fn:()=>ctrlRun(talkTo(np,'Jase avec '+nm))});
+      add({id:'_joke',e:'😂',n:'Raconter une blague à '+nm,ok:true,fn:()=>{const j=pick(JOKES);ctrlRun(talkTo(np,'Raconte une blague à '+nm,[['m',j[0]],['p',j[1]]],{social:1,fun:.6}));}});
+      add({id:'_hi',e:'👋',n:'Saluer '+nm,ok:true,fn:()=>{const ya=Math.atan2(np.pos.x-P.x,np.pos.z-P.z);ctrlRun([D('talk',1.6,{yaw:ya,label:'Salue '+nm,say:pick(['Salut!','Bonjour!','Allô, ça va?']),fx:{social:.3}})]);}});
+      if(np.staff)add({id:'_tip',e:'🛎️',n:'Demander un conseil à '+nm,ok:true,fn:()=>ctrlRun(talkTo(np,'Demande conseil à '+nm,[['m','Qu\'est-ce que vous me conseillez?'],['p',pick(['Notre spécial du jour est pas mal populaire!','Tout le monde aime celui-là, essayez-le!','Si j\'étais vous, je prendrais le plus gros!'])],['m','Merci, bonne idée!']]))});
+      if(np.dog&&np.dog.visible!==false)add({id:'_dog',e:'🐕',n:'Flatter le chien',ok:true,fn:()=>{const ya=Math.atan2(np.pos.x-P.x,np.pos.z-P.z);ctrlRun([D('pet',3,{yaw:ya,label:'Flatte le chien d\'un passant',fx:{fun:.6},chat:pick(ENC_DOG),speaker:true,partner:np})]);}});}
+    if(a==='town'){
+      /* voisins : sonner à la porte */
+      for(const k of CONTACTS){if(!k.bk||!BLD[k.bk]||k.bk==='home')continue;const b=BLD[k.bk];if(Math.hypot(b.door.x-P.x,b.door.z-P.z)>3.2)continue;const ch=chOf(k);const nm=k.n.split(' ')[0];
+        add({id:'_ring',e:'🔔',n:'Sonner chez '+nm,ok:ch.area==='none'&&!ch.q.length?true:nm+' n\'est pas chez lui',fn:()=>{const ya=Math.atan2(b.door.x-P.x,b.door.z-P.z);const here=Math.random()<.8;
+          ctrlRun([F(()=>{try{SFX.bell();}catch(e){}}),D('look',1.6,{yaw:ya,label:'Sonne chez '+nm,say:'Ding dong!'}),...(here?[F(()=>{if(ch.area==='none'){spawnAt(ch,k.bk);ch.q=[D('talk',10,{yaw:ya+PI,warp:.3}),F(()=>despawn(ch))];}}),D('talk',9,{yaw:ya,warp:.3,speaker:true,chat:genTalk('voisin',3),partner:ch,label:'Jase avec '+nm+' sur le perron',fx:{social:1.5}}),F(()=>{try{frXP(k.id,10);}catch(e){}cnt('jase');})]:[D('look',2,{say:'Personne… '+nm+' doit être parti.'})])]);}});break;}
+      /* courrier à la maison */
+      const hb=BLD.home;if(hb&&Math.hypot(hb.door.x-P.x,hb.door.z-P.z)<5){add({id:'_mail',e:'📬',n:'Vérifier le courrier',ok:true,fn:()=>ctrlRun([D('read',3,{label:'Vérifie le courrier',say:pick(['Encore des circulaires…','Une facture d\'Hydro. Youpi.','Une carte postale de ma tante!','Le catalogue de Canadian Tire!'])})])});
+        add({id:'_sweep',e:'🧹',n:'Balayer le perron',ok:true,fn:()=>ctrlRun([D('rake',rnd(5,8),{label:'Balaye le perron',fx:{fun:-.1}})])});}
+      /* bancs */
+      const B=(benchReg.L||[]).find(b=>Math.hypot(b[0]-P.x,b[1]-P.z)<2.2);if(B){const sit=(lab,anim,dur,o2)=>()=>ctrlRun([F(()=>{Mc.pos={x:B[0]+Math.sin(B[2])*.05,z:B[1]+Math.cos(B[2])*.05};Mc.back=[];}),D(anim,dur,{pose:'sit',seatH:.47,yaw:B[2],label:lab,warp:3,...o2})]);
+        add({id:'_bench',e:'🪑',n:'S\'asseoir sur le banc',ok:true,fn:sit('Se repose sur un banc','look',rnd(10,20),{fx:{energy:.3,fun:.2}})});
+        add({id:'_pigeon',e:'🐦',n:'Nourrir les pigeons',ok:true,fn:sit('Nourrit les pigeons','give',rnd(8,14),{fx:{fun:.6},say:'Petits, petits, petits!'})});
+        add({id:'_benchread',e:'📖',n:'Lire sur le banc',ok:true,fn:sit('Lit un roman sur un banc','read',rnd(15,30),{fx:{fun:.6}})});}
+      /* arbres */
+      const T=AABB.find(b=>b.h>2&&b.x1-b.x0<1.8&&b.z1-b.z0<1.8&&Math.hypot((b.x0+b.x1)/2-P.x,(b.z0+b.z1)/2-P.z)<2.2);if(T){const tx=(T.x0+T.x1)/2,tz=(T.z0+T.z1)/2;
+        add({id:'_tree',e:'🌳',n:'Se reposer à l\'ombre de l\'arbre',ok:true,fn:()=>{const ya=Math.atan2(P.x-tx,P.z-tz);ctrlRun([D('look',rnd(10,18),{pose:'sitg',yaw:ya,label:'Se repose à l\'ombre d\'un arbre',warp:3,fx:{energy:.3,fun:.3}})]);}});
+        add({id:'_hug',e:'🤗',n:'Faire un câlin à l\'arbre',ok:true,fn:()=>{const ya=Math.atan2(tx-P.x,tz-P.z);ctrlRun([D('pet',3,{yaw:ya,label:'Fait un câlin à un arbre',say:'Merci pour l\'oxygène, mon chum.'})]);}});}}
+    if(a==='home'){const S=INT.home.spots;const near=k=>S[k]&&Math.hypot(S[k].x-P.x,S[k].z-P.z)<2.4;
+      if(near('toilet'))add({id:'_wc',e:'🚽',n:'Aller aux toilettes',ok:true,fn:()=>ctrlRun(at('home.toilet','idle',3,{pose:'sit',seatH:.45,label:'Va aux toilettes',fx:{hyg:.5}}))});
+      if(near('bsink')){add({id:'_teeth',e:'🪥',n:'Se brosser les dents',ok:true,fn:()=>ctrlRun(at('home.bsink','teeth',3,{label:'Se brosse les dents',fx:{hyg:1.5}}))});add({id:'_shave',e:'🪒',n:'Se raser',ok:true,fn:()=>ctrlRun(at('home.bsink','wipe',4,{label:'Se rase devant le miroir',fx:{hyg:1},say:'Beau bonhomme!'}))});}
+      if(near('bed')||near('bedsit')){add({id:'_napbed',e:'💤',n:'Faire une sieste',ok:true,fn:()=>ctrlRun(at('home.bed','sleep',rnd(40,70),{label:'Fait une sieste',warp:8,fx:{energy:.17}}))});add({id:'_readbed',e:'📚',n:'Lire au lit',ok:true,fn:()=>ctrlRun(at('home.bedsit','read',rnd(20,35),{label:'Lit au lit',warp:3,fx:{fun:.8}}))});}
+      if(near('ward'))add({id:'_ward',e:'👕',n:'Changer de vêtements',ok:true,fn:()=>{try{wardOpen();}catch(e){toast('Garde-robe indisponible',false);}}});
+      if(near('fridge'))add({id:'_drink',e:'🥤',n:'Prendre une boisson',ok:true,fn:()=>ctrlRun([...at('home.fridge','fridge',1.5,{label:'Prend une boisson dans le frigo'}),D('drink',3,{label:'Boit une boisson froide',fx:{food:.4,fun:.2}})])});
+      if(near('sink'))add({id:'_water',e:'💧',n:'Boire un verre d\'eau',ok:true,fn:()=>ctrlRun([...at('home.sink','wipe',1.5,{label:'Se sert un verre d\'eau'}),D('drink',2,{fx:{food:.1}})])});
+      if(near('plant'))add({id:'_plant',e:'🪴',n:'Arroser la plante',ok:true,fn:()=>ctrlRun(at('home.plant','give',3,{label:'Arrose la plante',say:'Pousse, ma belle!'}))});
+      if(near('window'))add({id:'_win',e:'🪟',n:'Regarder dehors',ok:true,fn:()=>ctrlRun(at('home.window','look',rnd(4,8),{label:'Regarde dehors par la fenêtre'}))});
+      if(near('entry'))add({id:'_keys',e:'🔑',n:'Chercher ses clés',ok:true,fn:()=>ctrlRun([D('look',3,{label:'Cherche ses clés',say:'Voyons, je les ai mises où?'}),D('give',1.5,{say:'Ah! Dans ma poche.'})])});}
+    else if(INT[a]&&!INT[a].outdoor)add({id:'_look',e:'👀',n:'Regarder autour',ok:true,fn:()=>ctrlRun([D('look',rnd(4,7),{label:'Regarde autour : '+(INT[a].name||a)})])});
+    else if(INT[a]&&INT[a].outdoor)add({id:'_photo',e:'🏞️',n:'Photographier le paysage',ok:true,fn:()=>ctrlRun([D('scroll',3,{label:'Photographie le paysage',say:'Wow, quelle vue!'}),F(()=>cnt('photo'))])});
+    selfOpts(add);}
+  return O;};}
 /* v149 : cellulaire simplifié — 8 apps regroupées, dock, ligne « Aujourd'hui » */
 const CGRP=[['carte','🗺️','Carte','linear-gradient(135deg,#6bc17a,#3d8bfd)',['carte','tokyo']],
  ['msg','💬','Messages','linear-gradient(135deg,#4cd964,#1f9d4a)',['messages','voisins']],
