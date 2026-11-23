@@ -278,7 +278,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
    super(small,...a);if(ref){const self=this;Object.defineProperty(this,'needsUpdate',{configurable:true,set(v){if(v===true){const src=ref.deref();if(src&&self.image===small){try{shrink(src,small);}catch(e){}}self.version++;}}});}}}
  THREE.CanvasTexture=CT;})();</script>
 <script>
-var GAME_VER=166;
+var GAME_VER=167;
 (()=>{
 const $=id=>document.getElementById(id);
 const sceneEl=$('scene');
@@ -5505,11 +5505,11 @@ function computeShot(dt){shot.t+=dt;const p=Mc.world(new V3());const yaw=Mc.yaw;
   if(Mc.area==='town'&&shot.type!=='plongee')clearCam(look,pos);else{const I=INT[Mc.area];if(I&&I.camB)clearTk(I,look,pos);}
   D_.pos.copy(pos);D_.look.copy(look);D_.fov=fov;}
 let CAMV_MODE='iso';try{CAMV_MODE=localStorage.getItem('marcelCam')||'iso';}catch(e){}if(!['suivi','face','iso','ciel'].includes(CAMV_MODE))CAMV_MODE='iso';let camSY=null;
-let CAMAREA=null,CAMCUT=false,CAMFIX=false,ISOOFF=0,ISOLOW=0,ISOCV={t:0,x:0,z:0,c:false};function townG(){return town;}function CTSTEER(){return typeof ctrlOn==='function'&&ctrlOn()&&!Mc.inCar&&!Mc.inBus&&(CAMV_MODE==='suivi'||CAMV_MODE==='face'||(CAMV_MODE==='iso'&&(Mc.area==='town'||!!OUTD[Mc.area])));}
+let CAMAREA=null,CAMCUT=false,CAMFIX=false,ISOOFF=0,ISOLOW=0,ISOCV={t:0,x:0,z:0,c:false};function townG(){return town;}function CTSTEER(){return typeof ctrlOn==='function'&&ctrlOn()&&!Mc.inCar&&!Mc.inBus&&(CAMV_MODE==='suivi'||CAMV_MODE==='face');}
 function computeMode(dt){const p=Mc.world(new V3());const car=Mc.inCar||Mc.inBus;let yaw=car&&!Mc.inBus?MCAR.yaw:Mc.yaw;if(camSY==null)camSY=yaw;
   const CT=typeof ctrlOn==='function'&&ctrlOn();let rate=car?2.2:1.6;
   if(CAMAREA!==Mc.area){CAMAREA=Mc.area;camSY=yaw;CAMCUT=true;computeMode.pp=null;computeMode.sv=0;CAMFIX=true;}
-  if(CT&&!car){const pp=computeMode.pp||p;const sp2=dt>0?Math.hypot(p.x-pp.x,p.z-pp.z)/dt:0;computeMode.pp=p.clone();computeMode.sv=lerp(computeMode.sv||0,sp2,Math.min(1,dt*6));const mv=Mc.mv&&(Mc.pose==='walk'||Mc.pose==='run')&&computeMode.sv>.6&&!CTSTEER();if(mv){const hy=Math.atan2(Mc.mv[0],Mc.mv[1]);let dd=hy-camSY;while(dd>PI)dd-=2*PI;while(dd<-PI)dd+=2*PI;if(Math.abs(dd)<1.1){yaw=hy;rate=(Mc.pose==='run'?1.4:1.0)*(Math.abs(dd)>.6?.6:1);}else yaw=camSY;}else yaw=camSY;}
+  if(CT&&!car){const pp=computeMode.pp||p;const sp2=dt>0?Math.hypot(p.x-pp.x,p.z-pp.z)/dt:0;computeMode.pp=p.clone();computeMode.sv=lerp(computeMode.sv||0,sp2,Math.min(1,dt*6));const mv=Mc.mv&&(Mc.pose==='walk'||Mc.pose==='run')&&computeMode.sv>.6&&!CTSTEER();if(mv){const hy=Math.atan2(Mc.mv[0],Mc.mv[1]);let dd=hy-camSY;while(dd>PI)dd-=2*PI;while(dd<-PI)dd+=2*PI;if(Math.abs(dd)<1.1){yaw=hy;rate=(Mc.pose==='run'?1.4:1.0)*(Math.abs(dd)>.6?.6:1);}else yaw=camSY;}else if(CTSTEER()&&!JOY.on){yaw=Mc.yaw;rate=2.2;}else yaw=camSY;}
   if(CT&&car&&MCAR.v<-.5)yaw=camSY;
   let d=yaw-camSY;while(d>PI)d-=2*PI;while(d<-PI)d+=2*PI;camSY+=d*(1-Math.exp(-dt*rate));
   const f=new V3(Math.sin(camSY),0,Math.cos(camSY));const town=Mc.area==='town'||!!OUTD[Mc.area];const I=INT[Mc.area];
@@ -9712,9 +9712,9 @@ function ctrlStep(ch,dt){if(Mc.inCar)return mcarStep(dt);if(trans)return .35;
   const m=JOY.on?JOY.m:0;
   if(m<.12){if(ch.pose==='walk'||ch.pose==='run')ch.pose='stand';if(ch.act==='phonewalk')ch.act=null;ctrlTarget();return .35;}
   let ux,uz,spK=1,bk=false,hy=null;const CMd=CAMV_MODE;const dtr=Math.min(.05,Math.max(0,tReal-(ctrlStep.tr||tReal)));ctrlStep.tr=tReal;
-  if(CMd==='suivi'||CMd==='face'||CMd==='iso'){if(camSY==null)camSY=ch.yaw;const sa=Math.atan2(JOY.x,-JOY.y);let r=(CMd==='face'?PI:0)-sa;while(r>PI)r-=2*PI;while(r<-PI)r+=2*PI;const ar=Math.abs(r);
-    if(ar>2.5){bk=true;spK=.55;camSY+=(CMd==='face'?1:-1)*JOY.x*2.4*dtr;hy=camSY;ux=-Math.sin(camSY);uz=-Math.cos(camSY);}
-    else{const tn=clamp(r/(PI/2),-1,1);camSY+=tn*2.4*Math.min(1,m/.55)*dtr;hy=camSY+clamp(r,-PI/4,PI/4);ux=Math.sin(hy);uz=Math.cos(hy);if(ar>PI/2)spK=.7;}}
+  if(CMd==='suivi'||CMd==='face'){if(camSY==null)camSY=ch.yaw;const sa=Math.atan2(JOY.x,-JOY.y);let r=(CMd==='face'?PI:0)-sa;while(r>PI)r-=2*PI;while(r<-PI)r+=2*PI;const ar=Math.abs(r);
+    if(ar>2.5){bk=true;spK=.55;camSY+=(CMd==='face'?1:-1)*JOY.x*1.2*dtr;hy=camSY;ux=-Math.sin(camSY);uz=-Math.cos(camSY);}
+    else{const tn=clamp(r/(PI/2),-1,1);camSY+=tn*Math.abs(tn)*1.25*Math.min(1,m/.55)*dtr;hy=camSY+clamp(r*.3,-.38,.38);ux=Math.sin(hy);uz=Math.cos(hy);if(ar>PI/2)spK=.7;}}
   else[ux,uz]=joyDir();
   const run=m>.9&&!bk;const v=(run?4.2:1.6*Math.max(.5,m/.9))*spK*dt;
   ch.pose=run?'run':'walk';ch.act=null;ch.seatH=null;ch.tyaw=hy!=null?hy:Math.atan2(ux,uz);if(hy!=null){let dy=ch.tyaw-ch.yaw;while(dy>PI)dy-=2*PI;while(dy<-PI)dy+=2*PI;if(Math.abs(dy)<.9)ch.yaw=ch.tyaw;}ch.mv=[ux,uz];ch.ph+=(bk?-1:1)*dt*(run?11:7.5*Math.max(.6,m));ch.back=[];
