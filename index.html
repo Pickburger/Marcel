@@ -278,7 +278,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
    super(small,...a);if(ref){const self=this;Object.defineProperty(this,'needsUpdate',{configurable:true,set(v){if(v===true){const src=ref.deref();if(src&&self.image===small){try{shrink(src,small);}catch(e){}}self.version++;}}});}}}
  THREE.CanvasTexture=CT;})();</script>
 <script>
-var GAME_VER=167;
+var GAME_VER=168;
 (()=>{
 const $=id=>document.getElementById(id);
 const sceneEl=$('scene');
@@ -5505,7 +5505,7 @@ function computeShot(dt){shot.t+=dt;const p=Mc.world(new V3());const yaw=Mc.yaw;
   if(Mc.area==='town'&&shot.type!=='plongee')clearCam(look,pos);else{const I=INT[Mc.area];if(I&&I.camB)clearTk(I,look,pos);}
   D_.pos.copy(pos);D_.look.copy(look);D_.fov=fov;}
 let CAMV_MODE='iso';try{CAMV_MODE=localStorage.getItem('marcelCam')||'iso';}catch(e){}if(!['suivi','face','iso','ciel'].includes(CAMV_MODE))CAMV_MODE='iso';let camSY=null;
-let CAMAREA=null,CAMCUT=false,CAMFIX=false,ISOOFF=0,ISOLOW=0,ISOCV={t:0,x:0,z:0,c:false};function townG(){return town;}function CTSTEER(){return typeof ctrlOn==='function'&&ctrlOn()&&!Mc.inCar&&!Mc.inBus&&(CAMV_MODE==='suivi'||CAMV_MODE==='face');}
+var CAMZ=1;let CAMAREA=null,CAMCUT=false,CAMFIX=false,ISOOFF=0,ISOLOW=0,ISOCV={t:0,x:0,z:0,c:false};function townG(){return town;}function CTSTEER(){return typeof ctrlOn==='function'&&ctrlOn()&&!Mc.inCar&&!Mc.inBus&&(CAMV_MODE==='suivi'||CAMV_MODE==='face');}
 function computeMode(dt){const p=Mc.world(new V3());const car=Mc.inCar||Mc.inBus;let yaw=car&&!Mc.inBus?MCAR.yaw:Mc.yaw;if(camSY==null)camSY=yaw;
   const CT=typeof ctrlOn==='function'&&ctrlOn();let rate=car?2.2:1.6;
   if(CAMAREA!==Mc.area){CAMAREA=Mc.area;camSY=yaw;CAMCUT=true;computeMode.pp=null;computeMode.sv=0;CAMFIX=true;}
@@ -5522,14 +5522,14 @@ function computeMode(dt){const p=Mc.world(new V3());const car=Mc.inCar||Mc.inBus
       ISOOFF+=(best-ISOOFF)*(1-Math.exp(-dt*(CAMFIX?60:3.2)));pos.copy(arm(camSY+ISOOFF));look.copy(lk);}
     else{pos.copy(p).add(new V3(9*k,9*k,9*k));look.copy(p).add(new V3(0,.9,0));}fov=40;}
   else{const h=town?(car?26+vl*.6:20):9;pos.copy(p).add(new V3(0,h,h*.18));look.copy(p);fov=46;}
-  if(!town&&I&&CAMV_MODE!=='ciel'&&CAMV_MODE!=='iso'){}
+  if(CAMZ!==1){const dv=pos.clone().sub(look);pos.copy(look).addScaledVector(dv,CAMZ);}
   const close=(CAMV_MODE==='suivi'||CAMV_MODE==='face')&&!town&&I&&I.closeG;for(const k in INT){const J=INT[k];if(J.closeG)J.closeG.visible=close&&J===I;}
   if(!town&&I&&!I.outdoor&&CAMV_MODE==='suivi'){const o=I.origin;const cx=clamp(pos.x,o.x-I.w/2+.35,o.x+I.w/2-.35),cz=clamp(pos.z,o.z-I.d/2+.35,o.z+I.d/2-.35);const hd=Math.hypot(cx-p.x,cz-p.z);
     if(hd<2.1){let ty=Math.atan2(p.x-o.x,p.z-o.z);if(CTSTEER()&&JOY.on)ty=camSY;if(Math.hypot(p.x-o.x,p.z-o.z)<.5)ty=camSY;let dd=ty-camSY;while(dd>PI)dd-=2*PI;while(dd<-PI)dd+=2*PI;camSY+=dd*(1-Math.exp(-dt*2.2));pos.x=cx;pos.z=cz;pos.y=Math.max(pos.y,p.y+2.2+(2.1-hd)*.9);}}
   if(close){const o=I.origin;pos.x=clamp(pos.x,o.x-I.w/2+.3,o.x+I.w/2-.3);pos.z=clamp(pos.z,o.z-I.d/2+.3,o.z+I.d/2-.3);pos.y=Math.min(pos.y,o.y+I.wallH-.25+(I.gY?I.gY(p.x-o.x,p.z-o.z):0));}
   if(CT&&Mc.area==='town'&&CAMV_MODE==='suivi'&&!car&&!CTSTEER()){const D0=5.2,H0=2.4,lk=look.clone();const free=yw=>{const cp=new V3(p.x-Math.sin(yw)*D0,p.y+H0,p.z-Math.cos(yw)*D0);const v=new V3();for(let i=2;i<=20;i++){v.lerpVectors(lk,cp,i/20);if(inBox(v)||(Math.hypot(v.x-p.x,v.z-p.z)>1.8&&occDyn(v.x,v.y,v.z)))return(i-1.6)/20;}return 1;};
     const fc=free(camSY);if(fc<.8){let best=camSY,bf=fc;for(const da of[.45,-.45,.9,-.9,1.5,-1.5,2.2,-2.2,PI]){const f2=free(camSY+da);if(f2>bf+.08){bf=f2;best=camSY+da;}}if(best!==camSY)camSY+=(best-camSY)*(CAMFIX?1:1-Math.exp(-dt*3));}CAMFIX=false;}
-  if(CT&&Mc.area==='town'&&CAMV_MODE!=='ciel'){const v=new V3();const blk=q=>inBox(q)||(Math.hypot(q.x-p.x,q.z-p.z)>1.8&&occDyn(q.x,q.y,q.z));const segFree=(a2,b2)=>{for(let i=2;i<=24;i++){v.lerpVectors(a2,b2,i/24);if(blk(v))return false;}return true;};
+  if(CT&&Mc.area==='town'&&CAMV_MODE!=='ciel'){const v=new V3();const VB=vehBoxes(Mc.inCar).filter(b=>Math.hypot(b.x-p.x,b.z-p.z)<16);const blk=q=>inBox(q)||(Math.hypot(q.x-p.x,q.z-p.z)>1.8&&occDyn(q.x,q.y,q.z))||(q.y<1.6&&Math.hypot(q.x-p.x,q.z-p.z)>.9&&(VB.some(b=>vbInBox(b,q.x,q.z,.25))||(q.y<1.1&&autoHit(q.x,q.z,.15))));const segFree=(a2,b2)=>{for(let i=2;i<=24;i++){v.lerpVectors(a2,b2,i/24);if(blk(v))return false;}return true;};
     if(!segFree(look,pos)){const lo=pos.clone();lo.y=Math.min(pos.y,look.y+.3);const lk2=look.clone();lk2.y=Math.min(look.y,p.y+1.0);if(segFree(lk2,lo)){pos.copy(lo);look.copy(lk2);}}
     for(let i=2;i<=24;i++){v.lerpVectors(look,pos,i/24);if(blk(v)){const np=new V3().lerpVectors(look,pos,Math.max(.12,(i-1.6)/24));const hd=Math.hypot(np.x-look.x,np.z-look.z);if(hd<2.4)np.y=Math.max(np.y,look.y+(2.4-hd)*1.3+.3);look.copy(p).add(new V3(0,1.05,0));pos.copy(np);D_.snap=true;break;}}}
   if(Mc.area==='town')clearCam(look,pos);else if(I&&I.camB)clearTk(I,look,pos);
@@ -9718,7 +9718,7 @@ function ctrlStep(ch,dt){if(Mc.inCar)return mcarStep(dt);if(trans)return .35;
   else[ux,uz]=joyDir();
   const run=m>.9&&!bk;const v=(run?4.2:1.6*Math.max(.5,m/.9))*spK*dt;
   ch.pose=run?'run':'walk';ch.act=null;ch.seatH=null;ch.tyaw=hy!=null?hy:Math.atan2(ux,uz);if(hy!=null){let dy=ch.tyaw-ch.yaw;while(dy>PI)dy-=2*PI;while(dy<-PI)dy+=2*PI;if(Math.abs(dy)<.9)ch.yaw=ch.tyaw;}ch.mv=[ux,uz];ch.ph+=(bk?-1:1)*dt*(run?11:7.5*Math.max(.6,m));ch.back=[];
-  const nx=ch.pos.x+ux*v,nz=ch.pos.z+uz*v;const stuck=ctrlBlocked(ch.area,ch.pos.x,ch.pos.z,.05);if(stuck||!ctrlBlocked(ch.area,nx,ch.pos.z,.3))ch.pos.x=nx;if(stuck||!ctrlBlocked(ch.area,ch.pos.x,nz,.3))ch.pos.z=nz;
+  const nx=ch.pos.x+ux*v,nz=ch.pos.z+uz*v;const stuck=ctrlBlocked(ch.area,ch.pos.x,ch.pos.z,.05);if(stuck){const f0=freeDist(ch.area,ch.pos.x,ch.pos.z);if(freeDist(ch.area,nx,nz)<f0-.001||f0>=9){ch.pos.x=nx;ch.pos.z=nz;}else{const fx=freeDist(ch.area,nx,ch.pos.z),fz=freeDist(ch.area,ch.pos.x,nz);if(fx<f0)ch.pos.x=nx;else if(fz<f0)ch.pos.z=nz;}}else{if(!ctrlBlocked(ch.area,nx,ch.pos.z,.3))ch.pos.x=nx;if(!ctrlBlocked(ch.area,ch.pos.x,nz,.3))ch.pos.z=nz;}
   if(ch.area==='town'){if(tReal-ctrlDoorT>1.2){for(const bk in BLD2INT){const b=BLD[bk];if(!b)continue;const dx=b.door.x-ch.pos.x,dz=b.door.z-ch.pos.z,d=Math.hypot(dx,dz);if(d<1.5&&(ux*-b.n.x+uz*-b.n.z)>.45){ctrlDoorT=tReal;ch.q.unshift({t:'enter',I:BLD2INT[bk],own:1});setTask('Entre : '+(INT[BLD2INT[bk]].name||bk));break;}}}
     if(Math.random()<dt*2)ch.node=nearestNode(ch.pos.x,ch.pos.z);}
   else{const I=INT[ch.area];if(I&&!I.outdoor&&I.building&&I.door&&ch.area!=='etage'&&tReal-ctrlDoorT>1.2&&ch.pos.z>I.d/2-.6&&Math.abs(ch.pos.x-I.door.x)<.8&&uz>.45){ctrlDoorT=tReal;ch.q.unshift({t:'exit',own:1});setTask('Sort dehors');}}
@@ -9787,7 +9787,7 @@ function ctrlOptions(){const O=[],h=hourOf(),a=Mc.area;const seen=new Set();cons
  const j=document.createElement('div');j.id='joy';j.innerHTML='<i></i>';sceneEl.appendChild(j);const pm=document.createElement('div');pm.id='pmenu';pm.setAttribute('role','dialog');pm.setAttribute('aria-label','Actions de Marcel');sceneEl.appendChild(pm);}
 let PMO=[];
 function pmenuOpen(OO,ttl){const O=OO||ctrlOptions();PMO=O;const pm=$('pmenu');const where=Mc.inCar?'Dans l\'auto':(INT[Mc.area]&&INT[Mc.area].name)||(Mc.area==='town'?'Dans le quartier':'');
-  pm.innerHTML=`<h3><span>${escH(ttl||'Que fait Marcel?')} <small style="color:var(--gris);font-weight:600">· ${escH(where)}</small></span><button type="button" data-p="x" aria-label="Fermer">✕</button></h3>`+(O.length?`<div class="pg">`+O.map((o,i)=>`<button type="button" data-p="${i}" ${o.ok===true?'':'disabled'}><span>${o.e}</span><b>${escH(o.n)}${o.ok===true?'':`<small>${escH(String(o.ok))}</small>`}</b></button>`).join('')+`</div>`:`<div class="pm0">Rien à faire ici. Approche-toi d'un objet (lit, cuisinière, sofa…), d'un comptoir ou de ton auto, ou entre dans un commerce.</div>`);
+  pm.innerHTML=`<h3><span>${escH(ttl||'Que fait Marcel?')} <small style="color:var(--gris);font-weight:600">· ${escH(where)}</small></span><button type="button" data-p="x" aria-label="Fermer">✕</button></h3>`+(O.length?`<div class="pg">`+O.map((o,i)=>`<button type="button" data-p="${i}" ${o.ok===true?'':'disabled'}><span>${o.e}</span><b>${escH(o.n)}${o.ok===true?(o.sub?`<small>${escH(o.sub)}</small>`:''):`<small>${escH(String(o.ok))}</small>`}</b></button>`).join('')+`</div>`:`<div class="pm0">Rien à faire ici. Approche-toi d'un objet (lit, cuisinière, sofa…), d'un comptoir ou de ton auto, ou entre dans un commerce.</div>`);
   pm.classList.add('on');CTRL.menu=true;}
 function pmenuClose(){$('pmenu').classList.remove('on');CTRL.menu=false;}
 $('pmenu').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;const k=b.dataset.p;if(k==='x'){pmenuClose();return;}const o=PMO[+k];pmenuClose();if(!o||o.ok!==true)return;if(o.fn){o.fn();return;}if(CTRL.busy)ctrlCancel();ctrlRun(o.go());});
@@ -9924,7 +9924,170 @@ function obbHit(a,b){if(Math.hypot(a.x-b.x,a.z-b.z)>a.hl+a.hw+b.hl+b.hw)return f
   if(area==='town'){if(propHit(x,z,r))return true;if(r>0){for(const b of vehBoxes(Mc.inCar))if(vbInBox(b,x,z,r))return true;}}
   if(r===.3){for(const c of ALL){if(c===Mc||c.area!==area||c.hid||!c.m||c.m.root.visible===false)continue;const d=Math.hypot(c.pos.x-x,c.pos.z-z);if(d<.55&&d<Math.hypot(c.pos.x-Mc.pos.x,c.pos.z-Mc.pos.z)-.001)return true;}}
   return false;};}
+/* v168 : collisions auto — on « rastérise » la géométrie solide de la ville (fontaine, haies, clôtures, kiosques, abribus, statues, arbres…) dans une grille de 25 cm */
+var AUTOC=null,WATERS=[];const OCCN=1920,OCCS=.25,OCCO=240;
+function autoCols(){if(AUTOC)return AUTOC;const G={},L=[];const OG=new Uint8Array(OCCN*OCCN);AUTOC={G,L,OG};try{const g=town;g.updateMatrixWorld(true);const tg=new Set(cars.map(c=>c.g));const doors=Object.values(BLD).map(d=>d.door);
+  const nodoor=new Uint8Array(OCCN*OCCN);for(const d of doors){const R=2.3;for(let x=d.x-R;x<=d.x+R;x+=OCCS)for(let z=d.z-R;z<=d.z+R;z+=OCCS){if(Math.hypot(x-d.x,z-d.z)>R)continue;const ix=Math.floor((x+OCCO)/OCCS),iz=Math.floor((z+OCCO)/OCCS);if(ix>=0&&iz>=0&&ix<OCCN&&iz<OCCN)nodoor[ix*OCCN+iz]=1;}}
+  const a=new V3(),b=new V3(),c=new V3();const Y0=.55,Y1=1.7;
+  g.traverse(o=>{if(!o.isMesh||o.isInstancedMesh||!o.visible)return;for(let q=o;q&&q!==g;q=q.parent){if(q.visible===false||(q.userData&&(q.userData.chr||q.userData.car))||tg.has(q)||q===MCAR.g||(typeof ARROW!=='undefined'&&q===ARROW))return;}
+    const mt=Array.isArray(o.material)?o.material[0]:o.material;if(mt&&mt.transparent&&mt.opacity<.6)return;if(mt&&mt.visible===false)return;
+    const geo=o.geometry;if(!geo||!geo.attributes||!geo.attributes.position)return;if(!geo.boundingBox)geo.computeBoundingBox();const bb=geo.boundingBox.clone().applyMatrix4(o.matrixWorld);if(bb.max.y<Y0||bb.min.y>Y1)return;
+    const P=geo.attributes.position,I=geo.index,M=o.matrixWorld,n=I?I.count:P.count;
+    for(let t=0;t<n;t+=3){const i0=I?I.getX(t):t,i1=I?I.getX(t+1):t+1,i2=I?I.getX(t+2):t+2;a.fromBufferAttribute(P,i0).applyMatrix4(M);b.fromBufferAttribute(P,i1).applyMatrix4(M);c.fromBufferAttribute(P,i2).applyMatrix4(M);
+      const y0=Math.min(a.y,b.y,c.y),y1=Math.max(a.y,b.y,c.y);if(y1<Y0||y0>Y1)continue;
+      const x0=Math.floor((Math.min(a.x,b.x,c.x)+OCCO)/OCCS),x1=Math.floor((Math.max(a.x,b.x,c.x)+OCCO)/OCCS),z0=Math.floor((Math.min(a.z,b.z,c.z)+OCCO)/OCCS),z1=Math.floor((Math.max(a.z,b.z,c.z)+OCCO)/OCCS);
+      if(x1-x0>40||z1-z0>40){ /* grand triangle (sol en pente, toit) : on ne marque que s'il est presque vertical */ if(y1-y0<1)continue;}
+      if((x1-x0)*(z1-z0)>64&&(y1-y0)<.4)continue;
+      for(let ix=Math.max(0,x0);ix<=Math.min(OCCN-1,x1);ix++)for(let iz=Math.max(0,z0);iz<=Math.min(OCCN-1,z1);iz++){const k=ix*OCCN+iz;if(!nodoor[k])OG[k]=1;}}});
+  for(const q of AABB){const x0=Math.floor((q.x0+OCCO)/OCCS),x1=Math.floor((q.x1+OCCO)/OCCS),z0=Math.floor((q.z0+OCCO)/OCCS),z1=Math.floor((q.z1+OCCO)/OCCS);for(let ix=Math.max(0,x0);ix<=Math.min(OCCN-1,x1);ix++)for(let iz=Math.max(0,z0);iz<=Math.min(OCCN-1,z1);iz++)OG[ix*OCCN+iz]=0;}
+  for(const t of TREEP)L.push({x:t[0],z:t[1],r:.3*t[2],e:1});
+  {const ices=[];g.traverse(o=>{if(o.isMesh&&o.geometry&&o.geometry.type==='CircleGeometry'&&o.material&&o.material.color&&['a8d4ff','cde2ef'].includes(o.material.color.getHexString()))ices.push(o);});
+   const iceAt=(x,z)=>()=>ices.some(o=>{if(!o.visible)return false;for(let q=o;q;q=q.parent)if(q.visible===false)return false;const v=o.getWorldPosition(new V3());return Math.hypot(v.x-x,v.z-z)<3;});
+   if(typeof PARK!=='undefined'&&PARK.pond){const P=PARK.pond;L.push({x:P.x,z:P.z,r:P.r+.25,e:P.r+1,water:1,off:iceAt(P.x,P.z)});}
+   if(typeof POND!=='undefined'){L.push({x:POND.x,z:POND.z,hx:POND.rx*.92,hz:POND.rz*.92,e:POND.rx+1,water:1,ell:1,off:iceAt(POND.x,POND.z)});}}
+  for(const it of L){const e=it.e;for(let gx=Math.floor((it.x-e)/8);gx<=Math.floor((it.x+e)/8);gx++)for(let gz=Math.floor((it.z-e)/8);gz<=Math.floor((it.z+e)/8);gz++)(G[gx+','+gz]=G[gx+','+gz]||[]).push(it);}
+ }catch(e){console.error('autoCols',e);}return AUTOC;}
+setTimeout(()=>{try{autoCols();}catch(e){}},2500);
+function occGrid(x,z,r){const A=autoCols(),OG=A.OG;const x0=Math.floor((x-r+OCCO)/OCCS),x1=Math.floor((x+r+OCCO)/OCCS),z0=Math.floor((z-r+OCCO)/OCCS),z1=Math.floor((z+r+OCCO)/OCCS);
+  for(let ix=Math.max(0,x0);ix<=Math.min(OCCN-1,x1);ix++)for(let iz=Math.max(0,z0);iz<=Math.min(OCCN-1,z1);iz++){if(!OG[ix*OCCN+iz])continue;if(r>.15){const cx=ix*OCCS-OCCO+OCCS/2,cz=iz*OCCS-OCCO+OCCS/2;if(Math.hypot(cx-x,cz-z)>r+OCCS*.6)continue;}return true;}return false;}
+function autoHit(x,z,r){const A=autoCols();if(occGrid(x,z,Math.max(0,r-.08)))return true;const B=A.G[Math.floor(x/8)+','+Math.floor(z/8)];if(!B)return false;for(const p of B){if(p.off&&p.off())continue;const dx=x-p.x,dz=z-p.z;if(p.ell){const ex=dx/(p.hx+r),ez=dz/(p.hz+r);if(ex*ex+ez*ez<1)return true;continue;}if(p.hx==null){if(dx*dx+dz*dz<(p.r+r)*(p.r+r))return true;}else if(Math.abs(dx)<p.hx+r&&Math.abs(dz)<p.hz+r)return true;}return false;}
+{const _cb2=ctrlBlocked;ctrlBlocked=function(area,x,z,r){if(_cb2(area,x,z,r))return true;if(area==='town'&&!(Mc.inCar&&r===0&&!CARAUTO())&&autoHit(x,z,r))return true;return false;};}
+function CARAUTO(){return true;}
+/* sortie d'un obstacle : on ne peut que s'en éloigner (plus de « traversée » une fois coincé) */
+function freeDist(area,x,z){if(!ctrlBlocked(area,x,z,.05))return 0;for(let rr=.15;rr<=2.4;rr+=.15)for(let k=0;k<12;k++){const a=k*PI/6;if(!ctrlBlocked(area,x+Math.sin(a)*rr,z+Math.cos(a)*rr,.05))return rr;}return 9;}
 let CARHIT=null;
+/* v168 : zoom caméra (pincer à deux doigts / molette) */
+{const cv=$('cv');const PZ=new Map();let d0=0,z0=1;const dist=()=>{const a=[...PZ.values()];return Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);};
+ cv.addEventListener('pointerdown',e=>{PZ.set(e.pointerId,[e.clientX,e.clientY]);if(PZ.size===2){d0=dist();z0=CAMZ;}},true);
+ cv.addEventListener('pointermove',e=>{if(!PZ.has(e.pointerId))return;PZ.set(e.pointerId,[e.clientX,e.clientY]);if(PZ.size===2&&d0>20){CAMZ=clamp(z0*d0/Math.max(20,dist()),.55,1.9);e.stopImmediatePropagation();}},true);
+ const up=e=>{PZ.delete(e.pointerId);};for(const ev of['pointerup','pointercancel','pointerleave'])cv.addEventListener(ev,up,true);
+ cv.addEventListener('wheel',e=>{if(typeof ctrlOn==='function'&&!ctrlOn())return;e.preventDefault();e.stopImmediatePropagation();CAMZ=clamp(CAMZ*Math.exp(e.deltaY*.0012),.55,1.9);},{passive:false,capture:true});}
+/* v168 : style « Les Sims » — besoins (dont la vessie), losange d'humeur, bulles de pensée, file d'actions, interactions partout */
+if(need.blad==null)need.blad=85;
+const NEEDS=[['food','Faim','🍔'],['energy','Énergie','⚡'],['hyg','Hygiène','🛁'],['blad','Vessie','🚽'],['social','Social','💬'],['fun','Plaisir','🎉']];
+const NEEDTIP={food:'Mange : frigo, cuisinière, resto, casse-croûte…',energy:'Dors ou fais une sieste (lit, divan)',hyg:'Douche, lavabo, se laver les mains',blad:'Toilettes : à la maison ou dans un commerce',social:'Jase avec quelqu\'un, appelle un ami',fun:'Télé, jeux, musique, danse, sorties'};
+function moodVal(){let s=0,w=0;for(const[k]of NEEDS){const v=need[k]==null?60:need[k];const ww=v<20?3:v<40?1.6:1;s+=v*ww;w+=ww;}return s/w;}
+function moodCol(m){return m>68?'#3ddc5a':m>48?'#b8e04a':m>30?'#f0a23b':'#e5484d';}
+function moodTxt(m){return m>80?'Rayonnant':m>68?'Heureux':m>48?'Correct':m>30?'Mal à l\'aise':'Misérable';}
+/* --- losange (plumbob) --- */
+let PLUMB=null;function plumbTick(){try{if(!Mc||!Mc.m||!Mc.m.root)return;if(!PLUMB){const g=new THREE.OctahedronGeometry(.11,0);g.scale(1,1.7,1);PLUMB=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:'#3ddc5a',emissive:'#1f8a33',emissiveIntensity:.8,roughness:.25,metalness:.1,transparent:true,opacity:.92}));PLUMB.renderOrder=5;}
+  const root=Mc.m.root;if(PLUMB.parent!==root){root.add(PLUMB);}PLUMB.position.set(0,2.32+Math.sin(tReal*2.2)*.035,0);PLUMB.rotation.y=tReal*1.6;const c=moodCol(moodVal());PLUMB.material.color.set(c);PLUMB.material.emissive.set(c).multiplyScalar(.55);PLUMB.visible=!Mc.inCar&&!Mc.inBus&&SIMSOPT.plumb;}catch(e){}}
+var SIMSOPT={plumb:true};
+/* --- HUD : bouton humeur + panneau des besoins + file d'actions --- */
+{const st=document.createElement('style');st.textContent=`#moodB{position:absolute;top:92px;left:8px;z-index:7;width:36px;height:36px;border-radius:10px;border:1px solid var(--trait);background:rgba(18,22,30,.82);backdrop-filter:blur(6px);cursor:pointer;display:grid;place-items:center;padding:0}
+#moodB i{width:14px;height:22px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);background:#3ddc5a;display:block;box-shadow:0 0 8px currentColor}#moodB b{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;border-radius:8px;background:#e5484d;color:#fff;font:700 .62rem/16px var(--f-body);display:none;padding:0 3px}#moodB.warn b{display:block}
+#needP{position:absolute;top:92px;left:50px;z-index:8;width:min(230px,calc(100% - 66px));background:rgba(18,22,30,.94);backdrop-filter:blur(8px);border:1px solid var(--trait);border-radius:14px;padding:10px 11px;display:none;color:var(--craie)}#needP.on{display:block}
+#needP h4{margin:0 0 6px;font:800 .82rem var(--f-display);display:flex;align-items:center;gap:6px}#needP h4 i{width:10px;height:16px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);display:inline-block}
+#needP .nr{display:grid;grid-template-columns:22px 1fr 30px;align-items:center;gap:6px;margin:5px 0;font-size:.72rem}#needP .nb{height:9px;border-radius:5px;background:#2a3242;overflow:hidden}#needP .nb u{display:block;height:100%;border-radius:5px;transition:width .4s}
+#needP .nt{color:var(--gris);font-size:.64rem;margin-top:6px;line-height:1.3}#needP .nr span{text-align:right;color:var(--gris);font-size:.66rem}
+#simQ{position:absolute;z-index:7;display:flex;gap:5px;left:10px}#simQ button{width:40px;height:40px;border-radius:10px;border:1px solid var(--trait);background:rgba(18,22,30,.86);font-size:1.15rem;cursor:pointer;position:relative;padding:0}#simQ button.cur{border-color:#3ddc5a;box-shadow:0 0 0 2px rgba(61,220,90,.35)}#simQ button:after{content:'✕';position:absolute;top:-6px;right:-6px;width:15px;height:15px;border-radius:50%;background:#3a4356;color:#fff;font-size:.55rem;line-height:15px}
+#needP .nm{font-size:.7rem;color:var(--gris);margin:-2px 0 4px}`;document.head.appendChild(st);
+ const b=document.createElement('button');b.id='moodB';b.type='button';b.setAttribute('aria-label','Besoins et humeur de Marcel');b.innerHTML='<i></i><b>!</b>';sceneEl.appendChild(b);
+ const p=document.createElement('div');p.id='needP';p.setAttribute('role','dialog');p.setAttribute('aria-label','Besoins de Marcel');sceneEl.appendChild(p);
+ const q=document.createElement('div');q.id='simQ';q.setAttribute('aria-label','File d\'actions');sceneEl.appendChild(q);
+ b.addEventListener('click',e=>{e.stopPropagation();p.classList.toggle('on');needRender();});
+ for(const el of[b,p,q])for(const ev of['pointerdown','touchstart','mousedown'])el.addEventListener(ev,e=>e.stopPropagation(),{passive:true});
+ p.addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('[data-n=x]'))p.classList.remove('on');});
+ q.addEventListener('click',e=>{e.stopPropagation();const t=e.target.closest('[data-q]');if(!t)return;const i=+t.dataset.q;if(i<0){ctrlCancel();}else CTRLQ.splice(i,1);qRender();});}
+function needRender(){const p=$('needP');if(!p||!p.classList.contains('on'))return;const m=moodVal(),c=moodCol(m);let low=null;
+  p.innerHTML=`<h4><i style="background:${c}"></i>Marcel · ${moodTxt(m)}<button type="button" data-n="x" aria-label="Fermer" style="margin-left:auto;width:24px;height:24px;border-radius:50%;border:1px solid var(--trait);background:#232b3a;color:var(--craie);cursor:pointer">✕</button></h4><div class="nm">Humeur ${Math.round(m)} %</div>`+NEEDS.map(([k,n,e])=>{const v=Math.round(need[k]==null?60:need[k]);if(v<35&&(!low||v<need[low]))low=k;const col=v<25?'#e5484d':v<50?'#f0a23b':'#3ddc5a';return`<div class="nr"><span style="text-align:left;font-size:.9rem;color:inherit">${e}</span><div><div style="font-size:.66rem;margin-bottom:2px">${n}</div><div class="nb"><u style="width:${v}%;background:${col}"></u></div></div><span>${v}</span></div>`;}).join('')+(low?`<div class="nt">💡 ${NEEDTIP[low]}</div>`:`<div class="nt">Touche Marcel ou un objet pour voir ce qu'il peut faire.</div>`);}
+var CTRLQ=[],QCUR=null;
+function qRender(){const q=$('simQ');if(!q)return;const show=typeof ctrlOn==='function'&&ctrlOn()&&!Mc.inCar;const cur=CTRL.busy&&QCUR?QCUR:null;
+  if(!show||(!cur&&!CTRLQ.length)){q.innerHTML='';q.style.display='none';return;}q.style.display='flex';
+  const cm=$('camModes');if(cm){const r=cm.getBoundingClientRect(),s=sceneEl.getBoundingClientRect();q.style.bottom=(s.bottom-r.top+8)+'px';}
+  const html=(cur?`<button type="button" class="cur" data-q="-1" title="${escH(cur.n)} — toucher pour arrêter" aria-label="Arrêter : ${escH(cur.n)}">${cur.e}</button>`:'')+CTRLQ.map((o,i)=>`<button type="button" data-q="${i}" title="${escH(o.n)} — toucher pour retirer" aria-label="Retirer : ${escH(o.n)}">${o.e}</button>`).join('');if(q.innerHTML!==html)q.innerHTML=html;}
+/* file : on garde les actions choisies pendant qu'il est occupé */
+{const pm=$('pmenu');pm.addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;const k=b.dataset.p;if(k==='x')return;const o=PMO[+k];if(!o||o.ok!==true)return;
+   const busy=CTRL.busy&&Mc.q.length&&Mc.q[0].t!=='manual'&&!Mc.inCar;const run=()=>{QCUR={e:o.e,n:o.n};if(o.fn)o.fn();else{ctrlRun(o.go());}};
+   if(busy&&o.id!=='_stop'&&!/^_(out|hw|radio|gas)/.test(o.id)){e.stopImmediatePropagation();pmenuClose();if(CTRLQ.length>=4){toast('La file d\'actions est pleine (4 max)',false);return;}CTRLQ.push({e:o.e,n:o.n,fn:run});toast('➕ Ajouté à la file : '+o.n);qRender();return;}
+   QCUR={e:o.e,n:o.n};},true);}
+function qPump(){if(!CTRLQ.length||CTRL.busy||Mc.inCar||trans||MG.on)return;if(!(Mc.q.length&&Mc.q[0].t==='manual'))return;const o=CTRLQ.shift();try{o.fn();}catch(err){console.error(err);}qRender();}
+/* --- interactions « Sims » par type d'objet --- */
+const SA=(n,a,d,fx,say)=>[n,a,d,fx||{},say||null];
+const SIMSACT=[
+ [/^home\.sofa[LR]$/,[SA('Regarde les nouvelles','tv',20,{fun:.4}),SA('Lit un magazine','read',15,{fun:.5}),SA('Texte des amis','text',10,{social:1.2},'*Quoi de neuf?*'),SA('Fait des mots croisés','puzzle',20,{fun:.6}),SA('Rêvasse sur le divan','look',8,{fun:.3,energy:.2},'*Ahhh… la belle vie.*')]],
+ [/^home\.guitar$/,[SA('Compose une chanson','guitar',25,{fun:.9},'*Ça, c\'est un hit!*'),SA('Pratique ses gammes','guitar',15,{fun:.5})]],
+ [/^home\.window$/,[SA('Regarde dehors','look',6,{fun:.3}),SA('Espionne les voisins','look',5,{fun:.5,social:.3},'*Tiens donc…*'),SA('Photographie la vue','photo',3,{fun:.6})]],
+ [/^home\.dance$/,[SA('Danse le disco','dance',8,{fun:1.1,energy:-.3},'*Stayin\' alive!*'),SA('Pratique le moonwalk','dance',6,{fun:1},'*Hii-hii!*')]],
+ [/^home\.(plant|inst_plantes)$/,[SA('Arrose les plantes','water',4,{fun:.3}),SA('Parle aux plantes','talk',4,{fun:.5,social:.2},'*Pousse, ma belle, pousse!*'),SA('Taille les feuilles','water',6,{fun:.4})]],
+ [/^home\.shelf$/,[SA('Lit un roman','read',30,{fun:.6}),SA('Feuillette un livre de recettes','read',10,{fun:.4}),SA('Époussette l\'étagère','look',6,{hyg:-.2})]],
+ [/^home\.fridge$/,[SA('Prend une collation','fridge',5,{food:4.5},'*Miam!*'),SA('Boit un verre de lait','drink',3,{food:2,blad:-1}),SA('Regarde dans le frigo… sans raison','fridge',2,{fun:.2},'*Hmm… rien de nouveau.*'),SA('Fait l\'inventaire du frigo','fridge',4,{})]],
+ [/^home\.stove$/,[SA('Fait des crêpes','cook',15,{food:3.2,fun:.4},'*La première est toujours ratée.*'),SA('Fait du popcorn','cook',6,{food:2,fun:.5}),SA('Se fait un grilled cheese','cook',8,{food:4.5})]],
+ [/^home\.sink$/,[SA('Fait la vaisselle','dishes',12,{hyg:.3,fun:-.2}),SA('Se lave les mains','dishes',2,{hyg:6}),SA('Boit un verre d\'eau','drink',1.5,{food:.5,blad:-2})]],
+ [/^home\.trash$/,[SA('Sort les poubelles','give',4,{hyg:-1}),SA('Fait le recyclage','give',6,{fun:.2},'*Un geste pour la planète.*')]],
+ [/^home\.eat2?$/,[SA('Mange une collation','eat',8,{food:3}),SA('Boit un café','drink',6,{energy:1.2,blad:-1}),SA('Paie ses factures','text',8,{fun:-.4},'*Encore une facture d\'Hydro…*'),SA('Écrit dans son journal','read',10,{fun:.5})]],
+ [/^home\.bed$/,[SA('Fait une petite sieste','nap',40,{energy:.5}),SA('Se détend au lit avec son cell','scroll',12,{fun:.5,energy:.15})]],
+ [/^home\.bedsit$/,[SA('Médite au bord du lit','sit',10,{fun:.3,energy:.3},'*Ommm…*'),SA('Texte avant de dormir','text',8,{social:1})]],
+ [/^home\.ward$/,[SA('Change de tenue','dress',4,{fun:.3},'*Pas pire pantoute!*'),SA('Range le linge','dress',8,{}),SA('Essaie un look farfelu','dress',5,{fun:.9},'*Trop audacieux?*')]],
+ [/^home\.(desk|inst_desk)$/,[SA('Navigue sur Internet','type',15,{fun:.6}),SA('Écrit un billet de blogue','type',20,{fun:.5}),SA('Magasine en ligne','type',10,{fun:.5},'*Panier : 14 articles. Oups.*'),SA('Clavarde avec des amis','type',12,{social:1.1}),SA('Regarde des vidéos de chats','type',10,{fun:.9},'*Hahaha!*')]],
+ [/^home\.yoga$/,[SA('Fait du yoga','yoga',20,{fun:.4,energy:.2}),SA('Médite','yoga',10,{fun:.3,energy:.3},'*Inspire… expire…*'),SA('Fait des étirements','stretch',6,{energy:.3})]],
+ [/^home\.toilet$/,[SA('Utilise la toilette','sit',3,{blad:35},'*Ahhh, enfin.*'),SA('Lit sur la toilette','read',8,{blad:14,fun:.4}),SA('Nettoie la toilette','look',6,{hyg:-.4})]],
+ [/^home\.bsink$/,[SA('Se brosse les dents','dishes',3,{hyg:5}),SA('Se lave le visage','dishes',2,{hyg:7}),SA('Se regarde dans le miroir','look',2,{fun:.6},'*Salut, beau bonhomme!*'),SA('Pratique un discours au miroir','talk',6,{social:.6,fun:.3},'*Mesdames et messieurs…*')]],
+ [/^home\.shower$/,[SA('Chante sous la douche','shower',10,{hyg:6,fun:.6},'*La la laaa!*'),SA('Prend une douche rapide','shower',5,{hyg:12})]],
+ [/^home\.pantry$/,[SA('Grignote des biscuits','pantry',4,{food:4}),SA('Range l\'épicerie','stock',8,{})]],
+ [/^home\.espresso$/,[SA('Se fait un espresso','press',3,{energy:5,blad:-1},'*Ça réveille!*'),SA('Fait du latte art','press',5,{fun:.8,energy:3})]],
+ [/^home\.aqua$/,[SA('Nourrit les poissons','feed',2,{fun:.6}),SA('Regarde les poissons','look',6,{fun:.5,energy:.1},'*Ils sont tellement zen.*'),SA('Nettoie l\'aquarium','water',10,{fun:.1})]],
+ [/^home\.vinyle$/,[SA('Danse sur un vieux disque','dance',8,{fun:1.1})]],
+ [/^home\.piano$/,[SA('Compose au piano','piano',20,{fun:.8}),SA('Joue « Au clair de la lune »','piano',5,{fun:.6})]],
+ [/^home\.fauteuil$/,[SA('Lit le journal','read',12,{fun:.4}),SA('Tricote un foulard','puzzle',20,{fun:.6}),SA('Fait une mini-sieste','sit',12,{energy:.6},'*Zzz…*')]],
+ [/^home\.laundry$/,[SA('Fait le lavage','dishes',10,{hyg:.6}),SA('Plie le linge','dress',8,{})]],
+ [/^home\.(cat|bol)$/,[SA('Flatte le chat','pet',4,{fun:.8,social:.3},'*Qui c\'est le plus beau?*'),SA('Joue avec le chat','pet',6,{fun:1}),SA('Remplit le bol','feed',2,{})]],
+ [/^home\.tableau$/,[SA('Admire son tableau','look',4,{fun:.4},'*Du grand art.*')]],
+ [/^home\.(tapis)$/,[SA('Marche sur le tapis roulant','tread',12,{energy:-.4,fun:.2,hyg:-.6})]],
+ /* commerces et lieux publics */
+ [/\.(comptoir|caisse|cais|cpt\d*|accueil|guichet|order|ticket|bar)$/,[SA('Jase avec l\'employé','talk',4,{social:1.6},'*Belle journée, hein?*'),SA('Demande une recommandation','talk',3,{social:1,fun:.3},'*Qu\'est-ce que vous me conseillez?*'),SA('Raconte une blague','talk',2,{social:1.4,fun:.8},'*Connaissez-vous celle du pingouin?*'),SA('Demande où sont les toilettes','talk',1,{social:.3},'*Les toilettes, s\'il vous plaît?*')]],
+ [/\.(table\d*|tbl|t[ABC]|seat[AB]?|dine|e_tab)$/,[SA('Boit un café','drink',8,{energy:1,blad:-1,fun:.2}),SA('Lit le journal','read',12,{fun:.5}),SA('Texte des amis','text',8,{social:1.1}),SA('Observe les gens','look',6,{fun:.5},'*Les gens sont fascinants.*'),SA('Fait des mots croisés','puzzle',15,{fun:.6})]],
+ [/\.(rayon\d*|aisle\d|allee|outils|peinture|fruit|lait|chips|nourriture|cannes|leurres|souliers|mode|livres|jouets|electr|teles|jeux|gadgets|vit|browse|res|pneus|cages|chiots|demo)$/,[SA('Regarde les produits','browse',6,{fun:.5}),SA('Compare les prix','browse',4,{fun:.2},'*2 pour 5 $… intéressant.*'),SA('Lit les étiquettes','browse',3,{fun:.2}),SA('Prend une photo pour un ami','photo',2,{social:.8},'*Tu veux ça?*')]],
+ [/\.(banc\d*|attente|h_attente2|banquette|tabouret|siege|seat2|sofa|bench\w*)$/,[SA('Attend en regardant son cell','scroll',6,{fun:.4}),SA('Jase avec son voisin','talk',5,{social:1.4},'*Il fait beau, hein?*'),SA('Observe les passants','look',5,{fun:.4}),SA('Ferme les yeux un instant','sit',8,{energy:.5},'*Zzz…*')]],
+ [/\.(fontaine|cv_fontaine)$/,[SA('Lance une pièce et fait un vœu','give',1,{fun:.8},'*Je souhaite…*'),SA('Admire les jets d\'eau','look',4,{fun:.5})]],
+ [/\.(lac|belvedere|baie|plage|etang|pont|f_vue|e_rive|q_marina|terrasse|hublot|fenetre|window)$/,[SA('Admire la vue','look',6,{fun:.7},'*Wow…*'),SA('Prend une photo','photo',2,{fun:.8}),SA('Fait un égoportrait','photo',2,{fun:.6,social:.4},'*Souris!*'),SA('Respire l\'air frais','stretch',4,{energy:.4})]],
+ [/\.(popcorn|f_poutine|f_sushi|f_pizza|f_smooth|crepe|bonbons|rp_creme|rp_choco|rp_fromage|four|brew)$/,[SA('Hume les bonnes odeurs','look',2,{fun:.3,food:.5},'*Ça sent bon!*'),SA('Regarde le menu','browse',3,{})]],
+ [/\.(slot\d*|borne\d*|pince|arcadeA|gacha|purikura)$/,[SA('Regarde quelqu\'un jouer','look',5,{fun:.6,social:.3}),SA('Encourage les joueurs','talk',3,{social:1,fun:.5},'*Vas-y, vas-y!*')]],
+ [/\.(lit|h_lit|litsit)$/,[SA('Fait une petite sieste','nap',30,{energy:.6}),SA('Regarde son cell au lit','scroll',10,{fun:.5})]],
+ [/\.(douche)$/,[SA('Prend une douche','shower',8,{hyg:10})]],
+ [/\.(bureau|h_desk|e_bureau|desk)$/,[SA('Travaille un peu','type',15,{fun:-.2}),SA('Écrit des cartes postales','type',8,{social:.8})]],
+ [/^gym\.tapis\d$/,[SA('Court sur le tapis','tread',15,{energy:-.4,hyg:-.8,fun:.3}),SA('Marche en pente','tread',10,{energy:-.2,hyg:-.5})]],
+ [/^gym\.velo\d$/,[SA('Pédale à fond','pedal',12,{energy:-.4,hyg:-.8,fun:.3},'*Allez, allez!*'),SA('Pédale en regardant la télé','pedal',15,{fun:.5,hyg:-.5})]],
+ [/^gym\.(halteres|banc)$/,[SA('Soulève des haltères','lift',10,{energy:-.3,hyg:-.7},'*Une de plus!*'),SA('Se regarde les biceps','look',2,{fun:.6},'*Pas pire, Marcel!*')]],
+ [/^gym\.(sac|tapisol)$/,[SA('Fait des redressements','squat',8,{energy:-.3,hyg:-.6}),SA('S\'étire après l\'entraînement','stretch',5,{energy:.4})]],
+ [/^eglise\.(puces\d|bingo|cafe)$/,[SA('Fouille dans les puces','browse',8,{fun:.6},'*Un vieux vinyle de Beau Dommage!*'),SA('Jase avec les bénévoles','talk',5,{social:1.5}),SA('Boit un café filtre','drink',5,{energy:.8,blad:-1})]],
+ [/\.(cafe|espresso|cooler)$/,[SA('Boit un café','drink',4,{energy:1.2,blad:-1.5}),SA('Jase autour de la machine','talk',5,{social:1.4},'*Pis, ta fin de semaine?*')]],
+ [/\.(micro)$/,[SA('Chante une ballade','dance',6,{fun:1.2,social:.6},'*♪ Ma-a-ais oui! ♪*')]],
+ [/\.(sanctuaire|torii|ema)$/,[SA('Fait une prière','look',3,{fun:.4},'*Bonne chance pour demain…*'),SA('Écrit un vœu','give',3,{fun:.5})]],
+];
+function simsActsFor(a,k){const key=a+'.'+k,O=[];for(const[re,L]of SIMSACT)if(re.test(key)){for(const x of L)O.push(x);}return O;}
+function simsOpt(a,k,x,i){const[n,an,dur,fx,sy]=x;const sub=Object.entries(fx).filter(([,v])=>v>0).map(([kk])=>{const N=NEEDS.find(z=>z[0]===kk);return N?'+'+N[1]:'';}).filter(Boolean).slice(0,2).join(' ');
+  return{id:'_sm'+k+i,e:SAEMO[an]||({fridge:'🧊',dishes:'🧽',nap:'😴',shower:'🚿',sit:'🪑',dress:'👔',water:'💧',feed:'🐟',pet:'🐱',give:'🤲',stock:'📦',scroll:'📱',text:'💬',stretch:'🤸',yoga:'🧘',piano:'🎹',puzzle:'🧩',photo:'📸',pantry:'🍪',press:'☕',tread:'🏃'})[an]||'▶️',n,sub,ok:true,fn:()=>{const A=at(a+'.'+k,an,dur,{label:n,fx});if(sy&&A.length>1)A.splice(1,0,F(()=>say(Mc,sy)));ctrlRun(A);}};}
+{const _sa=spotActs;spotActs=function(a,hx,hz,sx,sy){const O=_sa(a,hx,hz,sx,sy);let best=null;
+  try{const keys=a==='town'?Object.keys(TOWN_SPOTS).filter(k=>k[0]!=='_'):Object.keys((INT[a]&&INT[a].spots)||{});const og=a==='town'?{x:0,z:0}:(INT[a].origin||{x:0,z:0});
+   const pos=k=>{if(a==='town'){try{const w=spotPos('town',k);return w;}catch(e){return null;}}return INT[a].spots[k];};
+   if(sx!=null){const r=$('cv').getBoundingClientRect();const v=new V3();let sd=70;for(const k of keys){if(k==='entry'||k==='entree')continue;const p=pos(k);if(!p)continue;if(Math.hypot(p.x-hx,p.z-hz)>4)continue;v.set(og.x+p.x,.9,og.z+p.z).project(cam);if(v.z>1)continue;const d=Math.hypot(r.left+(v.x+1)/2*r.width-sx,r.top+(1-v.y)/2*r.height-sy);if(d<sd){sd=d;best=k;}}}
+   if(!best){let bd=1.7;for(const k of keys){if(k==='entry'||k==='entree')continue;const p=pos(k);if(!p)continue;const d=Math.hypot(p.x-hx,p.z-hz);if(d<bd){bd=d;best=k;}}}}catch(e){}
+  if(best){const seen=new Set(O.map(o=>o.n));simsActsFor(a,best).forEach((x,i)=>{if(!seen.has(x[0])){O.push(simsOpt(a,best,x,i));seen.add(x[0]);}});}
+  return O.slice(0,10);};}
+/* options de lieu (menu de Marcel) */
+{const _co=ctrlOptions;ctrlOptions=function(){const O=_co();if(Mc.inCar)return O;const add=o=>{if(o&&!O.some(x=>x.id===o.id))O.push(o);};const a=Mc.area,I=INT[a];
+  /* objet le plus proche */
+  try{const keys=a==='town'?[]:Object.keys((I&&I.spots)||{});let best=null,bd=2.2;for(const k of keys){if(k==='entry'||k==='entree'||k[0]==='_')continue;const p=I.spots[k];if(!p)continue;const d=Math.hypot(p.x-Mc.pos.x,p.z-Mc.pos.z);if(d<bd&&simsActsFor(a,k).length){bd=d;best=k;}}
+   if(best)simsActsFor(a,best).slice(0,4).forEach((x,i)=>add(simsOpt(a,best,x,i)));}catch(e){}
+  /* toilettes publiques */
+  if(I&&a!=='home'&&a!=='etage'&&!I.outdoor&&I.w&&!/^(wagon|avion|metro|tkgondole)$/.test(a)){add({id:'_wc',e:'🚽',n:'Aller aux toilettes',sub:'+Vessie +Hygiène',ok:true,fn:()=>{const p=approach(a,clamp(Mc.pos.x<0?-I.w/2+.8:I.w/2-.8,-I.w/2+.8,I.w/2-.8),-I.d/2+.9);ctrlRun([...goTo(p),D('look',4,{label:'Utilise les toilettes',fx:{blad:25,hyg:1}}),F(()=>say(Mc,'*Ahhh. Beaucoup mieux.*'))]);}});
+    add({id:'_hands',e:'🧼',n:'Se laver les mains',sub:'+Hygiène',ok:true,fn:()=>ctrlRun([D('dishes',2,{label:'Se lave les mains',fx:{hyg:6}})])});}
+  if(need.blad<30&&a==='home'&&INT.home.spots.toilet)add({id:'_wch',e:'🚽',n:'Aller aux toilettes',sub:'Urgent!',ok:true,fn:()=>ctrlRun([...at('home.toilet','sit',3,{label:'Utilise la toilette',fx:{blad:35}})])});
+  add({id:'_stretch',e:'🤸',n:'S\'étirer',sub:'+Énergie',ok:true,fn:()=>ctrlRun([D('stretch',3,{label:'S\'étire',fx:{energy:.8},say:pick(['*Ahhh, ça fait du bien.*','*Crac!*',null])})])});
+  add({id:'_sing',e:'🎤',n:'Chanter',sub:'+Plaisir',ok:true,fn:()=>ctrlRun([D('dance',3,{label:'Chante à tue-tête',fx:{fun:1.4},say:pick(['*♪ Gens du pays… ♪*','*♪ La la la ♪*','*♪ Ça va bien aller ♪*'])})])});
+  add({id:'_jog',e:'🏃',n:'Jogger sur place',sub:'+Plaisir',ok:true,fn:()=>ctrlRun([D('tread',4,{label:'Jogge sur place',fx:{hyg:-1,fun:.4},say:'*Un, deux, un, deux!*'})])});
+  return O;};}
+/* --- décroissance de la vessie, bulles de pensée, conséquences --- */
+let SIMSLAST=null,THK=0;
+function simsTick(){requestAnimationFrame(simsTick);plumbTick();if(typeof gm!=='number')return;
+  if(SIMSLAST==null)SIMSLAST=gm;let dm=gm-SIMSLAST;SIMSLAST=gm;if(dm<0||dm>600)dm=0;
+  if(dm>0){const sl=Mc.act==='sleep';const s=Mc.q&&Mc.q[0];const drinking=s&&s.t==='do'&&/drink|cocoa|order/.test(s.a||'');need.blad=clamp(need.blad-dm*(sl?.045:drinking?.25:.15),0,100);
+    if(need.blad<=0&&!sl&&!trans){need.blad=100;need.hyg=Math.max(0,need.hyg-45);need.fun=Math.max(0,need.fun-15);need.social=Math.max(0,need.social-10);toast('😳 Oups… Marcel n\'a pas trouvé de toilettes à temps! (−Hygiène)',false);say(Mc,'*Oh non… pas encore.*');}}
+  if(tReal-THK>22&&!Mc.bubble){let low=null;for(const[k]of NEEDS){if(need[k]<22&&(!low||need[k]<need[low]))low=k;}if(low){THK=tReal;const T={food:['*J\'ai faim…*','*Mon ventre gargouille.*'],energy:['*Je suis épuisé…*','*Il me faudrait une sieste.*'],hyg:['*Je sens pas la rose…*','*Une douche, vite!*'],blad:['*Faut que j\'aille aux toilettes!*','*Urgent… les toilettes!*'],social:['*Je m\'ennuie de mes amis.*','*J\'aimerais jaser avec quelqu\'un.*'],fun:['*Je m\'ennuie…*','*Il me faut du fun!*']}[low];say(Mc,NEEDS.find(z=>z[0]===low)[2]+' '+pick(T),3.2);}}
+  if(tReal-(simsTick.u||0)>.4){simsTick.u=tReal;const b=$('moodB');if(b){const m=moodVal();b.querySelector('i').style.background=moodCol(m);b.classList.toggle('warn',NEEDS.some(([k])=>need[k]<22));b.title='Humeur : '+moodTxt(m);}needRender();qRender();qPump();}}
+requestAnimationFrame(simsTick);
+
 {const _ch=carHit;carHit=function(x,z,yaw){CARHIT=null;if(_ch(x,z,yaw)){CARHIT={k:'static'};return true;}const L=MCAR.trk==null?4.6:TLEN[MCAR.trk];const me={x,z,s:Math.sin(yaw),c:Math.cos(yaw),hl:L/2,hw:.95};
   for(const b of vehBoxes(true))if(obbHit(me,b)){CARHIT={k:'veh',b};return true;}
   for(const c of ALL){if(c===Mc||c.area!=='town'||c.hid||!c.m||c.m.root.visible===false)continue;if(vbInBox(me,c.pos.x,c.pos.z,.3)){CARHIT={k:'ped',c};return true;}}return false;};}
