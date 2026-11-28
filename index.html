@@ -278,7 +278,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
    super(small,...a);if(ref){const self=this;Object.defineProperty(this,'needsUpdate',{configurable:true,set(v){if(v===true){const src=ref.deref();if(src&&self.image===small){try{shrink(src,small);}catch(e){}}self.version++;}}});}}}
  THREE.CanvasTexture=CT;})();</script>
 <script>
-var GAME_VER=168;
+var GAME_VER=169;
 (()=>{
 const $=id=>document.getElementById(id);
 const sceneEl=$('scene');
@@ -3520,7 +3520,7 @@ class Ch{
   world(out){const o=this.area==='town'?null:INT[this.area]?.origin;out.set(this.pos.x+(o?o.x:0),this.y+(o?o.y:0),this.pos.z+(o?o.z:0));return out;}
 }
 const tmpV=new V3();
-function setArea(ch,area){ch.area=area;if(area!=='town'&&INT[area])INT[area].dyn.add(ch.m.root);else town.add(ch.m.root);}
+function setArea(ch,area){ch.area=area;if(ch===Mc&&area!=='town'&&INT[area]&&INT[area].__lz)intBuild(INT[area]);if(area!=='town'&&INT[area])INT[area].dyn.add(ch.m.root);else town.add(ch.m.root);}
 function headPos(ch,out){ch.m.head.getWorldPosition(out);return out;}
 
 // Personnages
@@ -5505,11 +5505,33 @@ function computeShot(dt){shot.t+=dt;const p=Mc.world(new V3());const yaw=Mc.yaw;
   if(Mc.area==='town'&&shot.type!=='plongee')clearCam(look,pos);else{const I=INT[Mc.area];if(I&&I.camB)clearTk(I,look,pos);}
   D_.pos.copy(pos);D_.look.copy(look);D_.fov=fov;}
 let CAMV_MODE='iso';try{CAMV_MODE=localStorage.getItem('marcelCam')||'iso';}catch(e){}if(!['suivi','face','iso','ciel'].includes(CAMV_MODE))CAMV_MODE='iso';let camSY=null;
-var CAMZ=1;let CAMAREA=null,CAMCUT=false,CAMFIX=false,ISOOFF=0,ISOLOW=0,ISOCV={t:0,x:0,z:0,c:false};function townG(){return town;}function CTSTEER(){return typeof ctrlOn==='function'&&ctrlOn()&&!Mc.inCar&&!Mc.inBus&&(CAMV_MODE==='suivi'||CAMV_MODE==='face');}
+var CAMZ=1;var TCAMHOLD=false;let CAMAREA=null,CAMCUT=false,CAMFIX=false,ISOOFF=0,ISOLOW=0,ISOCV={t:0,x:0,z:0,c:false};function townG(){return town;}function CTSTEER(){return typeof ctrlOn==='function'&&ctrlOn()&&!Mc.inCar&&!Mc.inBus&&(CAMV_MODE==='suivi'||CAMV_MODE==='face');}
+/* v169 : caméra intérieure « bras à ressort » — reste dans la pièce, garde Marcel centré, contourne les meubles et cherche un meilleur angle quand il est immobile */
+function town0(){return Mc.area==='town'||!!OUTD[Mc.area]||!INT[Mc.area]||INT[Mc.area].outdoor;}
+const ICAM={t:-9,f:1,key:'',y:0,ys:-9,best:null};const _irc=new THREE.Raycaster();
+function intArmFree(I,look,dir,L){_irc.set(look,dir);_irc.near=.35;_irc.far=L;_irc.camera=cam;const roots=new Set(ALL.filter(c=>c.m&&c.area===Mc.area).map(c=>c.m.root));
+  const hs=_irc.intersectObject(I.g,true);for(const h of hs){const o=h.object;if(o.isSprite||o.isLine||o.isPoints)continue;const m=Array.isArray(o.material)?o.material[0]:o.material;if(m&&((m.transparent&&m.opacity<.5)||m.visible===false))continue;let ok=true;for(let a=o;a;a=a.parent){if((a.visible===false&&a!==I.closeG)||a===I.closeG||a===I.piv||a===I.out||roots.has(a)||(typeof PLUMB!=='undefined'&&a===PLUMB)){ok=false;break;}if(a===I.g)break;}if(!ok)continue;return h.distance;}return L;}
+function intBoundT(I,look,A){const o=I.origin,m=.3;let t=1;const x0=o.x-I.w/2+m,x1=o.x+I.w/2-m,z0=o.z-I.d/2+m,z1=o.z+I.d/2+(I.closeG?2.4:-m);
+  if(A.x>1e-4&&look.x+A.x>x1)t=Math.min(t,(x1-look.x)/A.x);if(A.x<-1e-4&&look.x+A.x<x0)t=Math.min(t,(x0-look.x)/A.x);if(A.z>1e-4&&look.z+A.z>z1)t=Math.min(t,(z1-look.z)/A.z);if(A.z<-1e-4&&look.z+A.z<z0)t=Math.min(t,(z0-look.z)/A.z);return clamp(t,0,1);}
+function intArmT0(I,look,A){const L=A.length();if(L<.01)return 1;let t=intBoundT(I,look,A);const dir=A.clone().normalize();const h=intArmFree(I,look,dir,L*t);if(h<L*t)t=Math.max(.05,(h-.3)/L);return t;}
+function intArmT(I,look,A){const t=intArmT0(I,look,A);ICAM.lastUp=0;if(t>=.8)return t;const cap=I.origin.y+(I.wallH||2.8)-.3-look.y;const up=Math.min(1.1,cap-A.y);if(up<.25)return t;const A2=A.clone();A2.y+=up;const t2=intArmT0(I,look,A2);if(t2>t+.15){ICAM.lastUp=up;return t2-.05;}return t;}
+function intCam(I,p,pos,look,dt){const o=I.origin;const lk=p.clone().add(new V3(0,CAMV_MODE==='face'?1.25:1.15,0));look.copy(lk);const A=pos.clone().sub(look);const L=A.length();
+  const jump=ICAM.key!==Mc.area||Math.hypot(p.x-(ICAM.px||0),p.z-(ICAM.pz||0))>2.5;const moved=jump||Math.hypot(p.x-ICAM.px,p.z-ICAM.pz)>.2||Math.abs(camSY-ICAM.y)>.06;
+  if(moved||tReal-ICAM.t>.15){ICAM.t=tReal;ICAM.key=Mc.area;ICAM.px=p.x;ICAM.pz=p.z;ICAM.y=camSY;ICAM.f=intArmT(I,look,A);ICAM.up=ICAM.lastUp;}
+  /* immobile ou en activité : on cherche un angle plus dégagé (sans toucher la direction de marche au joystick) */
+  const steering=JOY.on&&JOY.m>.12;
+  if(CAMV_MODE==='face'&&(jump||(!steering&&ICAM.f<.75&&tReal-ICAM.ys>.4))){ICAM.ys=tReal;let best=null,bf=ICAM.f+(()=>{const cx=o.x-p.x,cz=o.z-p.z,cl=Math.hypot(cx,cz)||1,al=Math.hypot(A.x,A.z)||1;return cl>1.5?.18*((A.x*cx+A.z*cz)/(al*cl)):0;})();for(const da of(CAMV_MODE==='face'?[.45,-.45,.9,-.9]:[.5,-.5,1,-1,1.6,-1.6,2.3,-2.3,PI])){const y=camSY+da;const f=CAMV_MODE==='face'?1:-1;const A2=new V3(Math.sin(y)*f*Math.hypot(A.x,A.z),A.y,Math.cos(y)*f*Math.hypot(A.x,A.z));const cx=o.x-p.x,cz=o.z-p.z,cl=Math.hypot(cx,cz)||1,al=Math.hypot(A2.x,A2.z)||1;const bon=cl>1.5?.18*((A2.x*cx+A2.z*cz)/(al*cl)):0;const t=intArmT(I,look,A2)-Math.abs(da)*.02+bon;if(t>bf+.12){bf=t;best=y;}}ICAM.best=best;if(best!=null)ICAM.hold=true;if(jump&&best!=null){camSY=best;ICAM.best=null;ICAM.f=bf;ICAM.fs=bf;ICAM.y=camSY;CAMCUT=true;}}
+  if(!steering&&ICAM.best!=null){let dd=ICAM.best-camSY;while(dd>PI)dd-=2*PI;while(dd<-PI)dd+=2*PI;if(Math.abs(dd)<.03)ICAM.best=null;else camSY+=dd*(1-Math.exp(-dt*4));}
+  if(steering){ICAM.best=null;ICAM.hold=false;}
+  ICAM.fs=ICAM.fs==null||ICAM.key2!==Mc.area?ICAM.f:lerp(ICAM.fs,ICAM.f,ICAM.f<ICAM.fs?1-Math.exp(-dt*14):1-Math.exp(-dt*3));ICAM.key2=Mc.area;
+  ICAM.ups=lerp(ICAM.ups||0,ICAM.up||0,1-Math.exp(-dt*4));const t=ICAM.fs;A.y+=ICAM.ups;pos.copy(look).addScaledVector(A,t);const hd=Math.hypot(pos.x-p.x,pos.z-p.z);
+  let xf=0;if(hd<1.7){const k=1.7-hd;if(CAMV_MODE==='suivi'){const fx=p.x-pos.x,fz=p.z-pos.z,fl=Math.hypot(fx,fz);const ux=fl>.05?fx/fl:Math.sin(camSY),uz=fl>.05?fz/fl:Math.cos(camSY);pos.y+=Math.min(1.6,k*1.3);look.x+=ux*k*2;look.z+=uz*k*2;look.y-=Math.min(.85,k*.7);xf=k*8;}else{const lift=Math.min(.9,k*.7);pos.y+=lift;look.y-=Math.min(.3,lift*.3);xf=k*9;}}
+  pos.y=Math.min(pos.y,o.y+(I.wallH||2.8)-.22+(I.gY?I.gY(p.x-o.x,p.z-o.z):0));
+  pos.x=clamp(pos.x,o.x-I.w/2+.25,o.x+I.w/2-.25);pos.z=clamp(pos.z,o.z-I.d/2+.25,o.z+I.d/2+(I.closeG?2.4:-.25));if(I.closeG&&pos.z>o.z+I.d/2-.2)I.closeG.visible=false;return xf;}
 function computeMode(dt){const p=Mc.world(new V3());const car=Mc.inCar||Mc.inBus;let yaw=car&&!Mc.inBus?MCAR.yaw:Mc.yaw;if(camSY==null)camSY=yaw;
   const CT=typeof ctrlOn==='function'&&ctrlOn();let rate=car?2.2:1.6;
   if(CAMAREA!==Mc.area){CAMAREA=Mc.area;camSY=yaw;CAMCUT=true;computeMode.pp=null;computeMode.sv=0;CAMFIX=true;}
-  if(CT&&!car){const pp=computeMode.pp||p;const sp2=dt>0?Math.hypot(p.x-pp.x,p.z-pp.z)/dt:0;computeMode.pp=p.clone();computeMode.sv=lerp(computeMode.sv||0,sp2,Math.min(1,dt*6));const mv=Mc.mv&&(Mc.pose==='walk'||Mc.pose==='run')&&computeMode.sv>.6&&!CTSTEER();if(mv){const hy=Math.atan2(Mc.mv[0],Mc.mv[1]);let dd=hy-camSY;while(dd>PI)dd-=2*PI;while(dd<-PI)dd+=2*PI;if(Math.abs(dd)<1.1){yaw=hy;rate=(Mc.pose==='run'?1.4:1.0)*(Math.abs(dd)>.6?.6:1);}else yaw=camSY;}else if(CTSTEER()&&!JOY.on){yaw=Mc.yaw;rate=2.2;}else yaw=camSY;}
+  if(CT&&!car){const pp=computeMode.pp||p;const sp2=dt>0?Math.hypot(p.x-pp.x,p.z-pp.z)/dt:0;computeMode.pp=p.clone();computeMode.sv=lerp(computeMode.sv||0,sp2,Math.min(1,dt*6));const mv=Mc.mv&&(Mc.pose==='walk'||Mc.pose==='run')&&computeMode.sv>.6&&!CTSTEER();if(mv){const hy=Math.atan2(Mc.mv[0],Mc.mv[1]);let dd=hy-camSY;while(dd>PI)dd-=2*PI;while(dd<-PI)dd+=2*PI;if(Math.abs(dd)<1.1){yaw=hy;rate=(Mc.pose==='run'?1.4:1.0)*(Math.abs(dd)>.6?.6:1);}else yaw=camSY;}else if(CTSTEER()&&!JOY.on){const blkI=(!town0()&&CAMV_MODE==='face'&&(ICAM.best!=null||ICAM.f<.75||ICAM.hold)&&ICAM.key===Mc.area)||(Mc.area==='town'&&TCAMHOLD);yaw=blkI?camSY:Mc.yaw;rate=2.2;}else yaw=camSY;}
   if(CT&&car&&MCAR.v<-.5)yaw=camSY;
   let d=yaw-camSY;while(d>PI)d-=2*PI;while(d<-PI)d+=2*PI;camSY+=d*(1-Math.exp(-dt*rate));
   const f=new V3(Math.sin(camSY),0,Math.cos(camSY));const town=Mc.area==='town'||!!OUTD[Mc.area];const I=INT[Mc.area];
@@ -5524,15 +5546,14 @@ function computeMode(dt){const p=Mc.world(new V3());const car=Mc.inCar||Mc.inBus
   else{const h=town?(car?26+vl*.6:20):9;pos.copy(p).add(new V3(0,h,h*.18));look.copy(p);fov=46;}
   if(CAMZ!==1){const dv=pos.clone().sub(look);pos.copy(look).addScaledVector(dv,CAMZ);}
   const close=(CAMV_MODE==='suivi'||CAMV_MODE==='face')&&!town&&I&&I.closeG;for(const k in INT){const J=INT[k];if(J.closeG)J.closeG.visible=close&&J===I;}
-  if(!town&&I&&!I.outdoor&&CAMV_MODE==='suivi'){const o=I.origin;const cx=clamp(pos.x,o.x-I.w/2+.35,o.x+I.w/2-.35),cz=clamp(pos.z,o.z-I.d/2+.35,o.z+I.d/2-.35);const hd=Math.hypot(cx-p.x,cz-p.z);
-    if(hd<2.1){let ty=Math.atan2(p.x-o.x,p.z-o.z);if(CTSTEER()&&JOY.on)ty=camSY;if(Math.hypot(p.x-o.x,p.z-o.z)<.5)ty=camSY;let dd=ty-camSY;while(dd>PI)dd-=2*PI;while(dd<-PI)dd+=2*PI;camSY+=dd*(1-Math.exp(-dt*2.2));pos.x=cx;pos.z=cz;pos.y=Math.max(pos.y,p.y+2.2+(2.1-hd)*.9);}}
-  if(close){const o=I.origin;pos.x=clamp(pos.x,o.x-I.w/2+.3,o.x+I.w/2-.3);pos.z=clamp(pos.z,o.z-I.d/2+.3,o.z+I.d/2-.3);pos.y=Math.min(pos.y,o.y+I.wallH-.25+(I.gY?I.gY(p.x-o.x,p.z-o.z):0));}
-  if(CT&&Mc.area==='town'&&CAMV_MODE==='suivi'&&!car&&!CTSTEER()){const D0=5.2,H0=2.4,lk=look.clone();const free=yw=>{const cp=new V3(p.x-Math.sin(yw)*D0,p.y+H0,p.z-Math.cos(yw)*D0);const v=new V3();for(let i=2;i<=20;i++){v.lerpVectors(lk,cp,i/20);if(inBox(v)||(Math.hypot(v.x-p.x,v.z-p.z)>1.8&&occDyn(v.x,v.y,v.z)))return(i-1.6)/20;}return 1;};
-    const fc=free(camSY);if(fc<.8){let best=camSY,bf=fc;for(const da of[.45,-.45,.9,-.9,1.5,-1.5,2.2,-2.2,PI]){const f2=free(camSY+da);if(f2>bf+.08){bf=f2;best=camSY+da;}}if(best!==camSY)camSY+=(best-camSY)*(CAMFIX?1:1-Math.exp(-dt*3));}CAMFIX=false;}
-  if(CT&&Mc.area==='town'&&CAMV_MODE!=='ciel'){const v=new V3();const VB=vehBoxes(Mc.inCar).filter(b=>Math.hypot(b.x-p.x,b.z-p.z)<16);const blk=q=>inBox(q)||(Math.hypot(q.x-p.x,q.z-p.z)>1.8&&occDyn(q.x,q.y,q.z))||(q.y<1.6&&Math.hypot(q.x-p.x,q.z-p.z)>.9&&(VB.some(b=>vbInBox(b,q.x,q.z,.25))||(q.y<1.1&&autoHit(q.x,q.z,.15))));const segFree=(a2,b2)=>{for(let i=2;i<=24;i++){v.lerpVectors(a2,b2,i/24);if(blk(v))return false;}return true;};
+  if(close){fov+=intCam(I,p,pos,look,dt)||0;}
+  else if(!town&&I&&!I.outdoor&&CAMV_MODE==='suivi'){const o=I.origin;pos.x=clamp(pos.x,o.x-I.w/2+.35,o.x+I.w/2-.35);pos.z=clamp(pos.z,o.z-I.d/2+.35,o.z+I.d/2-.35);}
+  if(CT&&Mc.area==='town'&&CAMV_MODE==='suivi'&&!car&&!(CTSTEER()&&JOY.on&&JOY.m>.12)){const D0=5.2,H0=2.4,lk=look.clone();const VBt=vehBoxes(false).filter(b=>Math.hypot(b.x-p.x,b.z-p.z)<14);const DRS=Object.values(BLD).filter(b=>b.open>.05&&Math.hypot(b.door.x-p.x,b.door.z-p.z)<9).map(b=>b.door);const free=yw=>{const cp=new V3(p.x-Math.sin(yw)*D0,p.y+H0,p.z-Math.cos(yw)*D0);const v=new V3();for(let i=2;i<=20;i++){v.lerpVectors(lk,cp,i/20);if(inBox(v)||(Math.hypot(v.x-p.x,v.z-p.z)>.7&&v.y<2.4&&DRS.some(d=>Math.hypot(v.x-d.x,v.z-d.z)<1.25))||(Math.hypot(v.x-p.x,v.z-p.z)>1.8&&(occDyn(v.x,v.y,v.z)||(v.y<1.7&&(VBt.some(b=>vbInBox(b,v.x,v.z,.3))||autoHit(v.x,v.z,.1))))))return(i-1.6)/20;}return 1;};
+    const fc=free(camSY);if(fc<.8){let best=camSY,bf=fc;for(const da of[.45,-.45,.9,-.9,1.5,-1.5,2.2,-2.2,PI]){const f2=free(camSY+da);if(f2>bf+.08){bf=f2;best=camSY+da;}}if(best!==camSY){camSY+=(best-camSY)*(CAMFIX?1:1-Math.exp(-dt*3));TCAMHOLD=true;}}CAMFIX=false;}
+  if(CT&&Mc.area==='town'&&CAMV_MODE!=='ciel'){const v=new V3();const VB=vehBoxes(Mc.inCar).filter(b=>Math.hypot(b.x-p.x,b.z-p.z)<16);const TRN=TREEP.filter(t=>Math.hypot(t[0]-p.x,t[1]-p.z)<14);const treeAt=q=>{for(const t of TRN){const s2=t[2];if(q.y<2.3*s2||q.y>6.6*s2)continue;const dx=q.x-t[0],dz=q.z-t[1];if(dx*dx+dz*dz<(2.1*s2)*(2.1*s2))return true;}return false;};const blk=q=>inBox(q)||(Math.hypot(q.x-p.x,q.z-p.z)>1.8&&(treeAt(q)||(q.y>1.6&&occAt(q.x,q.y,q.z))))||(Math.hypot(q.x-p.x,q.z-p.z)>1.8&&occDyn(q.x,q.y,q.z))||(q.y<1.6&&Math.hypot(q.x-p.x,q.z-p.z)>.9&&(VB.some(b=>vbInBox(b,q.x,q.z,.25))||(q.y<1.9&&autoHit(q.x,q.z,.12))));const segFree=(a2,b2)=>{for(let i=2;i<=24;i++){v.lerpVectors(a2,b2,i/24);if(blk(v))return false;}return true;};
     if(!segFree(look,pos)){const lo=pos.clone();lo.y=Math.min(pos.y,look.y+.3);const lk2=look.clone();lk2.y=Math.min(look.y,p.y+1.0);if(segFree(lk2,lo)){pos.copy(lo);look.copy(lk2);}}
     for(let i=2;i<=24;i++){v.lerpVectors(look,pos,i/24);if(blk(v)){const np=new V3().lerpVectors(look,pos,Math.max(.12,(i-1.6)/24));const hd=Math.hypot(np.x-look.x,np.z-look.z);if(hd<2.4)np.y=Math.max(np.y,look.y+(2.4-hd)*1.3+.3);look.copy(p).add(new V3(0,1.05,0));pos.copy(np);D_.snap=true;break;}}}
-  if(Mc.area==='town')clearCam(look,pos);else if(I&&I.camB)clearTk(I,look,pos);
+  if(Mc.area==='town')clearCam(look,pos);else if(I&&I.camB&&!close)clearTk(I,look,pos);
   CAMFIX=false;D_.pos.copy(pos);D_.look.copy(look);D_.fov=fov;}
 function setCamMode(m){CAMV_MODE=m;try{localStorage.setItem('marcelCam',m);}catch(e){}document.querySelectorAll('#camModes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cm===m?'true':'false'));camSY=null;if(m==='cine'){shot.dur=0;}}
 function updateCamera(dt){
@@ -5550,12 +5571,12 @@ function occBlocked(look,pos){if(Mc.inCar||Mc.inBus)return false;if(Mc.area==='t
   const I=INT[Mc.area];if(!I||I.outdoor)return false;const dir=pos.clone().sub(look);const d=dir.length();if(d<1)return false;dir.normalize();const st=look.clone().addScaledVector(dir,.7);_orc.set(st,dir);_orc.near=0;_orc.far=d-.9;_orc.camera=cam;
   const hs=_orc.intersectObject(I.g,true);for(const h of hs){const o=h.object;if(o.isSprite||o.isLine||o.isPoints)continue;const m=o.material;if(m&&m.transparent&&m.opacity<.5)continue;let ok=true;for(let a=o;a&&a!==I.g;a=a.parent){if(!a.visible||a.userData&&a.userData.chr){ok=false;break;}}if(!ok)continue;if(ALL.some(c=>{for(let a=o;a;a=a.parent)if(a===c.m.root)return true;return false;}))continue;return true;}return false;}
 let OCCD=[],OCCDt=-9;function occDyn(x,y,z){if(tReal-OCCDt>4){OCCDt=tReal;OCCD=[];const gs=[];if(typeof HOMEB!=='undefined'&&HOMEB&&HOMEB.HR)gs.push(HOMEB.HR);if(typeof ETGG!=='undefined')gs.push(ETGG);for(const g of gs){if(!g.visible)continue;const b=new THREE.Box3().setFromObject(g);if(!b.isEmpty())OCCD.push(b);}}for(const b of OCCD)if(x>b.min.x&&x<b.max.x&&y>Math.max(1.6,b.min.y)&&y<b.max.y&&z>b.min.z&&z<b.max.z)return true;return false;}
-function occCam(){if(typeof ctrlOn==='function'&&ctrlOn()&&Mc.area==='town'){OCC.lv=0;OCC.v*=.9;if(OCC.v>.01)cam.position.copy(occLift(camLook,cam.position,OCC.v));return;}if(tReal-OCC.t>.3){OCC.t=tReal;let lv=0;for(;lv<4;lv++){if(!occBlocked(camLook,lv?occLift(camLook,cam.position,lv*.32):cam.position))break;}OCC.lv=lv;}
+function occCam(){if(typeof ctrlOn==='function'&&ctrlOn()&&(Mc.area==='town'||((CAMV_MODE==='suivi'||CAMV_MODE==='face')&&INT[Mc.area]&&!INT[Mc.area].outdoor&&INT[Mc.area].closeG))){OCC.lv=0;OCC.v*=.9;if(OCC.v>.01)cam.position.copy(occLift(camLook,cam.position,OCC.v));return;}if(tReal-OCC.t>.3){OCC.t=tReal;let lv=0;for(;lv<4;lv++){if(!occBlocked(camLook,lv?occLift(camLook,cam.position,lv*.32):cam.position))break;}OCC.lv=lv;}
   OCC.v+=(OCC.lv*.32-OCC.v)*.08;if(OCC.v>.01)cam.position.copy(occLift(camLook,cam.position,OCC.v));}
 function applyCam(){ORB.yaw+=(ORB.ty-ORB.yaw)*.35;ORB.pitch+=(ORB.tp-ORB.pitch)*.35;ORB.zoom+=(ORB.tz-ORB.zoom)*.35;
   if(Math.abs(ORB.yaw)>1e-3||Math.abs(ORB.pitch)>1e-3||Math.abs(ORB.zoom-1)>1e-3){const v=camPos.clone().sub(camLook);const r=v.length()*ORB.zoom;let az=Math.atan2(v.x,v.z)+ORB.yaw;let el=Math.asin(clamp(v.y/(v.length()||1),-1,1))+ORB.pitch;el=clamp(el,.06,1.45);
     cam.position.set(camLook.x+Math.sin(az)*Math.cos(el)*r,camLook.y+Math.sin(el)*r,camLook.z+Math.cos(az)*Math.cos(el)*r);if(cam.position.y<.4)cam.position.y=.4;}else cam.position.copy(camPos);
-  if(!trans){try{const P=cam.position.clone();if(Mc.area==='town')clearCam(camLook,P);else{const I=INT[Mc.area];if(I&&I.camB)clearTk(I,camLook,P);}cam.position.copy(P);}catch(e){}
+  if(!trans){try{const P=cam.position.clone();if(Mc.area==='town')clearCam(camLook,P);else{const I=INT[Mc.area];if(I&&I.camB&&!(I.closeG&&(CAMV_MODE==='suivi'||CAMV_MODE==='face')))clearTk(I,camLook,P);}cam.position.copy(P);}catch(e){}
     try{occCam();}catch(e){}}
   if(typeof SHAKE!=='undefined'&&SHAKE>.01){cam.position.x+=(Math.random()-.5)*SHAKE*.5;cam.position.y+=(Math.random()-.5)*SHAKE*.3;SHAKE*=.9;}
   cam.lookAt(camLook);if(Math.abs(cam.fov-camFov)>.01){cam.fov=camFov;cam.updateProjectionMatrix();}
@@ -5564,6 +5585,8 @@ function applyCam(){ORB.yaw+=(ORB.ty-ORB.yaw)*.35;ORB.pitch+=(ORB.tp-ORB.pitch)*
 /* ----- transitions par la porte ----- */
 function startTrans(kind,ik){const I=INT[ik],b=BLD[I.building];trans={kind,I,b,t:0,ph:0,from:camPos.clone(),fromL:camLook.clone()};}
 function runTrans(dt){const T=trans,I=T.I,b=T.b;T.t+=dt*Math.min(speed,2);const fade=$('fondu');
+  if(I&&I.__lz)intBuild(I);
+  {const CTI=typeof ctrlOn==='function'&&ctrlOn()&&(CAMV_MODE==='suivi'||CAMV_MODE==='face');const inside=(T.kind==='in'&&T.ph===1)||(T.kind!=='in'&&T.ph===0);const show=inside&&(T.kind!=='in'||T.t<=1.2||CTI);for(const k in INT){const J=INT[k];if(J.closeG)J.closeG.visible=show&&J===I;}}
   const dW=b.door.clone(),n=b.n,side=new V3(n.z,0,-n.x);const inDoor=new V3(I.origin.x+I.door.x,0,I.origin.z+I.door.z);const inw=new V3(0,0,-1);
   if(T.kind==='in'){
     if(T.ph===0){const u=ease(clamp(T.t/1.6,0,1));const tp=dW.clone().addScaledVector(n,4.4).addScaledVector(side,1.2).add(new V3(0,1.9,0));
@@ -5573,10 +5596,11 @@ function runTrans(dt){const T=trans,I=T.I,b=T.b;T.t+=dt*Math.min(speed,2);const 
       if(T.t>2.05){T.ph=1;T.t=0;setArea(Mc,I.key);Mc.pos={x:I.door.x,z:I.door.z+.2};Mc.back=[];Mc.room='main';Mc.tyaw=PI;I.open=1;
         camPos.copy(inDoor).addScaledVector(inw,4.8).add(new V3(1.4,2.1,0));camLook.copy(inDoor).add(new V3(0,1.1,0));T.from=camPos.clone();T.fromL=camLook.clone();}}
     else{fade.style.opacity=1-clamp(T.t/.3,0,1);const w=clamp(T.t/1.5,0,1);Mc.pos={x:lerp(I.door.x,I.entry.x,w),z:lerp(I.door.z+.2,I.entry.z,w)};Mc.pose=w<1?'walk':'stand';Mc.ph+=dt*7;
-      if(T.t>1.2){computeShotFor('piece');const u=ease(clamp((T.t-1.2)/1.5,0,1));camPos.lerpVectors(T.from,D_.pos,u);camLook.lerpVectors(T.fromL,D_.look,u);}
+      {const CTI=typeof ctrlOn==='function'&&ctrlOn()&&(CAMV_MODE==='suivi'||CAMV_MODE==='face');if(CTI){CAMAREA=Mc.area;if(T.cs==null){T.cs=1;camSY=PI;Mc.yaw=PI;Mc.tyaw=PI;ICAM.key='';}computeMode(1/60);camPos.copy(D_.pos);camLook.copy(D_.look);camFov=D_.fov;}
+       else if(T.t>1.2){computeShotFor('piece');const u=ease(clamp((T.t-1.2)/1.5,0,1));camPos.lerpVectors(T.from,D_.pos,u);camLook.lerpVectors(T.fromL,D_.look,u);}}
       if(T.t>2.7){fade.style.opacity=0;trans=null;Mc.pos={x:I.entry.x,z:I.entry.z};Mc.q.shift();shot={type:'piece',t:0,dur:rnd(7,12),seed:.5,cut:false,ctx:shotCtx()};}}
   } else {
-    if(T.ph===0){const u=ease(clamp(T.t/1.5,0,1));const tp=inDoor.clone().addScaledVector(inw,4.6).add(new V3(-1.3,2.2,0));camPos.lerpVectors(T.from,tp,u);camLook.lerpVectors(T.fromL,inDoor.clone().add(new V3(0,1.1,0)),u);
+    if(T.ph===0){const CTO=typeof ctrlOn==='function'&&ctrlOn()&&(CAMV_MODE==='suivi'||CAMV_MODE==='face')&&I.closeG;if(CTO){if(T.cs==null){T.cs=1;if(CAMV_MODE==='suivi')camSY=0;}computeMode(1/60);const k2=1-Math.exp(-dt*8);camPos.lerp(D_.pos,k2);camLook.lerp(D_.look,k2);camFov=lerp(camFov,D_.fov,k2);}else{const u=ease(clamp(T.t/1.5,0,1));const tp=inDoor.clone().addScaledVector(inw,4.6).add(new V3(-1.3,2.2,0));camPos.lerpVectors(T.from,tp,u);camLook.lerpVectors(T.fromL,inDoor.clone().add(new V3(0,1.1,0)),u);}
       const w=clamp((T.t-.2)/1.4,0,1);Mc.pos={x:lerp(I.entry.x,I.door.x,w),z:lerp(I.entry.z,I.door.z+.25,w)};Mc.tyaw=0;Mc.pose=w<1?'walk':'stand';Mc.ph+=dt*7;
       fade.style.opacity=clamp((T.t-1.75)/.3,0,1);
       if(T.t>2.05){T.ph=1;T.t=0;setArea(Mc,'town');b.open=1;const p=dW.clone().addScaledVector(n,-.1);Mc.pos={x:p.x,z:p.z};Mc.node=nk(b.stop[0],b.stop[1]);const ts=TOWN_SPOTS['b_'+I.building];Mc.back=[...ts.extra].reverse().slice(1);Mc.tyaw=Math.atan2(n.x,n.z);
@@ -9711,12 +9735,12 @@ function ctrlStep(ch,dt){if(Mc.inCar)return mcarStep(dt);if(trans)return .35;
   if(ch.area!=='town'){const I=INT[ch.area];if(I&&I.w&&(Math.abs(ch.pos.x)>I.w/2+.5||Math.abs(ch.pos.z)>I.d/2+1)){const e=I.spots.entry||I.spots.car||Object.values(I.spots)[0];if(e){ch.pos={x:e.x,z:e.z};ch.back=[];}}}
   const m=JOY.on?JOY.m:0;
   if(m<.12){if(ch.pose==='walk'||ch.pose==='run')ch.pose='stand';if(ch.act==='phonewalk')ch.act=null;ctrlTarget();return .35;}
-  let ux,uz,spK=1,bk=false,hy=null;const CMd=CAMV_MODE;const dtr=Math.min(.05,Math.max(0,tReal-(ctrlStep.tr||tReal)));ctrlStep.tr=tReal;
+  TCAMHOLD=false;let ux,uz,spK=1,bk=false,hy=null;const CMd=CAMV_MODE;const dtr=Math.min(.05,Math.max(0,tReal-(ctrlStep.tr||tReal)));ctrlStep.tr=tReal;
   if(CMd==='suivi'||CMd==='face'){if(camSY==null)camSY=ch.yaw;const sa=Math.atan2(JOY.x,-JOY.y);let r=(CMd==='face'?PI:0)-sa;while(r>PI)r-=2*PI;while(r<-PI)r+=2*PI;const ar=Math.abs(r);
     if(ar>2.5){bk=true;spK=.55;camSY+=(CMd==='face'?1:-1)*JOY.x*1.2*dtr;hy=camSY;ux=-Math.sin(camSY);uz=-Math.cos(camSY);}
     else{const tn=clamp(r/(PI/2),-1,1);camSY+=tn*Math.abs(tn)*1.25*Math.min(1,m/.55)*dtr;hy=camSY+clamp(r*.3,-.38,.38);ux=Math.sin(hy);uz=Math.cos(hy);if(ar>PI/2)spK=.7;}}
   else[ux,uz]=joyDir();
-  const run=m>.9&&!bk;const v=(run?4.2:1.6*Math.max(.5,m/.9))*spK*dt;
+  const run=m>.9&&!bk&&!(need.energy<8);const mf=typeof moodVal==='function'?(need.energy<15?.8:moodVal()<30?.9:moodVal()>75?1.06:1):1;const v=(run?4.2:1.6*Math.max(.5,m/.9))*spK*mf*dt;
   ch.pose=run?'run':'walk';ch.act=null;ch.seatH=null;ch.tyaw=hy!=null?hy:Math.atan2(ux,uz);if(hy!=null){let dy=ch.tyaw-ch.yaw;while(dy>PI)dy-=2*PI;while(dy<-PI)dy+=2*PI;if(Math.abs(dy)<.9)ch.yaw=ch.tyaw;}ch.mv=[ux,uz];ch.ph+=(bk?-1:1)*dt*(run?11:7.5*Math.max(.6,m));ch.back=[];
   const nx=ch.pos.x+ux*v,nz=ch.pos.z+uz*v;const stuck=ctrlBlocked(ch.area,ch.pos.x,ch.pos.z,.05);if(stuck){const f0=freeDist(ch.area,ch.pos.x,ch.pos.z);if(freeDist(ch.area,nx,nz)<f0-.001||f0>=9){ch.pos.x=nx;ch.pos.z=nz;}else{const fx=freeDist(ch.area,nx,ch.pos.z),fz=freeDist(ch.area,ch.pos.x,nz);if(fx<f0)ch.pos.x=nx;else if(fz<f0)ch.pos.z=nz;}}else{if(!ctrlBlocked(ch.area,nx,ch.pos.z,.3))ch.pos.x=nx;if(!ctrlBlocked(ch.area,ch.pos.x,nz,.3))ch.pos.z=nz;}
   if(ch.area==='town'){if(tReal-ctrlDoorT>1.2){for(const bk in BLD2INT){const b=BLD[bk];if(!b)continue;const dx=b.door.x-ch.pos.x,dz=b.door.z-ch.pos.z,d=Math.hypot(dx,dz);if(d<1.5&&(ux*-b.n.x+uz*-b.n.z)>.45){ctrlDoorT=tReal;ch.q.unshift({t:'enter',I:BLD2INT[bk],own:1});setTask('Entre : '+(INT[BLD2INT[bk]].name||bk));break;}}}
@@ -9971,7 +9995,7 @@ function moodCol(m){return m>68?'#3ddc5a':m>48?'#b8e04a':m>30?'#f0a23b':'#e5484d
 function moodTxt(m){return m>80?'Rayonnant':m>68?'Heureux':m>48?'Correct':m>30?'Mal à l\'aise':'Misérable';}
 /* --- losange (plumbob) --- */
 let PLUMB=null;function plumbTick(){try{if(!Mc||!Mc.m||!Mc.m.root)return;if(!PLUMB){const g=new THREE.OctahedronGeometry(.11,0);g.scale(1,1.7,1);PLUMB=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:'#3ddc5a',emissive:'#1f8a33',emissiveIntensity:.8,roughness:.25,metalness:.1,transparent:true,opacity:.92}));PLUMB.renderOrder=5;}
-  const root=Mc.m.root;if(PLUMB.parent!==root){root.add(PLUMB);}PLUMB.position.set(0,2.32+Math.sin(tReal*2.2)*.035,0);PLUMB.rotation.y=tReal*1.6;const c=moodCol(moodVal());PLUMB.material.color.set(c);PLUMB.material.emissive.set(c).multiplyScalar(.55);PLUMB.visible=!Mc.inCar&&!Mc.inBus&&SIMSOPT.plumb;}catch(e){}}
+  const root=Mc.m.root;if(PLUMB.parent!==root){root.add(PLUMB);}PLUMB.position.set(0,2.32+Math.sin(tReal*2.2)*.035,0);PLUMB.rotation.y=tReal*1.6;const c=moodCol(moodVal());PLUMB.material.color.set(c);PLUMB.material.emissive.set(c).multiplyScalar(.55);PLUMB.visible=!Mc.inCar&&!Mc.inBus&&SIMSOPT.plumb&&cam.position.distanceTo(PLUMB.getWorldPosition(new V3()))>1.4;}catch(e){}}
 var SIMSOPT={plumb:true};
 /* --- HUD : bouton humeur + panneau des besoins + file d'actions --- */
 {const st=document.createElement('style');st.textContent=`#moodB{position:absolute;top:92px;left:8px;z-index:7;width:36px;height:36px;border-radius:10px;border:1px solid var(--trait);background:rgba(18,22,30,.82);backdrop-filter:blur(6px);cursor:pointer;display:grid;place-items:center;padding:0}
@@ -9990,8 +10014,10 @@ var SIMSOPT={plumb:true};
  p.addEventListener('click',e=>{e.stopPropagation();if(e.target.closest('[data-n=x]'))p.classList.remove('on');});
  q.addEventListener('click',e=>{e.stopPropagation();const t=e.target.closest('[data-q]');if(!t)return;const i=+t.dataset.q;if(i<0){ctrlCancel();}else CTRLQ.splice(i,1);qRender();});}
 function needRender(){const p=$('needP');if(!p||!p.classList.contains('on'))return;const m=moodVal(),c=moodCol(m);let low=null;
-  p.innerHTML=`<h4><i style="background:${c}"></i>Marcel · ${moodTxt(m)}<button type="button" data-n="x" aria-label="Fermer" style="margin-left:auto;width:24px;height:24px;border-radius:50%;border:1px solid var(--trait);background:#232b3a;color:var(--craie);cursor:pointer">✕</button></h4><div class="nm">Humeur ${Math.round(m)} %</div>`+NEEDS.map(([k,n,e])=>{const v=Math.round(need[k]==null?60:need[k]);if(v<35&&(!low||v<need[low]))low=k;const col=v<25?'#e5484d':v<50?'#f0a23b':'#3ddc5a';return`<div class="nr"><span style="text-align:left;font-size:.9rem;color:inherit">${e}</span><div><div style="font-size:.66rem;margin-bottom:2px">${n}</div><div class="nb"><u style="width:${v}%;background:${col}"></u></div></div><span>${v}</span></div>`;}).join('')+(low?`<div class="nt">💡 ${NEEDTIP[low]}</div>`:`<div class="nt">Touche Marcel ou un objet pour voir ce qu'il peut faire.</div>`);}
-var CTRLQ=[],QCUR=null;
+  p.innerHTML=`<h4><i style="background:${c}"></i>Marcel · ${moodTxt(m)}<button type="button" data-n="x" aria-label="Fermer" style="margin-left:auto;width:24px;height:24px;border-radius:50%;border:1px solid var(--trait);background:#232b3a;color:var(--craie);cursor:pointer">✕</button></h4><div class="nm">Humeur ${Math.round(m)} %</div>`+NEEDS.map(([k,n,e])=>{const v=Math.round(need[k]==null?60:need[k]);if(v<35&&(!low||v<need[low]))low=k;const col=v<25?'#e5484d':v<50?'#f0a23b':'#3ddc5a';const tr=NTREND[k]||0;const ar=tr>.02?'<b style="color:#3ddc5a"> ▲</b>':tr<-.12?'<b style="color:#e5484d"> ▼</b>':'';return`<div class="nr"><span style="text-align:left;font-size:.9rem;color:inherit">${e}</span><div><div style="font-size:.66rem;margin-bottom:2px">${n}${ar}</div><div class="nb"><u style="width:${v}%;background:${col}"></u></div></div><span>${v}</span></div>`;}).join('')+moodlets()+(low?`<div class="nt">💡 ${NEEDTIP[low]}</div>`:`<div class="nt">Touche Marcel ou un objet pour voir ce qu'il peut faire.</div>`);}
+function moodlets(){const L=[];const n=need;if(n.food>85)L.push(['😋','Bien mangé',1]);if(n.food<20)L.push(['😩','Affamé',0]);if(n.energy>85)L.push(['⚡','Plein d\'énergie',1]);if(n.energy<20)L.push(['🥱','Épuisé',0]);if(n.hyg>85)L.push(['✨','Frais et propre',1]);if(n.hyg<20)L.push(['🦨','Malodorant',0]);if(n.blad<20)L.push(['🚽','Doit y aller!',0]);if(n.social>80)L.push(['🤗','Bien entouré',1]);if(n.social<20)L.push(['😔','Seul',0]);if(n.fun>80)L.push(['😄','S\'amuse',1]);if(n.fun<20)L.push(['😐','S\'ennuie',0]);if(typeof weather!=='undefined'&&Mc.area==='town'&&(weather==='orage'||(typeof RAIN==='function'&&RAIN())))L.push(['🌧️','Sous la pluie',0]);
+  if(!L.length)return'';return'<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">'+L.slice(0,5).map(([e,t,g])=>`<span style="font-size:.62rem;padding:2px 6px;border-radius:8px;background:${g?'rgba(61,220,90,.16)':'rgba(229,72,77,.18)'};color:${g?'#9be8a9':'#f3a3a5'}">${e} ${t}</span>`).join('')+'</div>';}
+var CTRLQ=[],QCUR=null,NTREND={},NPREV=null,NPT=0;
 function qRender(){const q=$('simQ');if(!q)return;const show=typeof ctrlOn==='function'&&ctrlOn()&&!Mc.inCar;const cur=CTRL.busy&&QCUR?QCUR:null;
   if(!show||(!cur&&!CTRLQ.length)){q.innerHTML='';q.style.display='none';return;}q.style.display='flex';
   const cm=$('camModes');if(cm){const r=cm.getBoundingClientRect(),s=sceneEl.getBoundingClientRect();q.style.bottom=(s.bottom-r.top+8)+'px';}
@@ -10085,6 +10111,7 @@ function simsTick(){requestAnimationFrame(simsTick);plumbTick();if(typeof gm!=='
   if(dm>0){const sl=Mc.act==='sleep';const s=Mc.q&&Mc.q[0];const drinking=s&&s.t==='do'&&/drink|cocoa|order/.test(s.a||'');need.blad=clamp(need.blad-dm*(sl?.045:drinking?.25:.15),0,100);
     if(need.blad<=0&&!sl&&!trans){need.blad=100;need.hyg=Math.max(0,need.hyg-45);need.fun=Math.max(0,need.fun-15);need.social=Math.max(0,need.social-10);toast('😳 Oups… Marcel n\'a pas trouvé de toilettes à temps! (−Hygiène)',false);say(Mc,'*Oh non… pas encore.*');}}
   if(tReal-THK>22&&!Mc.bubble){let low=null;for(const[k]of NEEDS){if(need[k]<22&&(!low||need[k]<need[low]))low=k;}if(low){THK=tReal;const T={food:['*J\'ai faim…*','*Mon ventre gargouille.*'],energy:['*Je suis épuisé…*','*Il me faudrait une sieste.*'],hyg:['*Je sens pas la rose…*','*Une douche, vite!*'],blad:['*Faut que j\'aille aux toilettes!*','*Urgent… les toilettes!*'],social:['*Je m\'ennuie de mes amis.*','*J\'aimerais jaser avec quelqu\'un.*'],fun:['*Je m\'ennuie…*','*Il me faut du fun!*']}[low];say(Mc,NEEDS.find(z=>z[0]===low)[2]+' '+pick(T),3.2);}}
+  if(tReal-NPT>1){const dtm=gm-(NPREV&&NPREV.gm||gm);if(NPREV&&dtm>0){for(const[k]of NEEDS)NTREND[k]=(need[k]-NPREV[k])/dtm;}NPREV={gm};for(const[k]of NEEDS)NPREV[k]=need[k];NPT=tReal;}
   if(tReal-(simsTick.u||0)>.4){simsTick.u=tReal;const b=$('moodB');if(b){const m=moodVal();b.querySelector('i').style.background=moodCol(m);b.classList.toggle('warn',NEEDS.some(([k])=>need[k]<22));b.title='Humeur : '+moodTxt(m);}needRender();qRender();qPump();}}
 requestAnimationFrame(simsTick);
 
