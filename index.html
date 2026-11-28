@@ -278,7 +278,7 @@ body.plein{overflow:hidden}body.plein .scene{position:fixed;inset:0;z-index:40;w
    super(small,...a);if(ref){const self=this;Object.defineProperty(this,'needsUpdate',{configurable:true,set(v){if(v===true){const src=ref.deref();if(src&&self.image===small){try{shrink(src,small);}catch(e){}}self.version++;}}});}}}
  THREE.CanvasTexture=CT;})();</script>
 <script>
-var GAME_VER=169;
+var GAME_VER=170;
 (()=>{
 const $=id=>document.getElementById(id);
 const sceneEl=$('scene');
@@ -9730,7 +9730,10 @@ function ctrlBlocked(area,x,z,r){if(area==='town'){if(Math.abs(x)>235||Math.abs(
 function camFwd(){const dx=camLook.x-cam.position.x,dz=camLook.z-cam.position.z,l=Math.hypot(dx,dz)||1;return[dx/l,dz/l];}
 function joyDir(){const f=camFwd();const dx=f[0]*(-JOY.y)+(-f[1])*JOY.x,dz=f[1]*(-JOY.y)+f[0]*JOY.x;const l=Math.hypot(dx,dz)||1;return[dx/l,dz/l];}
 let ctrlDoorT=0;
-function ctrlStep(ch,dt){if(Mc.inCar)return mcarStep(dt);if(trans)return .35;
+function vehPush(ch){if(ch.area!=='town'||Mc.inCar||Mc.inBus)return;for(const b of vehBoxes(false)){if(!vbInBox(b,ch.pos.x,ch.pos.z,.28))continue;const dx=ch.pos.x-b.x,dz=ch.pos.z-b.z;const al=dx*b.s+dz*b.c,lat=dx*b.c-dz*b.s;const pl=b.hw+.32-Math.abs(lat),pa=b.hl+.32-Math.abs(al);
+    const cands=[];const sl=lat>=0?1:-1,sa=al>=0?1:-1;cands.push([b.c*sl*pl,-b.s*sl*pl],[b.s*sa*pa,b.c*sa*pa],[-b.c*sl*(2*b.hw+.64-pl),b.s*sl*(2*b.hw+.64-pl)],[-b.s*sa*(2*b.hl+.64-pa),-b.c*sa*(2*b.hl+.64-pa)]);cands.sort((u,v)=>Math.hypot(u[0],u[1])-Math.hypot(v[0],v[1]));
+    for(const[ox,oz]of cands){const px=ch.pos.x+ox,pz=ch.pos.z+oz;if(!ctrlBlocked('town',px,pz,.05)){ch.pos.x=px;ch.pos.z=pz;break;}}}}
+function ctrlStep(ch,dt){if(Mc.inCar)return mcarStep(dt);if(trans)return .35;vehPush(ch);if(!ch.lie&&ch.seatH==null&&ctrlBlocked(ch.area,ch.pos.x,ch.pos.z,.05)){const fp=freePt(ch.area,ch.pos.x,ch.pos.z);if(fp&&Math.hypot(fp.x-ch.pos.x,fp.z-ch.pos.z)<.8){const k=Math.min(1,dt*6+.15);ch.pos.x+=(fp.x-ch.pos.x)*k;ch.pos.z+=(fp.z-ch.pos.z)*k;}}
   if(CTRL.busy||!CTRL.idle){CTRL.busy=false;CTRL.idle=1;if(!ch.lie){ch.act=null;ch.seatH=null;ch.show=null;if(ch.pose!=='walk'&&ch.pose!=='run')ch.pose='stand';}setTask('Attend tes ordres');}
   if(ch.area!=='town'){const I=INT[ch.area];if(I&&I.w&&(Math.abs(ch.pos.x)>I.w/2+.5||Math.abs(ch.pos.z)>I.d/2+1)){const e=I.spots.entry||I.spots.car||Object.values(I.spots)[0];if(e){ch.pos={x:e.x,z:e.z};ch.back=[];}}}
   const m=JOY.on?JOY.m:0;
@@ -9742,7 +9745,7 @@ function ctrlStep(ch,dt){if(Mc.inCar)return mcarStep(dt);if(trans)return .35;
   else[ux,uz]=joyDir();
   const run=m>.9&&!bk&&!(need.energy<8);const mf=typeof moodVal==='function'?(need.energy<15?.8:moodVal()<30?.9:moodVal()>75?1.06:1):1;const v=(run?4.2:1.6*Math.max(.5,m/.9))*spK*mf*dt;
   ch.pose=run?'run':'walk';ch.act=null;ch.seatH=null;ch.tyaw=hy!=null?hy:Math.atan2(ux,uz);if(hy!=null){let dy=ch.tyaw-ch.yaw;while(dy>PI)dy-=2*PI;while(dy<-PI)dy+=2*PI;if(Math.abs(dy)<.9)ch.yaw=ch.tyaw;}ch.mv=[ux,uz];ch.ph+=(bk?-1:1)*dt*(run?11:7.5*Math.max(.6,m));ch.back=[];
-  const nx=ch.pos.x+ux*v,nz=ch.pos.z+uz*v;const stuck=ctrlBlocked(ch.area,ch.pos.x,ch.pos.z,.05);if(stuck){const f0=freeDist(ch.area,ch.pos.x,ch.pos.z);if(freeDist(ch.area,nx,nz)<f0-.001||f0>=9){ch.pos.x=nx;ch.pos.z=nz;}else{const fx=freeDist(ch.area,nx,ch.pos.z),fz=freeDist(ch.area,ch.pos.x,nz);if(fx<f0)ch.pos.x=nx;else if(fz<f0)ch.pos.z=nz;}}else{if(!ctrlBlocked(ch.area,nx,ch.pos.z,.3))ch.pos.x=nx;if(!ctrlBlocked(ch.area,ch.pos.x,nz,.3))ch.pos.z=nz;}
+  const nx=ch.pos.x+ux*v,nz=ch.pos.z+uz*v;const stuck=ctrlBlocked(ch.area,ch.pos.x,ch.pos.z,.3);if(stuck){const fp=freePt(ch.area,ch.pos.x,ch.pos.z);const mx=nx-ch.pos.x,mz=nz-ch.pos.z,fx=fp?fp.x-ch.pos.x:0,fz=fp?fp.z-ch.pos.z:0;const fl=Math.hypot(fx,fz)||1,ml=Math.hypot(mx,mz)||1;if(!fp||(mx*fx+mz*fz)/(fl*ml)>-.25||!ctrlBlocked(ch.area,nx,nz,.3)){if(!ctrlBlocked(ch.area,nx,nz,.05)||ctrlBlocked(ch.area,ch.pos.x,ch.pos.z,.05)){ch.pos.x=nx;ch.pos.z=nz;}}}else{if(!ctrlBlocked(ch.area,nx,ch.pos.z,.3))ch.pos.x=nx;if(!ctrlBlocked(ch.area,ch.pos.x,nz,.3))ch.pos.z=nz;}
   if(ch.area==='town'){if(tReal-ctrlDoorT>1.2){for(const bk in BLD2INT){const b=BLD[bk];if(!b)continue;const dx=b.door.x-ch.pos.x,dz=b.door.z-ch.pos.z,d=Math.hypot(dx,dz);if(d<1.5&&(ux*-b.n.x+uz*-b.n.z)>.45){ctrlDoorT=tReal;ch.q.unshift({t:'enter',I:BLD2INT[bk],own:1});setTask('Entre : '+(INT[BLD2INT[bk]].name||bk));break;}}}
     if(Math.random()<dt*2)ch.node=nearestNode(ch.pos.x,ch.pos.z);}
   else{const I=INT[ch.area];if(I&&!I.outdoor&&I.building&&I.door&&ch.area!=='etage'&&tReal-ctrlDoorT>1.2&&ch.pos.z>I.d/2-.6&&Math.abs(ch.pos.x-I.door.x)<.8&&uz>.45){ctrlDoorT=tReal;ch.q.unshift({t:'exit',own:1});setTask('Sort dehors');}}
@@ -9978,6 +9981,7 @@ function autoHit(x,z,r){const A=autoCols();if(occGrid(x,z,Math.max(0,r-.08)))ret
 {const _cb2=ctrlBlocked;ctrlBlocked=function(area,x,z,r){if(_cb2(area,x,z,r))return true;if(area==='town'&&!(Mc.inCar&&r===0&&!CARAUTO())&&autoHit(x,z,r))return true;return false;};}
 function CARAUTO(){return true;}
 /* sortie d'un obstacle : on ne peut que s'en éloigner (plus de « traversée » une fois coincé) */
+function freePt(area,x,z){for(let rr=.15;rr<=3;rr+=.15)for(let k=0;k<16;k++){const a=k*PI/8;const px=x+Math.sin(a)*rr,pz=z+Math.cos(a)*rr;if(!ctrlBlocked(area,px,pz,.3))return{x:px,z:pz};}return null;}
 function freeDist(area,x,z){if(!ctrlBlocked(area,x,z,.05))return 0;for(let rr=.15;rr<=2.4;rr+=.15)for(let k=0;k<12;k++){const a=k*PI/6;if(!ctrlBlocked(area,x+Math.sin(a)*rr,z+Math.cos(a)*rr,.05))return rr;}return 9;}
 let CARHIT=null;
 /* v168 : zoom caméra (pincer à deux doigts / molette) */
